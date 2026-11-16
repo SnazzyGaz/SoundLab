@@ -8,7 +8,7 @@ physically informed stochastic models whose controls still map to real quantitie
 By Garyck Arntzen ([@_mintydoge](https://x.com/_mintydoge)). MIT licence. Standalone project; AIDAW uses it as
 a library/plugin.
 
-Status: **0.8.0**. New in 0.8: a body-weight `footstep` model (shoe: trainer/boot/heel; surface:
+Status: **0.8.1** (heel and toe now flam into one step: 35 ms default gap). New in 0.8: a body-weight `footstep` model (shoe: trainer/boot/heel; surface:
 wood/stone/gravel), the default `hit` is now a damped board knock (the old quick resonant sound is
 `dowel.json` / `-m object=dowel`), and a physical `coin` (drop with bounces and Euler's-disk wobble, plus a
 jingle; the retro blip stays as `blocks/coin_pickup.json`). Every recipe has macro sliders (size, distance, intensity, material, ...), seeded

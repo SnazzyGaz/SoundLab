@@ -555,7 +555,7 @@ A walking footstep: body weight, not a tap. Heel strike = a long, soft force pul
 | `surface` | `wood` |  | wood, stone, gravel | wood boards, stone/concrete, gravel |
 | `weight_kg` | `75.0` | kg | 30 .. 150 | walker's weight: more weight = longer, lower, louder push |
 | `intensity` | `0.5` |  | 0 .. 1 | sneaking .. stomping (heel speed ~0.2-0.7 m/s; harder = shorter, brighter contact, more slap and scuff) Source: heel vertical speed ~0.4 m/s at strike (est. from gait literature). |
-| `roll_s` | `0.11` | s | 0.03 .. 0.4 | heel-to-toe time (slow walk longer) |
+| `roll_s` | `0.035` | s | 0.01 .. 0.3 | heel-to-toe gap: in a heel-toe walk the toe lands ~20-60 ms after the heel, so the two flam into one step (v0.8.1, after 0.2 s sounded like two hits). Scaled a little by shoe (soft trainer longer, hard heel shorter) and weight |
 | `creak` | `0.3` |  | 0 .. 1 | wood only: chance and level of a board creak during loading |
 | `scuff` | `0.4` |  | 0 .. 1 | friction noise as the foot rolls (stone/wood) |
 | `floor_scale` | `1.0` |  | 0.4 .. 2.5 | scales the floor's mode frequencies (stiffer/smaller floor > 1) |

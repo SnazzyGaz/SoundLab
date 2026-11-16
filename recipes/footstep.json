@@ -14,7 +14,7 @@
     "surface": "wood",
     "weight_kg": 75.0,
     "intensity": 0.68,
-    "roll_s": 0.2,
+    "roll_s": 0.035,
     "creak": 0.3,
     "scuff": 0.16,
     "floor_scale": 1.7,
@@ -164,7 +164,7 @@
   },
   "pace": {
    "default": 0.5,
-   "doc": "slow .. hurried (heel-to-toe roll and step interval)",
+   "doc": "slow .. hurried (heel-to-toe gap ~56 .. 21 ms at boot defaults, and step interval)",
    "map": [
     {
      "to": "0.roll_s",

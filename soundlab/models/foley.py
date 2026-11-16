@@ -69,11 +69,11 @@ def _hann_spectrum(f, T):
 # heel (~5 ms) reaches ~400 Hz and its tip adds a click. Values are our estimates within that range.
 SHOES = {
     "trainer": dict(heel_ms=22.0, toe_ms=16.0, slap=0.35, slap_hz=2800.0, click=0.0, click_hz=2600.0,
-                    scuff_hz=1300.0, toe_gain=0.5),
+                    scuff_hz=1300.0, toe_gain=0.5, roll=1.15),
     "boot": dict(heel_ms=12.0, toe_ms=10.0, slap=0.55, slap_hz=5000.0, click=0.18, click_hz=3000.0,
-                 scuff_hz=2000.0, toe_gain=0.55),
+                 scuff_hz=2000.0, toe_gain=0.55, roll=1.0),
     "heel": dict(heel_ms=6.0, toe_ms=7.0, slap=0.4, slap_hz=6000.0, click=2.6, click_hz=4200.0,
-                 scuff_hz=2800.0, toe_gain=0.4),
+                 scuff_hz=2800.0, toe_gain=0.4, roll=0.8),
 }
 # Floor table: (Hz, t60 s) of the floor's own modes. A joisted timber floor rings in the ~70-250 Hz range
 # (CC0 wood-floor refs: strongest lines at 80-130 and ~220 Hz, energy below 150 Hz within 1-2 dB of the
@@ -107,7 +107,9 @@ SURFACES = {
            Param("intensity", 0.5, "", 0, 1, "sneaking .. stomping (heel speed ~0.2-0.7 m/s; harder = shorter, "
                  "brighter contact, more slap and scuff)", source="heel vertical speed ~0.4 m/s at strike (est. "
                  "from gait literature)"),
-           Param("roll_s", 0.11, "s", 0.03, 0.4, "heel-to-toe time (slow walk longer)"),
+           Param("roll_s", 0.035, "s", 0.01, 0.3, "heel-to-toe gap: in a heel-toe walk the toe lands ~20-60 ms after "
+                 "the heel, so the two flam into one step (v0.8.1, after 0.2 s sounded like two hits). Scaled a "
+                 "little by shoe (soft trainer longer, hard heel shorter) and weight"),
            Param("creak", 0.3, "", 0, 1, "wood only: chance and level of a board creak during loading"),
            Param("scuff", 0.4, "", 0, 1, "friction noise as the foot rolls (stone/wood)"),
            Param("floor_scale", 1.0, "", 0.4, 2.5, "scales the floor's mode frequencies (stiffer/smaller floor > 1)"),
@@ -151,7 +153,7 @@ def footstep(ctx: Ctx, x, shoe, surface, weight_kg, intensity, roll_s, creak, sc
         if sh["click"] > 0:
             dsp.place(clicks, _hann(max(3, int(0.25e-3 * sr))), i0, A * sh["click"] * (0.6 + 0.6 * I))
         # roll to the toe
-        rt = roll_s * w ** 0.15 * rng.uniform(0.88, 1.12)
+        rt = roll_s * sh["roll"] * w ** 0.15 * rng.uniform(0.88, 1.12)
         it = i0 + int(rt * sr)
         tt = sh["toe_ms"] * 1e-3 * su["soft"] / hard * rng.uniform(0.9, 1.1)
         mt = int(tt * sr)

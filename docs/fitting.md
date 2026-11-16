@@ -149,3 +149,14 @@ How each was done, honestly:
 - **coin:** a 7-control CMA-ES fit pushed two controls to their bounds and made the coin-on-ground hold-out
   worse (0.521 -> 0.641), so it was rejected. Kept instead: one control (floor level 1 -> 2) plus the wobble
   rework (rolling micro-contacts), which improves the fit clip and both hold-outs.
+
+### 0.8.1: heel-to-toe gap set by ear
+
+The 0.8.0 footstep's heel and toe sounded like two separate hits (gap 0.2 s, which came from the fit). The gap
+is now 35 ms by default (~20-60 ms with shoe, weight and the `pace` macro), so heel and toe flam into one step.
+The CC0 recordings preferred the long gap: with 35 ms the wood distances go back to roughly v0.7 levels (fit
+clip 0.383 -> 0.496; hold-outs 0.902 -> 1.228 and 0.472 -> 0.579), stone 0.566 -> 0.577 (hold-outs 0.666 ->
+0.750, 0.938 -> 0.745), gravel 0.751 -> 0.794 (hold-outs 0.549 -> 0.610, 0.562 -> 0.709). A refit of the other
+footstep controls with the gap locked gained little (0.496 -> 0.456) and pushed three controls to their
+bounds, so it was not kept. Here the ear overrides the metric: those recordings seem to be slow walks with a
+distinct toe-down, and a single-number spectral distance rewards copying that.

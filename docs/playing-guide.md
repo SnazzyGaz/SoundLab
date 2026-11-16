@@ -287,7 +287,7 @@ What a real step is: **body weight, then a roll**, not a tap. The heel lands thr
 floor gets a 6-25 ms push (foam trainer longest, hard heel shortest), not a click. A push that long has almost
 no energy above about 2/T Hz, which is why a real step is mostly a low, soft thump. The floor (a joisted
 timber floor rings at roughly 70-250 Hz) is heavily damped. Then the foot rolls to the toe (a smaller push
-0.1-0.25 s later) with a little scuff. What changes with the shoe: the push length, how much the sole slaps
+~20-60 ms later, so heel and toe flam into one step) with a little scuff. What changes with the shoe: the push length, how much the sole slaps
 (contact noise), and whether a hard heel tip clicks. What changes with the surface: wood booms a little and may
 creak (stick-slip in nails and joints under the moving load: a short pulse train through a few board
 resonances); stone gives almost no floor ring but a hard click and grit; gravel gives dense crunch grains
@@ -297,8 +297,12 @@ The CC0 wood-floor recordings we checked put 50-70 % of the energy below 150 Hz 
 -20 dB within 5-20 ms of the peak. The v0.7 footstep (two hard hits on an oak plate) had only ~12 % below
 150 Hz and a clear ring at ~830 Hz: that is why it read as tapping.
 
+Heel-to-toe gap (`roll_s`, 0.8.1): default 35 ms, x1.15 for a trainer, x0.8 for a hard heel, a little longer
+for heavier walkers; the `pace` macro spans ~56 ms (slow) to ~21 ms (hurried). v0.8.0 used 0.2 s, which
+sounded like two separate hits.
+
 Macros: `shoe` (trainer/boot/heel), `surface` (wood/stone/gravel), `size` (walker's weight), `intensity`
-(sneak .. stomp), `pace` (roll time and step interval), `creak`, `distance`. For a walk, set `steps` and
+(sneak .. stomp), `pace` (heel-to-toe gap and step interval), `creak`, `distance`. For a walk, set `steps` and
 `interval_s` on the layer.
 
 ## Board knock vs dowel (`hit`, 0.8)

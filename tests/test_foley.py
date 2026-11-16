@@ -121,3 +121,26 @@ def test_coin_jingle_and_retro_coin_kept():
     y = render("coin_jingle")
     assert y.size
     assert (RECIPES / "blocks" / "coin_pickup.json").exists(), "the retro coin stays"
+
+
+def test_heel_and_toe_flam_into_one_step():
+    """heel and toe must come almost as one. Gap ~20-60 ms, scaled a little by shoe/pace."""
+    from soundlab.models.foley import SHOES
+    from soundlab.recipe import render as rr
+    rec = soundlab.load_recipe(str(RECIPES / "footstep.json"))
+    for pace in (0.0, 0.5, 1.0):
+        roll = apply_pace(rec, pace)
+        for shoe in SHOES.values():
+            assert 0.015 <= roll * shoe["roll"] <= 0.075, (pace, roll, shoe["roll"])
+    dry = soundlab.load_recipe(str(RECIPES / "footstep.json"))
+    dry["post"] = []
+    dry["layers"][0]["params"].update(scuff=0.0, creak=0.0)
+    y, _ = rr(dry)
+    env = np.convolve(np.abs(y), np.ones(96) / 96, "same")
+    i = int(np.argmax(env))
+    assert i < int(0.1 * SR) and env[i + int(0.08 * SR):].max() < 0.25 * env[i], "no separate late toe hit"
+
+
+def apply_pace(rec, pace):
+    from soundlab.macros import apply_macros
+    return apply_macros(rec, {"pace": pace})["layers"][0]["params"]["roll_s"]
