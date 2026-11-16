@@ -74,3 +74,20 @@ renders to every reference listed in `TARGETS.json` (file, crop start, crop end)
 `tools/character_metrics.py` (same arguments) prints a few targeted numbers per listening note, such as the
 duck's periodicity, the explosion's rise time and how long its hiss lasts, and the foghorn's f0 and share of
 energy below 250 Hz.
+
+
+## Fits to the reference recordings (0.3.0)
+
+`recipes/fit/*_fitted.json` are dry recipes already holding the fitted values for the crops in
+`refs/targets.json` (duck: one quack; engine: idle + three blips; foghorn: one blast; explosion: one big
+blast; match: strike + flame; shaker: the box shake). Fit reports are in the research folder
+(`fits/<sound>/`). Before -> after (distance total):
+
+| sound | before | after |
+|---|---|---|
+| duck | 0.562 | 0.388 |
+| engine | 0.566 | 0.450 (two passes; `exhaust_crack` added between them) |
+| foghorn | 0.406 | 0.364 |
+| explosion | 0.758 | 0.381 |
+| match | 0.548 | 0.444 (the flame model changed between the two passes) |
+| shaker | 0.670 | 0.603 |

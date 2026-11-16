@@ -1,6 +1,6 @@
 {
  "soundlab": 1,
- "name": "Type F diaphone with grunt, heard across the water from about 800 m",
+ "name": "Barge/ship air horn, heard across the water from about 250 m",
  "sample_rate": 48000,
  "duration": 7.0,
  "seed": 5,
@@ -9,16 +9,18 @@
    "name": "diaphone",
    "model": "foghorn",
    "params": {
-    "tone_hz": 120,
-    "grunt_hz": 75,
-    "mode": "grunt",
-    "blast_s": 1.8,
-    "grunt_s": 1.2,
-    "roughness": 0.3,
-    "chop": 0.65,
-    "brightness": 0.85,
+    "tone_hz": 109,
+    "mode": "single",
+    "blast_s": 3.1,
+    "brightness": 0.3,
     "blasts": 1,
-    "interval_s": 4.6
+    "interval_s": 4.6,
+    "throat_hz": 330,
+    "wobble": 0.85,
+    "release_s": 0.3,
+    "horn_length": 5.7,
+    "attack_s": 0.1,
+    "mouth_radius": 0.9
    }
   },
   {
@@ -39,7 +41,7 @@
   {
    "model": "distance",
    "params": {
-    "distance": 500,
+    "distance": 250,
     "atmosphere": "15C_80RH",
     "spreading": false
    }
@@ -63,7 +65,8 @@
     ],
     "tail_s": 3.0,
     "tail_level": 0.25,
-    "tail_lowpass": 900
+    "tail_lowpass": 900,
+    "diffusion": 0.7
    }
   }
  ],

@@ -2,21 +2,21 @@
  "soundlab": 1,
  "name": "Safety match struck on the box, flares and burns, small room, close mic",
  "sample_rate": 48000,
- "duration": 2.6,
+ "duration": 3.0,
  "seed": 8,
  "layers": [
   {
    "name": "match",
    "model": "match",
    "params": {
-    "strike_s": 0.06,
+    "strike_s": 0.045,
     "strike_speed": 0.9,
     "strike_force": 3.0,
-    "flare_s": 0.19,
-    "flame_s": 1.6,
-    "flame_size": 0.5,
-    "flame_db": -30,
-    "brightness": 0.15
+    "flare_s": 0.36129,
+    "flame_s": 2.0,
+    "flame_size": 0.66673,
+    "flame_db": -37.39867,
+    "brightness": 0.6
    }
   }
  ],
@@ -24,7 +24,7 @@
   {
    "model": "room",
    "params": {
-    "volume": 35,
+    "volume": 60,
     "absorption": 0.35,
     "source_distance": 0.4,
     "hf_ratio": 0.6

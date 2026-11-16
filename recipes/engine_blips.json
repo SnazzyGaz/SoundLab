@@ -1,0 +1,169 @@
+{
+ "soundlab": 1,
+ "name": "V8 idling, three throttle blips (follows the shape of the reference V8 reference), 4 m away",
+ "sample_rate": 48000,
+ "duration": 7.0,
+ "seed": 11,
+ "layers": [
+  {
+   "name": "engine",
+   "model": "engine",
+   "params": {
+    "rpm": [
+     [
+      0,
+      800
+     ],
+     [
+      0.5,
+      800
+     ],
+     [
+      0.75,
+      3500
+     ],
+     [
+      1.0,
+      3200
+     ],
+     [
+      1.4,
+      1000
+     ],
+     [
+      2.1,
+      850
+     ],
+     [
+      2.3,
+      3000
+     ],
+     [
+      2.5,
+      2800
+     ],
+     [
+      2.9,
+      1000
+     ],
+     [
+      3.3,
+      900
+     ],
+     [
+      3.9,
+      4500
+     ],
+     [
+      4.9,
+      4500
+     ],
+     [
+      5.5,
+      850
+     ],
+     [
+      6,
+      800
+     ]
+    ],
+    "load": [
+     [
+      0,
+      0.3
+     ],
+     [
+      0.5,
+      0.3
+     ],
+     [
+      0.55,
+      0.9
+     ],
+     [
+      1.0,
+      0.9
+     ],
+     [
+      1.05,
+      0.15
+     ],
+     [
+      2.1,
+      0.2
+     ],
+     [
+      2.15,
+      0.9
+     ],
+     [
+      2.5,
+      0.9
+     ],
+     [
+      2.55,
+      0.15
+     ],
+     [
+      3.3,
+      0.25
+     ],
+     [
+      3.35,
+      0.9
+     ],
+     [
+      4.9,
+      0.9
+     ],
+     [
+      4.95,
+      0.15
+     ],
+     [
+      5.6,
+      0.25
+     ],
+     [
+      6,
+      0.3
+     ]
+    ],
+    "cylinders": 8,
+    "firing": "crossplane_v8",
+    "exhaust_length": 1.32334,
+    "muffler": 0.14191,
+    "body": 0.51786,
+    "exhaust_noise": 0.69533,
+    "intake": 0.08373,
+    "mechanical": 0.8,
+    "pipe_ring": 0.1378,
+    "jitter": 0.06234,
+    "whine": 0.02,
+    "pops": 0.2,
+    "exhaust_crack": 0.5
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "distance",
+   "params": {
+    "distance": 4
+   }
+  },
+  {
+   "model": "ground",
+   "params": {
+    "source_height": 0.3,
+    "listener_height": 1.6,
+    "distance": 4,
+    "reflection": 0.35
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.2
+ }
+}

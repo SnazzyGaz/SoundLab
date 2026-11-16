@@ -52,6 +52,15 @@ filter is a quack.
 Tips: keep `pitch_fall` small; any pitch movement inside a quack makes it read as a voice. For a hunter's duck
 call (a reed instrument), lower `rasp` to 0.3-0.4.
 
+### v3 (0.3.0), after "passable, but a slight grain"
+
+Fitted to the reference mallard video (one quack, 1.3-1.75 s). The pulses are now placed at exact sub-sample times
+(no grid grain), with far less jitter and breath: that recording shows **clean harmonics every ~168 Hz** up to
+3 kHz, a strong line near 330 Hz (the 2nd harmonic, lifted by `low_hz`/`low_level`), the main energy at
+2-3 kHz and a gentle fall to 10 kHz. Fitted values: `f0` 165, `formant_hz` 2960, `rasp` 0.65, `nasal` 0.23,
+`note_s` 0.235 s. A calm series is about 0.75 s start to start (`gap_s` 0.5). For a raspier, wilder hen, raise
+`rasp`; for a duck call (reed), lower it. See [artefacts.md](artefacts.md).
+
 ## Car engine (`engine`)
 
 Physics: each cylinder's exhaust blowdown is a pressure pulse at the firing frequency **f = RPM x cylinders /
@@ -86,6 +95,16 @@ Tips: always move `load` with `rpm`, because a revving engine under no load soun
 when the revs peak to get lift-off pops. Put `passby` after it for drive-bys; `ground` adds the comb of the road
 reflection, a static notch pattern that can sound phasey up close.
 
+### v3 (0.3.0), after "really good but a slight hiss"
+
+The hiss was stationary noise: the blowdown-noise gate overlapped across 8 cylinders into a constant, the
+valve-train band was always on, and the ground reflection dug fixed comb notches. Now the noise comes in
+bursts tied to the firing, and the high end is a short broadband **crack at each exhaust-valve opening**
+(`exhaust_crack`), as in the reference V8 video. Fitted (idle + three blips, 13-19 s): `exhaust_length` 1.32,
+`muffler` 0.14, `body` 0.52, `exhaust_noise` 0.7, `intake` 0.08, `mechanical` 0.8, `pipe_ring` 0.14,
+`exhaust_crack` 0.5, `jitter` 0.06. `engine_blips.json` follows the shape of that video. The `ground` block
+now has `ground_hz` (porous ground reflects less treble: asphalt ~8000, grass ~800) and `turbulence`.
+
 ## Foghorn (`foghorn`)
 
 Physics: a diaphone. Compressed air is chopped by a reciprocating slotted piston into a long conical trumpet.
@@ -116,6 +135,17 @@ v2 changes, after "too high and alarm-like; real ones are bassy and choppier":
 Tips: foghorns are heard far away. Follow with `distance` (hundreds of metres, `spreading: false` if you
 normalise) and `outdoor` with reflectors at a few hundred metres for cliff echoes. Low tones carry further.
 
+### v3 (0.3.0), after "sci-fi horn, very digital"
+
+Rebuilt as a real air horn: steady pitch (3 % scoop at most; the reference barge horn holds 108.7 Hz within 0.03
+semitones), slow random pressure and pitch **wobble** (`wobble`), turbulence noise gated by the air puffs,
+asymmetric puffs (38 % open, so all harmonics are present, unlike a square wave), **throat formants**
+(`throat_hz` and 2x; harmonics 2-3 are strongest in the barge ref), and a pressure release tail
+(`release_s`). The v2 grunt, octave-down growl and choppy AM remain as options (`mode: "grunt"`,
+`roughness`, `chop`) but are off by default: they were what made it sound synthetic. Fitted: `tone_hz` 109,
+`blast_s` 3.1, `throat_hz` ~330, `wobble` 0.85, `release_s` 0.3; scene uses `brightness` 0.3 and a 0.9 m
+mouth so the fundamental is not thinned.
+
 ## Explosion (`explosion`)
 
 Physics, v2: a detonation is a **pressure pulse**, not a flow of gas.
@@ -144,6 +174,16 @@ down from 7 kHz over ~0.7 s, so it took about 0.2 s to reach its peak and had a 
 Tips: distance is most of the character. Close up you hear crack + boom + roar. Far away, `distance` takes out
 the highs and terrain echoes roll for seconds (`outdoor` with reflectors 300-2000 m).
 
+### v3 (0.3.0), after "an explosion in a plastic bucket"
+
+The v2 boom was a tuned resonator ringing at ~120 Hz: a small-cavity sound. v3 has **no tonal part**: an
+N-wave + crack, a critically damped low thump (`boom_hz` is now only its corner), and a long turbulent
+**fireball roar** (`roar`, `fireball_s`, `surge`) whose top closes slowly while the low end lasts longest.
+The output is highpassed at 22 Hz: v2 put about half its energy below 20 Hz, which you cannot hear and which
+steals headroom. Fitted to the reference big explosion (21.5 s-end): `size` 0.95, `fireball_s` 9.8, `roar` 2.2,
+`crack` 0.31, `drive` 3.7, `boom_hz` 76. `explosion_small.json` is a field-recording-scale example
+(size 0.5, 2 s fireball).
+
 ## Match (`match`): our design, retimed to recordings
 
 No paper describes a match recipe. This model is built from sourced parts: stick-slip friction for the scrape
@@ -166,6 +206,33 @@ v1 had a long scrape and a low "woof" flame.
 | `flame_s`, `flame_size` | steady flame | match ~0.3-0.5, lighter ~0.5 |
 
 Tips: strike twice (two layers, the first with `ignite: false`).
+
+### v3 (0.3.0), after "good but some tinniness"
+
+The tinny parts were a ~530 Hz flame "woof" (now 90-250 Hz), a barely damped cardboard box (damping 40 ->
+180), resonant crackle pings (Q 1.5 -> 0.7) and a flat white flame hiss (now pink with a soft top and slow +
+fast flicker, a soft band around 1-4 kHz). There is a small low hand thump at ignition. Fitted to the reference video
+(strike + flame): `strike_s` 0.045, `flare_s` 0.36, `flame_size` 0.67, `flame_db` -37, `brightness` 0.94
+(`brightness` now mainly brightens the strike burst). The scene recipe uses `brightness` 0.6: the distance is
+the same within 0.004 and the strike is less sharp.
+
+## Shaken box (`shaker`): matchbox rattle
+
+Physics (after Cook's PhISM shakers): at each reversal of the hand the loose contents keep going and hit the
+far wall and each other, so every stroke gives a **cluster of tiny impacts** (wood on wood: bright, very short)
+lasting `spread_ms`, and the bulk hit knocks the box (a small, very lossy cardboard plate + a damped body
+knock). Between strokes the contents slide.
+
+| control | what it does | realistic values |
+|---|---|---|
+| `rate_hz`, `shake_s` / `strokes` | how fast and how long you shake (2 reversals per stroke) | 3-8 Hz |
+| `items`, `fill` | how many matches; fuller = more, duller hits | 15-50 |
+| `intensity` | how hard | 0.4-0.8 |
+| `spread_ms` | length of one collision cluster | 20-50 ms |
+| `item_hz` | brightness of the clicks | 1.5-5 kHz (the reference fit: 2350) |
+| `knock` | box body knock | 0-0.5 |
+
+`recipes/matchbox.json` = shake (0.15-0.85 s) + four taps + strike at 2.2 s + flame, like the reference video.
 
 ## Fitting a sound to a recording
 

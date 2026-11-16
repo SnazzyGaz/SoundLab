@@ -1,0 +1,67 @@
+{
+ "soundlab": 1,
+ "name": "Matchbox shaken, then a match struck on it and burning, small room, close mic",
+ "sample_rate": 48000,
+ "duration": 5.2,
+ "seed": 11,
+ "layers": [
+  {
+   "name": "shake",
+   "model": "shaker",
+   "params": {
+    "rate_hz": 7.8,
+    "shake_s": 0.7,
+    "items": 18,
+    "intensity": 0.54,
+    "spread_ms": 38,
+    "item_hz": 2350,
+    "knock": 0.0,
+    "start": 0.15
+   }
+  },
+  {
+   "name": "taps",
+   "model": "shaker",
+   "params": {
+    "rate_hz": 3.0,
+    "strokes": 4,
+    "items": 14,
+    "intensity": 0.45,
+    "spread_ms": 30,
+    "item_hz": 2350,
+    "knock": 0.0,
+    "start": 1.35
+   }
+  },
+  {
+   "name": "match",
+   "model": "match",
+   "params": {
+    "strike_s": 0.045,
+    "strike_speed": 0.9,
+    "strike_force": 3.0,
+    "flare_s": 0.36129,
+    "flame_s": 2.0,
+    "flame_size": 0.66673,
+    "flame_db": -37.39867,
+    "brightness": 0.6,
+    "start": 2.2
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 60,
+    "absorption": 0.35,
+    "source_distance": 0.4,
+    "hf_ratio": 0.6
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.3
+ }
+}

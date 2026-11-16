@@ -93,8 +93,11 @@ def room(ctx: Ctx, x, volume, absorption, rt60, hf_ratio, source_distance, wet):
            Param("tail_s", 1.5, "s", 0, 20, "diffuse tail T60 (0 = none)"),
            Param("tail_level", 0.15, "", 0, 2, "diffuse tail level"),
            Param("tail_lowpass", 1500.0, "Hz", 100, 16000, "tail brightness"),
-       ], ["Farnell 2010 practical 31", "Wikipedia: Thunder (rolling echoes)"])
-def outdoor(ctx: Ctx, x, reflectors, tail_s, tail_level, tail_lowpass):
+           Param("diffusion", 0.7, "", 0, 1, "how scattered each echo is. Real cliffs, tree lines and buildings "
+                 "return a smeared burst, not a clean copy; 0 = mirror-like slapback"),
+       ], ["Farnell 2010 practical 31", "Wikipedia: Thunder (rolling echoes)",
+           "Embleton 1996, Tutorial on sound propagation outdoors"])
+def outdoor(ctx: Ctx, x, reflectors, tail_s, tail_level, tail_lowpass, diffusion):
     from .propagation import air_absorb
     y = x.copy()
     for d, g in reflectors:
@@ -103,7 +106,15 @@ def outdoor(ctx: Ctx, x, reflectors, tail_s, tail_level, tail_lowpass):
         if n >= len(x):
             continue
         e = air_absorb(x[: len(x) - n], ctx.sr, path) * g / max(path / 20.0, 1.0)
-        y[n:] += dsp.lowpass(e, 5000.0, ctx.sr)
+        e = dsp.lowpass(e, 5000.0, ctx.sr)
+        if diffusion > 0:
+            # scattering: a short decaying noise burst (longer for farther, larger reflectors; estimate)
+            Ls = int((0.03 + 0.1 * min(d / 1000.0, 1.0)) * ctx.sr)
+            ts = np.arange(Ls) / ctx.sr
+            h = ctx.rng.standard_normal(Ls) * np.exp(-6.91 * ts / (Ls / ctx.sr))
+            h /= np.sqrt(np.sum(h ** 2)) + 1e-12
+            e = (1 - diffusion) * e + diffusion * signal.fftconvolve(e, h)[: len(e)]
+        y[n:] += e
     if tail_s > 0 and tail_level > 0:
         L = int(min(tail_s * 1.2, ctx.duration) * ctx.sr)
         t = np.arange(L) / ctx.sr

@@ -1,6 +1,6 @@
 # Roadmap (build order from the knowledge base)
 
-Status as of 0.2.0 (16 Nov 2026).
+Status as of 0.3.0 (16 Nov 2026). 0.3.0 fixed the synthesis artefacts behind the v2 listening notes (see [artefacts.md](artefacts.md)), fitted all five sounds to the reference recordings and added the `shaker` model.
 
 | step | content | status |
 |---|---|---|
@@ -15,6 +15,14 @@ Status as of 0.2.0 (16 Nov 2026).
 | 9 | AIDAW plugin, MCP server, compiled real-time core, recipe library | later |
 
 ## Next concrete tasks
+
+- Oversample `rough_pulses` (or use a smoother pulse) to take it from -43 dB to below -60 dB inharmonic energy.
+- Make every noise source sample-rate invariant (only the oversampled blocks are now).
+- Explosion: one recipe cannot match both a 2.5 s blast and a 7 s cinematic one; calibrate `size` and
+  `fireball_s` against several refs at once. Against the older field-recording refs v3 is worse than v2
+  (the recipe is now cinematic scale).
+- Duck and match moved away from the older refs while getting much closer to the references. Fit against both sets at
+  once (mean loss) to find values that suit both.
 
 - Fit `modal` parameters (frequencies, decays, amplitudes) from `analysis.track_partials` output, closing the loop
   for impacts first.

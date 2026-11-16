@@ -1,0 +1,42 @@
+{
+ "soundlab": 1,
+ "name": "Fit target: matchbox shake (vs matchbox ref 0-2.15 s) [fitted values]",
+ "sample_rate": 48000,
+ "duration": 2.15,
+ "seed": 1,
+ "layers": [
+  {
+   "name": "shake",
+   "model": "shaker",
+   "params": {
+    "rate_hz": 7.81363,
+    "shake_s": 0.7,
+    "items": 18,
+    "intensity": 0.5378,
+    "spread_ms": 38.16457,
+    "item_hz": 2353.73616,
+    "knock": 0.0,
+    "start": 0.15
+   }
+  },
+  {
+   "name": "taps",
+   "model": "shaker",
+   "params": {
+    "rate_hz": 3.0,
+    "strokes": 4,
+    "items": 25,
+    "intensity": 0.5,
+    "spread_ms": 30,
+    "item_hz": 1800,
+    "knock": 0.2,
+    "start": 1.35
+   }
+  }
+ ],
+ "post": [],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.02
+ }
+}

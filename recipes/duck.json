@@ -1,8 +1,8 @@
 {
  "soundlab": 1,
- "name": "Mallard hen decrescendo call, pond edge",
+ "name": "Mallard hen calling, calm series of quacks, about 6 m away outdoors",
  "sample_rate": 48000,
- "duration": 2.6,
+ "duration": 4.6,
  "seed": 3,
  "layers": [
   {
@@ -10,13 +10,16 @@
    "model": "duck",
    "params": {
     "voice": "female",
-    "notes": 6,
-    "f0": 280,
-    "formant_hz": 1650,
-    "rasp": 0.7,
-    "nasal": 0.35,
-    "note_s": 0.18,
-    "gap_s": 0.2
+    "notes": 5,
+    "f0": 165,
+    "formant_hz": 2960,
+    "rasp": 0.65,
+    "nasal": 0.23,
+    "note_s": 0.235,
+    "gap_s": 0.5,
+    "decrescendo_db": 1.0,
+    "low_hz": 255,
+    "low_level": 0.06
    }
   }
  ],

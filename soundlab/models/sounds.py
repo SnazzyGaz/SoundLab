@@ -24,33 +24,39 @@ def norm(x):
 
 # =================================================================== duck
 @model("duck", "sound",
-       "Mallard call. v2: the syrinx is modelled as a rough, irregular pulse train (rough_pulses: low ~150-250 Hz "
-       "rate, strong jitter and period doubling) rather than a smooth sung tone, then a nasal vocal tract: broad "
+       "Mallard call. The syrinx is a pulse train (rough_pulses) rather than a smooth sung tone, then a nasal vocal "
+       "tract: broad "
        "resonances around 1.2-3.3 kHz (strongest ~2 kHz) with an anti-resonance notch. Each quack swells then "
        "stops abruptly; pitch does not arc (an arc reads as a laugh). Female call = 2-10 quacks in a decrescendo; "
-       "male = quieter, longer, breathier 1-2 note 'raeb'.",
+       "male = quieter, longer, breathier 1-2 note 'raeb'. v3 (after 'slight grain'): pulses are placed at exact "
+       "sub-sample times, much less jitter and breath noise (the reference mallard ref shows clean harmonics every "
+       "~168 Hz up to 3 kHz; v2's heavy jitter smeared them into grain), a low resonance that lifts the second "
+       "harmonic (~330 Hz line in every ref quack), and a gentle top roll-off instead of a steep cut.",
        [
            Param("voice", "female", "", choices=("female", "male")),
            Param("notes", 6, "count", 1, 10, "quacks per call (female typical 5-6, range 2-10)",
                  source="Cornell All About Birds; Ducks Unlimited"),
-           Param("f0", 200.0, "Hz", 100, 500, "mean syrinx pulse rate. Our refs show harmonic spacing ~170-210 Hz; "
+           Param("f0", 175.0, "Hz", 100, 500, "mean syrinx pulse rate. Our refs show harmonic spacing ~168-210 Hz; "
                  "literature reports ~180-585 Hz", source="refs/SOURCES.md; Wildfowl journal (Greenewalt 1958)"),
            Param("formant_hz", 2100.0, "Hz", 1200, 3200, "main nasal resonance (max amplification 1.5-2.5 kHz)",
                  source="Wildfowl journal; our reference analysis"),
            Param("rasp", 0.7, "", 0, 1, "roughness: jitter, period doubling, shimmer and breath noise together. "
                  "Low = sung/'cartoon', high = real raspy quack"),
            Param("nasal", 0.6, "", 0, 1, "depth of the nasal anti-resonance and the high resonance cluster"),
-           Param("note_s", 0.15, "s", 0.05, 0.5, "length of one quack (refs: 0.13-0.2 s)"),
+           Param("note_s", 0.22, "s", 0.05, 0.5, "length of one quack (refs: 0.13-0.27 s)"),
            Param("gap_s", 0.1, "s", 0.02, 0.8, "silence between quacks (a hurried hen call ~0.1 s; a calm series "
                  "~0.4 s)"),
            Param("decrescendo_db", 2.0, "dB", 0, 8, "level drop per quack"),
            Param("pitch_fall", 0.02, "", 0, 0.2, "relative pitch drop per quack"),
+           Param("low_hz", 330.0, "Hz", 150, 800, "low (tracheal) resonance; refs show a strong line at ~330 Hz"),
+           Param("low_level", 0.25, "", 0, 1.5, "level of the low resonance"),
            Param("start", 0.05, "s", 0, None, "start time"),
        ],
        ["Cornell All About Birds: Mallard sounds", "Wildfowl: Observations on sound production in the Anatidae",
         "Abs 1970, Vocalizations of the Mallard", "Ducks Unlimited duck-calling study", "Wikipedia: Syrinx",
         "Herzel et al. 1995 (subharmonics in voice)", "refs/SOURCES.md (Commons/xeno-canto mallard recordings)"])
-def duck(ctx: Ctx, x, voice, notes, f0, formant_hz, rasp, nasal, note_s, gap_s, decrescendo_db, pitch_fall, start):
+def duck(ctx: Ctx, x, voice, notes, f0, formant_hz, rasp, nasal, note_s, gap_s, decrescendo_db, pitch_fall,
+         low_hz, low_level, start):
     sr = ctx.sr
     out = np.zeros(ctx.n)
     male = voice == "male"
@@ -71,8 +77,8 @@ def duck(ctx: Ctx, x, voice, notes, f0, formant_hz, rasp, nasal, note_s, gap_s, 
         step = 32
         src = call("rough_pulses", sub, f0=[[i / sr, float(v)] for i, v in zip(range(0, L, step), contour[::step])],
                    level=[[i / sr, float(v)] for i, v in zip(range(0, L, step), amp[::step])],
-                   jitter=0.02 + 0.16 * rasp, period_doubling=0.6 * rasp, shimmer=0.15 + 0.45 * rasp,
-                   pulse_ms=0.35, aspiration=0.1 + 0.3 * rasp)
+                   jitter=0.004 + 0.03 * rasp, period_doubling=0.35 * rasp, shimmer=0.06 + 0.2 * rasp,
+                   pulse_ms=0.35, aspiration=0.02 + 0.05 * rasp)
         if male:
             fm = [[650, 2.5, 0], [1300, 2.0, 3], [fc * 0.9, 2.0, 2], [3000, 3, -6]]
         else:
@@ -80,10 +86,13 @@ def duck(ctx: Ctx, x, voice, notes, f0, formant_hz, rasp, nasal, note_s, gap_s, 
         # the resonance slides down a little through the quack (beak closing; seen in the refs)
         shift = [[0, 1.06], [L / sr, 0.92]]
         y = call("formant", sub, src, formants=fm, shift=shift, dry=0.02)
-        y = dsp.biquad(y, "peak", 0.33 * fc, 1.6, sr, -14 * nasal)  # nasal anti-resonance
-        y = dsp.highpass(y, 380.0, sr, 0.9)
-        # the energy stops fairly sharply above ~1.6 x the main resonance (refs: ~3.3 kHz)
-        y = dsp.lowpass(dsp.lowpass(y, 1.65 * fc, sr, 0.9), 1.9 * fc, sr, 0.7)
+        y = dsp.biquad(y, "peak", 0.5 * fc, 1.6, sr, -10 * nasal)  # nasal anti-resonance
+        # v3: a weak low (tracheal/syrinx) resonance near 300-330 Hz, present in every mallard recording
+        y = y + low_level * norm(dsp.bandpass(src, low_hz, sr, 4.0)) * np.max(np.abs(y))
+        y = dsp.highpass(y, 200.0, sr, 0.7)
+        # v3: gentle top roll-off (one 2-pole at 2.6 x the resonance) instead of v2's steep double lowpass;
+        # real quacks have click energy up to ~10 kHz, 25-35 dB down. The steep cut made it dull/boxy.
+        y = dsp.lowpass(y, 2.6 * fc, sr, 0.6)
         gain = 10 ** (-decrescendo_db * k / 20) * (0.35 if male else 1.0)
         dsp.place(out, norm(y) * gain, int(t0 * sr))
         t0 += L / sr + gap_s * (1 + 0.2 * ctx.rng.uniform(-1, 1))
@@ -123,12 +132,14 @@ FIRING = {
            Param("body", 0.6, "", 0, 1, "low-end weight: muffler chamber resonance + low shelf (our estimate)"),
            Param("exhaust_noise", 0.5, "", 0, 1, "broadband blowdown noise (rasp) relative to the tonal pulses"),
            Param("pipe_ring", 0.3, "", 0, 0.9, "exhaust pipe resonance feedback; high values ring/whistle"),
+           Param("exhaust_crack", 0.4, "", 0, 1, "v3: short broadband crack at the start of each blowdown (the "
+                 "exhaust valve opening). Refs show HF energy as clicks locked to the firing, not as steady hiss"),
        ],
        ["Baldan et al., SIVE 2015", "Farnell 2010 practical 22", "Borla: engine sound and drone physics",
         "Wikipedia: Firing order", "Heywood 1988, Internal Combustion Engine Fundamentals (blowdown)",
         "refs/SOURCES.md (Rover V8, start-idle-rev recordings)"])
 def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, jitter, intake, mechanical, whine,
-           whine_order, pops, body, exhaust_noise, pipe_ring):
+           whine_order, pops, body, exhaust_noise, pipe_ring, exhaust_crack):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     R = ctrl(ctx, rpm, "exp")
     Ld = np.clip(ctrl(ctx, load), 0, 1)
@@ -149,10 +160,11 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
         banks = [offs]
     width = 0.16 - 0.04 * Ld  # blowdown lasts ~100-120 crank degrees of the 720 cycle (estimate after Heywood)
     flow = (R / 3000.0) ** 0.5
-    pink = dsp.lowpass(dsp.pink(rng, n), 2500.0, sr)
+    pink = dsp.lowpass(dsp.pink(rng, n), 1800.0, sr)
     pink /= np.std(pink) + 1e-12
     y = np.zeros(n)
     gate_all = np.zeros(n)
+    crack_gate = np.zeros(n)
     for bi, offs in enumerate(banks):
         pulses = np.zeros(n)
         gate = np.zeros(n)
@@ -165,9 +177,15 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
             a_cyc *= 1 + 0.06 * rng.standard_normal()
             shape = np.where(u < 1, np.sin(np.pi * np.clip(u, 0, 1)) ** 2 * np.exp(-1.5 * u), 0.0)
             pulses += shape * a_cyc[cyc]
-            gate += shape
+            # v3: the blowdown noise follows a much sharper burst (shape^3: the first, fastest ~30 % of the
+            # blowdown). With 8 cylinders x 0.16 cycle the old gate overlapped into a constant: stationary hiss.
+            gate += shape ** 3 * a_cyc[cyc]
+            # valve-opening crack: the first ~3 % of the cycle
+            uc = (p - cyc) / 0.03
+            crack_gate += np.where(uc < 1, np.exp(-3 * np.clip(uc, 0, 1)) * (1 - np.clip(uc, 0, 1)), 0.0) * np.abs(a_cyc[cyc]) \
+                * (1.0 - 0.3 * bi)
         src = pulses * (0.3 + 0.7 * Ld)
-        src = src + pink * gate * exhaust_noise * (0.6 + 1.2 * Ld) * flow
+        src = src + pink * gate * exhaust_noise * (0.8 + 1.6 * Ld) * flow
         src = dsp.highpass(src, 20.0, sr)
         D = 2 * exhaust_length * (1 + 0.07 * bi) / ctx.c * sr
         # the listener is nearer one tailpipe (estimate): bank imbalance is what makes a cross-plane V8 burble
@@ -182,19 +200,27 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
     loud = (0.5 + 0.5 * Ld) * (R / 3000.0) ** 0.35  # refs: rev peaks ~10-15 dB above idle
     y = norm(y * loud)
     # intake roar: low-mid band noise, grows with airflow (load x rpm)
-    roar = dsp.lowpass(dsp.highpass(dsp.pink(rng, n), 120.0, sr), 900.0, sr)
-    roar = roar / (np.std(roar) + 1e-12) * (0.6 + 0.4 * dsp.lowpass(gate_all, 200.0, sr) / (gate_all.mean() + 1e-9))
-    roar *= Ld * flow * intake * 0.12
+    roar = dsp.lowpass(dsp.highpass(dsp.pink(rng, n), 120.0, sr), 700.0, sr)
+    gl = dsp.lowpass(gate_all, 150.0, sr)
+    roar = roar / (np.std(roar) + 1e-12) * (0.25 + 0.75 * gl / (gl.mean() + 1e-9))  # pulses with the intake strokes
+    roar *= Ld ** 1.5 * flow * intake * 0.1
     # block / valve-train: band noise 1.5-4 kHz rising with rpm + soft ticks
-    blk = dsp.bandpass(rng.standard_normal(n), 2500.0, sr, 0.8) * (R / 3000.0) ** 1.5 * mechanical * 0.08
+    # v3: valve-train noise comes in bursts (valve seating), not as a steady band of hiss
+    blk = dsp.bandpass(rng.standard_normal(n), 2200.0, sr, 0.8) * (R / 3000.0) ** 1.5 * mechanical * 0.03
+    blk *= 0.2 + 0.8 * gl / (gl.max() + 1e-9)
+    # plus a low floor that follows the firing activity (the refs never drop to silence between cracks)
+    crack_gate = crack_gate + 1.2 * dsp.lowpass(crack_gate, 15.0, sr)
+    crk = dsp.lowpass(dsp.highpass(rng.standard_normal(n), 400.0, sr, 0.5), 7000.0, sr, 0.5) * crack_gate
+    crk *= exhaust_crack * 0.3 * (0.4 + 0.6 * Ld) * np.sqrt(loud)
     ticks = np.zeros(n)
     if mechanical > 0:
         cam = np.cumsum(cyc_rate * 2 * cylinders) / sr
         idx = np.nonzero(np.diff(np.floor(cam)) > 0)[0]
-        click = np.sin(2 * np.pi * 3200 * np.arange(120) / sr) * np.exp(-np.arange(120) / 20.0)
+        # v3: broadband clicks (was a 3.2 kHz sine burst + Q 2 bandpass: a tonal 'tink' line in the spectrum)
         for i in idx:
-            dsp.place(ticks, click, i, rng.uniform(0.5, 1.0))
-        ticks = dsp.bandpass(ticks, 3200.0, sr, 2.0) * mechanical * 0.05
+            m = int(rng.uniform(0.2, 0.6) * 1e-3 * sr) + 2
+            dsp.place(ticks, rng.standard_normal(m) * np.hanning(m), i, rng.uniform(0.5, 1.0))
+        ticks = dsp.bandpass(ticks, 3000.0, sr, 0.6) * mechanical * 0.05
     wph = 2 * np.pi * np.cumsum(R / 60.0 * whine_order) / sr
     whine_sig = (np.sin(wph) + 0.3 * np.sin(2 * wph)) * whine * 0.03 * Ld * (R / 3000.0)
     pop_sig = np.zeros(n)
@@ -207,51 +233,59 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
             pp = friedlander(L, sr, 0.003 + 0.005 * rng.random()) + 0.3 * rng.standard_normal(L) * np.exp(-np.arange(L) / (0.006 * sr))
             dsp.place(pop_sig, pp, i, rng.uniform(0.3, 1.0) * 1.5)
         pop_sig = dsp.lowpass(dsp.comb_waveguide(pop_sig, 2 * exhaust_length / ctx.c * sr, 0.3, sr, 2000.0, -1.0), 3000.0, sr)
-    return y + roar + blk + ticks + whine_sig + pop_sig * 0.5
+    return y + roar + blk + crk + ticks + whine_sig + pop_sig * 0.5
 
 
 # =================================================================== foghorn
 @model("foghorn", "sound",
-       "Diaphone foghorn. Compressed air chopped by a reciprocating slotted piston (chopper) into a long conical "
-       "trumpet (horn). v2: tuned to our reference recordings (fundamentals 87-150 Hz, energy concentrated in "
-       "the 125-250 Hz octaves, very buzzy harmonics): lower default tone, sharper port edges, a bark at the "
-       "start (pressure overshoot + pitch scoop), growl (flutter + period doubling) and a choppy grunt where the "
-       "slowing piston audibly pulses. Several blasts can be chained.",
+       "Air-driven foghorn (diaphone or large air horn). v3, rebuilt after 'sci-fi / digital' feedback: the tone "
+       "is steady like a real horn (a few per cent scoop at most; real horns do not glide), with slow random "
+       "pressure and pitch wobble from the air supply and the bell, turbulence noise gated by the air puffs, "
+       "an asymmetric puff shape (not a square wave, whose missing even harmonics sound synthetic), the horn "
+       "throat formants that make harmonics 3 and 6 stand out in real recordings, and a natural pressure "
+       "release tail. The source is rendered 4x oversampled. The v2 grunt (pitch fall with choppy pulsing) and "
+       "the octave-down growl are still there as options but off by default.",
        [
-           Param("tone_hz", 140.0, "Hz", 50, 600, "main tone. Our refs: 87-150 Hz; historic Type F ~180-250 Hz",
-                 source="refs/SOURCES.md; Terry Pepper: the diaphone"),
+           Param("tone_hz", 110.0, "Hz", 50, 600, "main tone. Refs: barge horn ~109 Hz; diaphones 87-150 Hz; "
+                 "historic Type F ~180-250 Hz", source="refs/SOURCES.md; Terry Pepper: the diaphone"),
            Param("grunt_hz", 85.0, "Hz", 40, 200, "end pitch of the grunt / the low tone", source="Terry Pepper"),
-           Param("mode", "grunt", "", choices=("single", "grunt", "two_tone")),
+           Param("mode", "single", "", choices=("single", "grunt", "two_tone")),
            Param("blast_s", 2.2, "s", 0.3, 20, "length of the main tone"),
-           Param("attack_s", 0.2, "s", 0.02, 3, "pressure build-up / piston spin-up (estimate)"),
+           Param("attack_s", 0.12, "s", 0.02, 3, "pressure build-up (refs: almost immediate)"),
            Param("grunt_s", 0.9, "s", 0.1, 6, "length of the falling grunt or the low tone (estimate)"),
            Param("pressure", 1.0, "", 0.3, 1.5, "air pressure re nominal 35-40 psi"),
-           Param("roughness", 0.5, "", 0, 1, "growl: piston flutter + period doubling (0 = clean alarm-like tone)"),
-           Param("chop", 0.6, "", 0, 1, "depth of the pulsing as the piston slows in the grunt"),
+           Param("roughness", 0.0, "", 0, 1, "growl: octave-down puff (period doubling) + fast flutter. 0 = clean"),
+           Param("chop", 0.0, "", 0, 1, "depth of the pulsing as the piston slows in the grunt"),
            Param("blasts", 1, "count", 1, 6, "number of blasts"),
            Param("interval_s", 3.5, "s", 0.5, 60, "start-to-start time between blasts"),
-           Param("brightness", 0.4, "", 0, 1, "how much upper harmonic buzz gets out (lowpass 500 Hz .. 3 kHz); refs "
-                 "have harmonics 2-5 strongest"),
+           Param("brightness", 0.4, "", 0, 1, "how much upper harmonic buzz gets out (lowpass 500 Hz .. 3 kHz)"),
            Param("horn_length", 4.0, "m", 0.5, 8, "trumpet length (estimate)"),
            Param("mouth_radius", 0.6, "m", 0.05, 1.5, "trumpet bell radius; sets the low cutoff c/(2 pi a) "
                  "(0.6 m -> 91 Hz)"),
+           Param("throat_hz", 330.0, "Hz", 100, 2000, "horn throat formant: harmonics near it and near 2x it "
+                 "stand out (barge ref: harmonics 3 and 6)"),
+           Param("wobble", 0.5, "", 0, 1, "slow random pressure/pitch wobble (air supply, bell; refs ~0.5-3 Hz)"),
+           Param("release_s", 0.35, "s", 0.05, 3, "pressure release after the valve closes"),
+           Param("scoop", 0.03, "", 0, 0.4, "pitch rise at the start (fraction); v2 used 0.4 (sounded synthetic)"),
            Param("start", 0.1, "s", 0, None, "start time"),
-       ], ["Terry Pepper, Seeing The Light: the diaphone", "Wikipedia: Foghorn", "Herzel et al. 1995",
-           "refs/SOURCES.md (East Brother Light, echoing foghorn recordings)"])
+       ], ["Terry Pepper, Seeing The Light: the diaphone", "Wikipedia: Foghorn; Wikipedia: Air horn",
+           "Fletcher & Rossing 1998, The Physics of Musical Instruments ch. 8 (horns)", "Herzel et al. 1995",
+           "refs/SOURCES.md (East Brother Light, echoing foghorn, barge horn reference)"])
 def foghorn(ctx: Ctx, x, tone_hz, grunt_hz, mode, blast_s, attack_s, grunt_s, pressure, roughness, chop, blasts,
-            interval_s, brightness, horn_length, mouth_radius, start):
-    sr, n = ctx.sr, ctx.n
-    f, P, C = [[0, tone_hz * 0.6]], [[0, 0]], [[0, 0]]
+            interval_s, brightness, horn_length, mouth_radius, throat_hz, wobble, release_s, scoop, start):
+    sr, n, rng = ctx.sr, ctx.n, ctx.rng
+    lo = tone_hz * (1 - scoop)
+    f, P, C = [[0, lo]], [[0, 0]], [[0, 0]]
     for k in range(int(blasts)):
         s0 = start + k * interval_s
         a, b = s0 + attack_s, s0 + attack_s + blast_s
-        f += [[s0, tone_hz * 0.6], [a, tone_hz], [b, tone_hz]]
-        P += [[s0, 0], [s0 + attack_s * 0.6, pressure * 1.15], [a, pressure], [b, pressure]]
+        f += [[s0, lo], [a, tone_hz], [b, tone_hz]]
+        P += [[s0, 0], [s0 + attack_s * 0.5, pressure * 0.8], [a, pressure * 1.03], [b, pressure]]
         C += [[b, 0]]
         if mode == "single":
-            f += [[b + 0.15, tone_hz * 0.95]]
-            P += [[b + 0.2, 0]]
-            end = b + 0.2
+            f += [[b + release_s, tone_hz * (1 - 0.6 * scoop - 0.01)]]
+            P += [[b + release_s * 0.35, pressure * 0.35], [b + release_s, 0]]
+            end = b + release_s
         elif mode == "grunt":
             f += [[b + 0.1, tone_hz * 0.88], [b + grunt_s, grunt_hz]]
             P += [[b + 0.1, pressure * 0.9], [b + grunt_s * 0.8, pressure * 0.4], [b + grunt_s, 0]]
@@ -263,56 +297,89 @@ def foghorn(ctx: Ctx, x, tone_hz, grunt_hz, mode, blast_s, attack_s, grunt_s, pr
             C += [[b + 0.1, chop * 0.4], [b + grunt_s, chop * 0.4]]
             end = b + grunt_s
         C += [[end + 0.01, 0]]
+    # slow organic wobble of pressure (+-1.5 dB) and pitch (+-0.4 %), breakpoints every 20 ms
+    if wobble > 0:
+        dur = n / sr
+        tw = np.arange(0, dur + 0.02, 0.02)
+        w1 = dsp.lowpass(rng.standard_normal(len(tw)), 2.0, 50)
+        w2 = dsp.lowpass(rng.standard_normal(len(tw)), 2.5, 50)
+        w1 /= np.std(w1) + 1e-12
+        w2 /= np.std(w2) + 1e-12
+        Fb = ctrl_at(f, tw, log=True)
+        Pb = ctrl_at(P, tw)
+        f = [[float(t), float(v * (1 + 0.004 * wobble * a1))] for t, v, a1 in zip(tw, Fb, w1)]
+        P = [[float(t), float(max(v * (1 + 0.17 * wobble * a2), 0.0))] for t, v, a2 in zip(tw, Pb, w2)]
     F = ctrl(ctx, f, "exp")
-    src = call("chopper", ctx, freq=f, pressure=P, open_fraction=0.5, edge=0.2, jitter=0.003, flow_noise=0.05)
+    # asymmetric air puffs (open 38 %): all harmonics present, unlike a 50 % square-ish puff
+    src = call("chopper", ctx, freq=f, pressure=P, open_fraction=0.38, edge=0.25, jitter=0.002, flow_noise=0.12)
     if roughness > 0:
-        # period doubling: a weaker chopper an octave down (piston/air-column interaction; estimate)
         sub = call("chopper", ctx.child(), freq=[[t, v / 2] for t, v in f], pressure=P, open_fraction=0.3,
                    edge=0.2, jitter=0.006, flow_noise=0.0)
         src = src + 0.35 * roughness * sub
-        flutter = dsp.lowpass(ctx.rng.standard_normal(n), 18.0, sr)
+        flutter = dsp.lowpass(rng.standard_normal(n), 18.0, sr)
         src *= 1 + 0.5 * roughness * flutter / (np.std(flutter) + 1e-12) * 0.35
-    # choppy grunt: amplitude pulses at a rate that slows with the piston (pulse rate ~ f / 8, estimate)
     Cc = np.clip(ctrl(ctx, C), 0, 1)
     if np.any(Cc > 0):
         ph = np.cumsum(np.clip(F / 8.0, 4.0, 25.0)) / sr
         am = 0.5 + 0.5 * np.cos(2 * np.pi * ph)
         src *= 1 - Cc * (1 - am ** 1.5)
-    y = call("horn", ctx, src, length=horn_length, mouth_radius=mouth_radius, resonance=0.35, damp_hz=1500.0)
+    y = call("horn", ctx, src, length=horn_length, mouth_radius=mouth_radius, resonance=0.15, damp_hz=1200.0)
+    # throat formants (broad, so the harmonics near them are lifted without a ringing whistle)
+    y = dsp.biquad(y, "peak", throat_hz, 2.0, sr, 7.0)
+    y = dsp.biquad(y, "peak", 2.0 * throat_hz, 2.5, sr, 5.0)
     lp = 500.0 * 6.0 ** brightness
-    y = dsp.lowpass(dsp.lowpass(y, lp, sr, 0.6), lp * 1.5, sr, 0.6)
-    y = dsp.biquad(y, "lowshelf", 160.0, 0.7, sr, 6.0)
-    Pc = ctrl(ctx, P)
-    hiss = dsp.bandpass(ctx.rng.standard_normal(n), 1200.0, sr, 0.8) * np.sqrt(np.maximum(Pc, 0)) * 0.008
+    y = dsp.lowpass(y, lp, sr, 0.5)  # gentle single 2-pole: real horns keep weak harmonics up to several kHz
+    y = dsp.biquad(y, "lowshelf", 160.0, 0.7, sr, 4.0)
+    Pc = np.maximum(ctrl(ctx, P), 0)
+    # air rush at the mouth: pink, broad, follows the pressure
+    hiss = dsp.bandpass(dsp.pink(rng, n), 900.0, sr, 0.5)
+    hiss = hiss / (np.std(hiss) + 1e-12) * np.sqrt(Pc) * 0.012
     return norm(y) + hiss
+
+
+def ctrl_at(value, times, log=False):
+    """Evaluate a constant or breakpoint list at arbitrary times (helper for building automation)."""
+    times = np.asarray(times, float)
+    if not isinstance(value, (list, tuple)):
+        return np.full(len(times), float(value))
+    pts = sorted((float(a), float(b)) for a, b in value)
+    ts = np.array([q[0] for q in pts])
+    vs = np.array([q[1] for q in pts])
+    if log and np.all(vs > 0):
+        return np.exp(np.interp(times, ts, np.log(vs)))
+    return np.interp(times, ts, vs)
 
 
 # =================================================================== explosion
 @model("explosion", "sound",
-       "Detonation. v2 replaces v1's long swept noise band (which read as gas venting) with the parts a "
-       "microphone actually records: a Friedlander N-wave (sharp rise, positive phase, negative phase) whose "
-       "length scales with charge size; a short broadband crack that overloads the mic; a heavy low 'boom' "
-       "(the pressure pulse ringing a low resonance of ground/air coupling); a rolling broadband roar whose "
-       "band closes down as it decays; very low rumble; optional secondary blasts and debris. Put "
+       "Detonation. v3, rebuilt after 'explosion in a plastic bucket' feedback. The v2 'boom' was a tuned 2-pole "
+       "resonator ringing at ~120 Hz for ~0.6 s: a narrow, pitched resonance is exactly what a small cavity "
+       "sounds like. v3 has no tonal parts. It is: a Friedlander N-wave (length grows with charge size) with a "
+       "broadband crack that overloads the mic; a critically damped (non-ringing) low thump; and the main body, "
+       "a long turbulent fireball roar of broadband noise with slow random surges, whose high end dies first "
+       "(air absorption and a cooling fireball) while the low end lasts longest. Big refs stay within 10 dB of "
+       "the peak for several seconds and fade over 5-7 s. Optional secondary blasts and debris. Put "
        "distance/ground/outdoor blocks after it for the far field.",
        [
-           Param("size", 0.6, "", 0, 1, "overall scale: N-wave length, boom pitch and length, rumble weight"),
+           Param("size", 0.6, "", 0, 1, "overall scale: N-wave length, thump weight, roar length and darkness"),
            Param("sub_blasts", 0, "count", 0, 20, "secondary detonations in the first ~0.5 s"),
-           Param("fireball_s", 1.6, "s", 0.2, 10, "rumble T60"),
+           Param("fireball_s", 4.0, "s", 0.2, 12, "how long the roar lasts (T60 of the low part)"),
            Param("debris", 0.3, "", 0, 1, "falling debris amount"),
            Param("drive", 2.5, "", 0, 10, "mic overload on the shock (a close blast overloads any mic)"),
            Param("crack", 0.5, "", 0, 1, "level of the short high-frequency crack at the front"),
-           Param("boom_hz", 0.0, "Hz", 0, 200, "low boom frequency; 0 = from size (75 Hz small .. 35 Hz large)"),
+           Param("boom_hz", 0.0, "Hz", 0, 300, "corner of the low thump (no resonance); 0 = from size"),
+           Param("roar", 0.8, "", 0, 2, "level of the fireball roar re the front"),
+           Param("surge", 0.5, "", 0, 1, "depth of the slow random surges in the roar"),
            Param("at", 0.05, "s", 0, None, "time of detonation"),
        ], ["Wikipedia: Blast wave (Friedlander waveform)", "Kinney & Graham 1985, Explosive Shocks in Air "
            "(positive-phase duration grows with cube root of yield)", "Farnell 2010 practical 31",
-           "refs/SOURCES.md (Commons LS100155, oxyhydrogen detonation, huge explosion)"])
-def explosion(ctx: Ctx, x, size, sub_blasts, fireball_s, debris, drive, crack, boom_hz, at):
+           "ISO 9613-1 (air absorption: high frequencies die first with distance)",
+           "refs/SOURCES.md (Commons LS100155, oxyhydrogen detonation, huge explosion, explosion reference recordings)"])
+def explosion(ctx: Ctx, x, size, sub_blasts, fireball_s, debris, drive, crack, boom_hz, roar, surge, at):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     n0 = int(at * sr)
     m = n - n0
     t = np.arange(m) / sr
-    # positive-phase duration: ms for small charges, tens of ms for large (cube-root scaling; our mapping)
     t_pos = 0.0015 + 0.035 * size ** 1.5
     shock = friedlander(m, sr, t_pos)
     crk = dsp.highpass(rng.standard_normal(m), 900.0, sr) * np.exp(-t / (0.004 + 0.01 * size)) * crack
@@ -326,30 +393,39 @@ def explosion(ctx: Ctx, x, size, sub_blasts, fireball_s, debris, drive, crack, b
                 * np.exp(-np.arange(L) / sr / 0.004)
             front[i:] += sb * rng.uniform(0.25, 0.6)
     front = dsp.softclip(front, drive) / max(dsp.softclip(np.array([1.0]), drive)[0], 1e-9) if drive > 0 else front
-    # boom: the pressure pulse rings a low, heavily damped resonance (estimate: ground/air coupling and mic
-    # low-frequency response); bigger charges = lower and longer
-    fb = boom_hz if boom_hz > 0 else 75.0 - 40.0 * size
-    t60_b = 0.25 + 0.6 * size
-    r = 10 ** (-3 / (t60_b * sr))
-    w0 = 2 * np.pi * fb / sr
-    from scipy.signal import lfilter
-    boom = lfilter([1.0], [1.0, -2 * r * np.cos(w0), r * r], dsp.lowpass(shock, 400.0, sr))
-    # rolling roar: broadband noise through a gentle (non-resonant, so no whistling sweep) lowpass that closes
-    # from ~4 kHz to ~150 Hz as it decays; every reference shows broadband energy that dies top-down
-    fc = 150.0 + 3850.0 * np.exp(-t / (0.12 + 0.3 * size))
-    roll = dsp.svf(rng.standard_normal(m), fc, 0.5, sr, "lp")
-    rollmod = np.clip(1 + 0.6 * dsp.lowpass(rng.standard_normal(m), 3.0, sr) / 0.03, 0.2, 2.5)
-    roll *= dsp.ar_env(m, sr, 0.015, fireball_s) * rollmod
-    low = dsp.lowpass(dsp.brown(rng, m), 60.0, sr, 0.8) * dsp.ar_env(m, sr, 0.05, fireball_s * 1.3)
+    # low thump: broadband pressure pulse, two cascaded 1-pole-like (Q 0.5) lowpasses: no ringing
+    fb = boom_hz if boom_hz > 0 else 140.0 - 80.0 * size
+    burst = shock + 0.5 * dsp.brown(rng, m) / 30.0 * np.exp(-t / (0.08 + 0.25 * size))
+    thump = dsp.lowpass(dsp.lowpass(burst, fb, sr, 0.5), fb * 1.5, sr, 0.5)
+    # fireball roar: pink noise, broadband; high band closes from ~8 kHz to ~250 Hz as the fireball cools.
+    T = max(fireball_s, 0.2)
+    fc = 300.0 + 9700.0 * np.exp(-t / (0.2 * T + 0.5 * size))
+    body = dsp.svf(dsp.pink(rng, m), fc, 0.5, sr, "lp")
+    # slow surges (billowing): smoothed noise, 0.3-3 Hz
+    sg = dsp.lowpass(rng.standard_normal(m), 1.5, sr)
+    sg /= np.std(sg) + 1e-12
+    surge_env = np.exp(0.5 * surge * sg)  # log-normal, ~+-4 dB at surge 1
+    # envelope: fast rise, a slowly sagging plateau (the fireball keeps burning for 0.4 x fireball_s), then a
+    # decay with T60 = fireball_s
+    rise = 1 - np.exp(-t / 0.03)
+    hold = 0.4 * T
+    env = rise * np.where(t < hold, 10 ** (-6 * t / hold / 20), 10 ** (-6 / 20) * np.exp(-6.91 * (t - hold) / T)) \
+        * (1 + 0.6 * np.exp(-t / (0.2 + 0.3 * size)))
+    body = norm(body * env * surge_env)
+    low = dsp.lowpass(dsp.highpass(dsp.brown(rng, m), 30.0, sr, 0.7), 160.0 - 60.0 * size, sr, 0.5)
+    low = norm(low * rise * np.exp(-6.91 * np.maximum(t - hold, 0) / (1.3 * T)) * surge_env)
     deb = np.zeros(m)
     if debris > 0:
         rate = [[0, 0], [0.3, 0], [0.5, 50 * debris], [1.5, 20 * debris], [3.0, 3 * debris], [5, 0]]
-        deb = call("crackle", ctx.child(m), rate=rate, grain_ms=5, f_lo=500, f_hi=5000, q=3, size_exponent=2.2,
+        deb = call("crackle", ctx.child(m), rate=rate, grain_ms=5, f_lo=400, f_hi=4000, q=0.8, size_exponent=2.2,
                    level=0.5)
     out = np.zeros(n)
-    out[n0:] = (1.0 * front + (0.9 + 0.5 * size) * norm(boom) + 0.45 * norm(roll) + (0.3 + 0.4 * size) * norm(low)
+    out[n0:] = (1.0 * front + (0.7 + 0.5 * size) * norm(thump) + roar * body + (0.3 + 0.4 * size) * low
                 + 0.12 * deb)
-    return out
+    # v3: remove infrasound. The N-wave and brown noise put most of their energy below 20 Hz (v2 renders were
+    # ~50 % infrasound, early v3 ~78 %): inaudible, it only eats headroom, so after normalising the audible
+    # body is quieter and thinner on real speakers. A measurement mic + preamp also rolls off there.
+    return dsp.highpass(dsp.highpass(out, 22.0, sr, 0.54), 22.0, sr, 1.31)
 
 
 # =================================================================== match
@@ -384,7 +460,7 @@ def match(ctx: Ctx, x, strike_s, strike_speed, strike_force, ignite, flare_s, fl
     fr = call("friction", sub, velocity=vel, normal_force=force, mu_static=0.7, mu_kinetic=0.4, stribeck_v=0.02,
               f_osc=1400, zeta=0.08, roughness=0.9, roughness_hz=6000)
     box = call("modal", sub, fr, material="cardboard", shape="plate", length=0.05, width=0.035, thickness=0.0015,
-               n_modes=20, extra_damping=40, strike_pos=0.3)
+               n_modes=20, extra_damping=180, strike_pos=0.3)  # v3: cardboard is very lossy (was 40: tinny)
     V = ctrl(ctx, vel)
     grit = dsp.bandpass(rng.standard_normal(n), 3500.0, sr, 0.7) * (V / max(strike_speed, 1e-3)) ** 1.5
     grit *= 1 + 0.8 * dsp.lowpass(rng.standard_normal(n), 300.0, sr) / 0.1
@@ -400,19 +476,92 @@ def match(ctx: Ctx, x, strike_s, strike_speed, strike_force, ignite, flare_s, fl
         burst = dsp.biquad(burst, "highshelf", 5000.0, 0.7, sr, -9 + 12 * brightness) * burst_env
         burst *= 1 + 0.6 * np.abs(dsp.lowpass(rng.standard_normal(m), 150.0, sr)) / 0.05
         crk = call("crackle", ctx.child(m), rate=[[0, 500], [flare_s * 0.5, 150], [flare_s, 20], [flare_s + 0.3, 6], [flare_s + 0.6, 0]],
-                   grain_ms=1.0, f_lo=1500, f_hi=12000, q=1.5, size_exponent=2.4, level=1.0)
+                   grain_ms=1.0, f_lo=1500, f_hi=12000, q=0.7, size_exponent=2.4, level=1.0)
         flame_env = np.clip((tt - 0.02) / 0.08, 0, 1) * np.clip((flame_s + 0.05 - tt) / 0.05, 0, 1)
-        flut = np.clip(1 + 0.5 * dsp.lowpass(rng.standard_normal(m), 8.0, sr) / 0.06, 0.3, 2.0)
-        hiss = dsp.lowpass(dsp.highpass(rng.standard_normal(m), 900.0 + 1200 * brightness, sr), 12000.0, sr)
+        # v3: flame flutter has slow (~5 Hz, flicker) and fast (~30 Hz, turbulence) parts; the hiss is pink-ish
+        # with a soft top instead of flat white noise (white hiss above 5 kHz read as 'tinny')
+        f1 = dsp.lowpass(rng.standard_normal(m), 6.0, sr)
+        f2 = dsp.lowpass(rng.standard_normal(m), 30.0, sr)
+        flut = np.exp(0.45 * f1 / (np.std(f1) + 1e-12) + 0.25 * f2 / (np.std(f2) + 1e-12))
+        # a small flame's hiss is a soft band around 1-4 kHz (the reference match ref: the flame is a low rumble with
+        # sparse crackle; a bright 2-20 kHz hiss band was the remaining 'tinny' part)
+        hiss = dsp.highpass(dsp.pink(rng, m), 900.0 + 300 * brightness, sr)
+        hiss = dsp.lowpass(hiss, 2500.0 + 1500.0 * brightness, sr, 0.5)
         hiss = norm(hiss) * flut * flame_env
-        fc_flame = 180.0 + 700.0 * (1 - flame_size)
-        woof = norm(dsp.bandpass(rng.standard_normal(m), fc_flame, sr, 0.7)) * flut * flame_env * (0.1 + 0.4 * flame_size)
+        # v3: the 'woof' (buoyant flame flow) sits low, 90-250 Hz; v2's ~530 Hz band was a honk
+        fc_flame = 90.0 + 160.0 * (1 - flame_size)
+        woof = norm(dsp.lowpass(dsp.pink(rng, m), fc_flame, sr, 0.5)) * flut * flame_env * (0.3 + 0.7 * flame_size)
         sparse = call("crackle", ctx.child(m), rate=4.0 * flame_size + 2, grain_ms=0.8, f_lo=2000, f_hi=10000,
-                      q=1.5, level=1.0) * flame_env
+                      q=0.7, level=1.0) * flame_env
         g = 10 ** (flame_db / 20)
-        burn = 0.4 * norm(pop) + norm(burst) + 0.5 * crk + g * (hiss + woof) * 2.5 + 0.25 * sparse
+        # hand/box thump as the head catches and the hand jerks back (refs: energy below 100 Hz)
+        thump = dsp.lowpass(friedlander(m, sr, 0.006), 120.0, sr, 0.5)
+        burn = 0.4 * norm(pop) + norm(burst) + 0.5 * crk + g * (hiss + woof) * 2.5 + 0.25 * sparse \
+            + 0.25 * norm(thump)
         out[ni:] += burn
-    return out
+    return dsp.highpass(out, 25.0, sr, 0.7)  # v3: no infrasound from the pop/thump pulses
+
+
+# =================================================================== shaker / matchbox
+@model("shaker", "sound",
+       "Things rattling in a shaken box (matchbox by default). Physics: the hand moves the box back and forth; "
+       "at each reversal the loose contents keep going and slam into the far wall and into each other. So "
+       "every stroke gives a cluster of many tiny impacts (wood on wood: bright, very short) a few ms to tens of "
+       "ms long, and the bigger hits excite the box itself (a small, very lossy cardboard plate, plus a dull "
+       "body knock). Between strokes the contents slide (soft noise). After Cook's PhISM shakers.",
+       [
+           Param("rate_hz", 5.0, "Hz", 0.5, 15, "shake strokes per second (each back-and-forth = 2 reversals)"),
+           Param("shake_s", 0.8, "s", 0.05, 30, "how long the shaking lasts"),
+           Param("strokes", 0, "count", 0, 200, "explicit number of reversals (0 = from rate_hz x shake_s)"),
+           Param("items", 40, "count", 1, 300, "number of loose items (matches in a full box: ~40)"),
+           Param("intensity", 0.7, "", 0, 1, "how hard it is shaken (more and louder impacts, more box knock)"),
+           Param("spread_ms", 18.0, "ms", 1, 100, "how long a reversal's cluster of collisions lasts"),
+           Param("item_hz", 4500.0, "Hz", 500, 15000, "centre of the item click spectrum (thin wood sticks)"),
+           Param("box_size", 0.05, "m", 0.01, 0.5, "box length (sets the body knock and plate modes)"),
+           Param("fill", 0.8, "", 0, 1, "how full the box is (fuller = more, duller hits, less free flight)"),
+           Param("knock", 0.5, "", 0, 2, "level of the box body knock"),
+           Param("start", 0.05, "s", 0, None, "start time"),
+       ], ["Cook 1997, Physically Informed Sonic Modeling (PhISM shakers), Computer Music Journal 21(3)",
+           "Farnell 2010 (rattles)", "matchbox shake reference (analysis only)"])
+def shaker(ctx: Ctx, x, rate_hz, shake_s, strokes, items, intensity, spread_ms, item_hz, box_size, fill, knock,
+           start):
+    sr, n, rng = ctx.sr, ctx.n, ctx.rng
+    nrev = int(strokes) if strokes > 0 else max(1, int(round(2 * rate_hz * shake_s)))
+    half = 1.0 / (2 * rate_hz)
+    clicks = np.zeros(n)
+    knocks = np.zeros(n)
+    slide = np.zeros(n)
+    t = start
+    for r in range(nrev):
+        if r:
+            t += half * (1 + 0.12 * rng.standard_normal())  # human timing: strokes are not metronomic
+        i0 = int(t * sr)
+        if i0 >= n:
+            break
+        force = intensity * (0.6 + 0.4 * rng.random()) * (1.0 if r % 2 == 0 else 0.8)
+        # the bulk of the contents slams into the wall: one knock per reversal
+        dsp.place(knocks, np.array([1.0]), i0 + int(rng.uniform(0, 3e-3) * sr), force)
+        # the cluster of item collisions
+        k = rng.poisson(max(1.0, items * (0.25 + 0.5 * intensity) * (1.2 - 0.5 * fill)))
+        dt = rng.exponential(spread_ms * 1e-3 / 2.5, k)
+        amps = force * (rng.pareto(2.2, k) + 0.2)
+        for d, a in zip(dt, amps):
+            j = i0 + int(d * sr)
+            m = max(2, int(rng.uniform(0.05, 0.25) * 1e-3 * sr))
+            dsp.place(clicks, np.sin(np.pi * np.arange(m) / m) * rng.choice([-1, 1]), j, a)
+        L = int(half * 0.7 * sr)
+        if L > 8:
+            dsp.place(slide, np.sin(np.pi * np.arange(L) / L) ** 2 * force * 0.3, i0 + int(0.15 * half * sr))
+    # item clicks: wood on wood, bright and short (broad band, no ringing)
+    it = dsp.bandpass(clicks, item_hz, sr, 0.8) + 0.3 * dsp.highpass(clicks, 2000.0, sr)
+    # box: lossy cardboard plate + a damped body knock
+    box = call("modal", ctx.child(), clicks * 0.3 + knocks, material="cardboard", shape="plate",
+               length=box_size, width=box_size * 0.7, thickness=0.001, n_modes=16, extra_damping=250, strike_pos=0.3)
+    body_hz = 9.0 / max(box_size, 0.01)  # ~180 Hz for a 5 cm box (estimate)
+    kn = dsp.lowpass(dsp.lowpass(knocks, body_hz * 2, sr, 0.5), body_hz * 3, sr, 0.5)
+    sl = dsp.bandpass(dsp.pink(rng, n), 2500.0, sr, 0.5) * dsp.lowpass(slide, 30.0, sr)
+    return 0.9 * norm(it) + 0.35 * norm(box) * (0.5 + 0.5 * intensity) + knock * norm(kn) * intensity \
+        + 0.06 * norm(sl)
 
 
 # =================================================================== fire

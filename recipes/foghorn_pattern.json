@@ -1,24 +1,26 @@
 {
  "soundlab": 1,
- "name": "Diaphone pattern: three short choppy grunting blasts, about 500 m over water",
+ "name": "Ship air horn signal: three blasts, heard over water from about 250 m",
  "sample_rate": 48000,
- "duration": 12.0,
+ "duration": 12.5,
  "seed": 5,
  "layers": [
   {
    "name": "diaphone",
    "model": "foghorn",
    "params": {
-    "tone_hz": 120,
-    "grunt_hz": 75,
-    "mode": "grunt",
-    "blast_s": 1.2,
-    "grunt_s": 1.0,
-    "roughness": 0.45,
-    "chop": 0.8,
-    "brightness": 0.85,
+    "tone_hz": 109,
+    "mode": "single",
+    "blast_s": 1.8,
+    "brightness": 0.3,
     "blasts": 3,
-    "interval_s": 3.2
+    "interval_s": 3.6,
+    "throat_hz": 330,
+    "wobble": 0.85,
+    "release_s": 0.3,
+    "horn_length": 5.7,
+    "attack_s": 0.1,
+    "mouth_radius": 0.9
    }
   },
   {
@@ -39,7 +41,7 @@
   {
    "model": "distance",
    "params": {
-    "distance": 500,
+    "distance": 250,
     "atmosphere": "15C_80RH",
     "spreading": false
    }
@@ -63,7 +65,8 @@
     ],
     "tail_s": 3.0,
     "tail_level": 0.25,
-    "tail_lowpass": 900
+    "tail_lowpass": 900,
+    "diffusion": 0.7
    }
   }
  ],

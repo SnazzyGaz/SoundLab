@@ -1,21 +1,23 @@
 {
  "soundlab": 1,
- "name": "Large explosion in open country, about 150 m away",
+ "name": "Large explosion (cinematic scale) about 150 m away, open ground, distant reflections",
  "sample_rate": 48000,
- "duration": 9.0,
+ "duration": 12.0,
  "seed": 21,
  "layers": [
   {
    "name": "blast",
    "model": "explosion",
    "params": {
-    "size": 0.65,
+    "size": 0.95,
     "sub_blasts": 1,
-    "fireball_s": 3.0,
+    "fireball_s": 9.8,
+    "roar": 2.2,
+    "surge": 0.1,
     "debris": 0.3,
-    "drive": 2.5,
-    "crack": 0.6,
-    "boom_hz": 120
+    "drive": 3.7,
+    "crack": 0.31,
+    "boom_hz": 76
    }
   }
  ],
@@ -53,14 +55,16 @@
       0.3
      ]
     ],
-    "tail_s": 4.0,
+    "tail_s": 5.0,
     "tail_level": 0.2,
-    "tail_lowpass": 1500
+    "tail_lowpass": 1500,
+    "diffusion": 0.8
    }
   }
  ],
  "master": {
   "normalize_db": -1.0,
-  "fade_out": 0.5
+  "fade_out": 0.5,
+  "highpass_hz": 25
  }
 }

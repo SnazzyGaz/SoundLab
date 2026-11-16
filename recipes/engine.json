@@ -71,16 +71,17 @@
       0.35
      ]
     ],
-    "exhaust_length": 1.6,
-    "muffler": 0.6,
-    "jitter": 0.075,
-    "intake": 0.8,
-    "mechanical": 0.5,
+    "exhaust_length": 1.32,
+    "muffler": 0.14,
+    "jitter": 0.062,
+    "intake": 0.08,
+    "mechanical": 0.8,
     "whine": 0.04,
     "pops": 0.4,
-    "body": 0.7,
-    "exhaust_noise": 0.8,
-    "pipe_ring": 0.15
+    "body": 0.52,
+    "exhaust_noise": 0.7,
+    "pipe_ring": 0.14,
+    "exhaust_crack": 0.5
    }
   }
  ],
@@ -97,7 +98,7 @@
     "source_height": 0.3,
     "listener_height": 1.6,
     "distance": 4,
-    "reflection": 0.8
+    "reflection": 0.35
    }
   }
  ],

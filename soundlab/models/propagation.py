@@ -82,11 +82,24 @@ def passby(ctx: Ctx, x, speed, closest, t_closest, atmosphere):
            Param("listener_height", 1.7, "m", 0, 1000, "listener height"),
            Param("distance", 20.0, "m", 0.5, 20000, "horizontal distance"),
            Param("reflection", 0.7, "", -1, 1, "ground reflection coefficient (hard ~0.9, grass ~0.5)"),
-       ], ["Farnell 2010 practical 31 (ground comb)", "ISO 9613-2 (ground effect)"])
-def ground(ctx: Ctx, x, source_height, listener_height, distance, reflection):
+           Param("ground_hz", 2000.0, "Hz", 100, 20000, "above this the ground reflects less (porous/grassy "
+                 "ground has a finite impedance; asphalt ~8000, grass ~800; estimate after Delany-Bazley)"),
+           Param("turbulence", 0.5, "", 0, 1, "air turbulence: random wobble of the reflected path that smears "
+                 "the comb notches at high frequencies (a perfectly static comb sounds phasey and synthetic)"),
+       ], ["Farnell 2010 practical 31 (ground comb)", "ISO 9613-2 (ground effect)",
+           "Delany & Bazley 1970 (porous ground impedance)", "Salomons 2001, Computational Atmospheric Acoustics "
+           "(coherence loss from turbulence)"])
+def ground(ctx: Ctx, x, source_height, listener_height, distance, reflection, ground_hz, turbulence):
     hs = ctrl(ctx, source_height)
     d_direct = np.sqrt(distance ** 2 + (hs - listener_height) ** 2)
     d_refl = np.sqrt(distance ** 2 + (hs + listener_height) ** 2)
     extra = (d_refl - d_direct) / ctx.c * ctx.sr
-    refl = dsp.variable_delay(x, extra) * reflection * (d_direct / d_refl)
-    return x + dsp.lowpass(refl, 6000.0, ctx.sr)
+    if turbulence > 0:
+        # path-length wobble: ~0.1-0.3 ms at turbulence 1, slow (a few Hz); grows with distance (estimate)
+        wob = dsp.lowpass(ctx.rng.standard_normal(ctx.n), 3.0, ctx.sr)
+        wob /= np.std(wob) + 1e-12
+        sig = turbulence * (0.1e-3 + 0.2e-3 * min(distance / 100.0, 1.0)) * ctx.sr
+        extra = extra + sig * wob
+    refl = dsp.variable_delay(x, np.maximum(extra, 0.0)) * reflection * (d_direct / d_refl)
+    refl = dsp.lowpass(refl, ground_hz, ctx.sr, 0.5)
+    return x + refl

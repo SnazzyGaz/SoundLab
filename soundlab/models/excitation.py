@@ -20,6 +20,27 @@ def friedlander(n: int, sr: int, t_star: float, peak: float = 1.0) -> np.ndarray
     return p
 
 
+OVERSAMPLE = 4  # internal oversampling for nonlinear / hard-edged sources (aliasing control)
+
+
+def noise_scale(sr: int) -> float:
+    """White noise of unit variance spreads its power over sr/2, so its level per Hz falls as sr rises.
+    Multiply by this to keep noise layers at the same in-band level at any rate (reference 48 kHz)."""
+    return math.sqrt(sr / 48000.0)
+
+
+def oversampled(ctx: Ctx, fn, factor: int = OVERSAMPLE, **params):
+    """Run a source at factor x the sample rate and decimate with a linear-phase anti-alias filter.
+    Hard edges (valve closures, port openings) create harmonics above Nyquist; at 48 kHz those fold back as
+    inharmonic 'grain'. Rendering at 192 kHz and filtering first keeps them out (classic oversampling)."""
+    from scipy.signal import resample_poly
+    if factor <= 1 or ctx.sr * factor > 400000:
+        return fn(ctx, **params)
+    sub = Ctx(ctx.sr * factor, ctx.n * factor, ctx.rng, ctx.c)
+    y = fn(sub, **params)
+    return resample_poly(y, 1, factor)[: ctx.n]
+
+
 @model("impact", "excitation",
        "Contact force of a hit (half-sine pulse, Hertz-like). Shorter contact = harder hammer = brighter. "
        "Optional bounces with a coefficient of restitution.",
@@ -175,6 +196,11 @@ def _phase(ctx: Ctx, f: np.ndarray, jitter: float) -> np.ndarray:
            Param("aspiration", 0.05, "", 0, 1, "breath noise gated by the open valve"),
        ], ["Rosenberg glottal pulse (speech science)", "Ducks Unlimited duck-calling study (rasp/entropy)"])
 def valve_pulse(ctx: Ctx, x, f0, level, open_quotient, speed_quotient, jitter, shimmer, rasp, aspiration):
+    return oversampled(ctx, _valve_pulse, f0=f0, level=level, open_quotient=open_quotient,
+                       speed_quotient=speed_quotient, jitter=jitter, shimmer=shimmer, rasp=rasp, aspiration=aspiration)
+
+
+def _valve_pulse(ctx: Ctx, f0, level, open_quotient, speed_quotient, jitter, shimmer, rasp, aspiration):
     f = ctrl(ctx, f0, "exp")
     ph = _phase(ctx, f, jitter)
     cyc = np.floor(ph).astype(int)
@@ -191,7 +217,7 @@ def valve_pulse(ctx: Ctx, x, f0, level, open_quotient, speed_quotient, jitter, s
     camp = np.maximum(camp, 0.05)
     flow = flow * camp[cyc]
     dflow = np.diff(flow, prepend=0.0) * ctx.sr / np.maximum(f, 1.0) * 0.15
-    asp = ctx.rng.standard_normal(ctx.n) * flow * (aspiration + 0.6 * rasp) * 0.5
+    asp = ctx.rng.standard_normal(ctx.n) * noise_scale(ctx.sr) * flow * (aspiration + 0.6 * rasp) * 0.5
     asp = dsp.highpass(asp, 800.0, ctx.sr)
     return (dflow + asp) * ctrl(ctx, level)
 
@@ -209,6 +235,11 @@ def valve_pulse(ctx: Ctx, x, f0, level, open_quotient, speed_quotient, jitter, s
            Param("flow_noise", 0.08, "", 0, 1, "turbulent hiss through the ports"),
        ], ["Terry Pepper, Seeing The Light: the diaphone", "Wikipedia: Foghorn"])
 def chopper(ctx: Ctx, x, freq, pressure, open_fraction, edge, jitter, flow_noise):
+    return oversampled(ctx, _chopper, freq=freq, pressure=pressure, open_fraction=open_fraction, edge=edge,
+                       jitter=jitter, flow_noise=flow_noise)
+
+
+def _chopper(ctx: Ctx, freq, pressure, open_fraction, edge, jitter, flow_noise):
     f = ctrl(ctx, freq, "exp")
     P = ctrl(ctx, pressure)
     ph = _phase(ctx, f, jitter) % 1.0
@@ -217,7 +248,7 @@ def chopper(ctx: Ctx, x, freq, pressure, open_fraction, edge, jitter, flow_noise
     g = np.clip(ph / e, 0, 1) * np.clip((open_fraction - ph) / e, 0, 1)
     g = 0.5 - 0.5 * np.cos(np.pi * g)
     flow = g * np.sqrt(np.maximum(P, 0))  # orifice flow ~ sqrt(pressure)
-    turb = ctx.rng.standard_normal(ctx.n) * g * flow_noise
+    turb = ctx.rng.standard_normal(ctx.n) * noise_scale(ctx.sr) * g * flow_noise
     d = np.diff(flow, prepend=0.0) * ctx.sr / np.maximum(f, 1.0) * 0.1
     return d + dsp.highpass(turb, 500.0, ctx.sr) * P
 
@@ -334,17 +365,12 @@ def rough_pulses(ctx: Ctx, x, f0, level, jitter, period_doubling, shimmer, pulse
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     F = np.maximum(ctrl(ctx, f0, "exp"), 1.0)
     A = ctrl(ctx, level)
-    w = max(3, int(pulse_ms * 1e-3 * sr))
-    # asymmetric flow pulse (slow opening 70%, fast closing 30%), differentiated -> strong closure spike
-    up = int(w * 0.7)
-    g = np.concatenate([0.5 - 0.5 * np.cos(np.pi * np.arange(up) / up),
-                        0.5 + 0.5 * np.cos(np.pi * np.arange(w - up) / max(w - up, 1))])
-    pulse = np.diff(g, append=0.0)
-    pulse /= np.max(np.abs(pulse)) + 1e-12
+    w = max(4.0, pulse_ms * 1e-3 * sr)  # pulse width in samples (fractional)
     out = np.zeros(n)
     gate = np.zeros(n)
     t = float(rng.uniform(0, sr / F[0]))
     k = 0
+    idx = np.arange(int(math.ceil(w)) + 2)
     while t < n:
         i = int(t)
         P = sr / F[min(i, n - 1)]
@@ -352,9 +378,28 @@ def rough_pulses(ctx: Ctx, x, f0, level, jitter, period_doubling, shimmer, pulse
         period = P * (1 + 0.3 * period_doubling * side) * (1 + jitter * rng.standard_normal())
         amp = A[min(i, n - 1)] * max(0.05, 1 + 0.5 * shimmer * rng.standard_normal()) \
             * (1 - 0.5 * period_doubling * (k % 2))
-        dsp.place(out, pulse, i, amp)
-        dsp.place(gate, g, i, abs(amp))
+        # v3: the pulse is evaluated at its exact (sub-sample) time instead of being snapped to the sample grid.
+        # Snapping turned every period into a whole number of samples: a hidden +-0.5 sample jitter that put
+        # inharmonic 'grain' ~19 dB below the harmonics above 3 kHz.
+        k0 = int(math.ceil(t))
+        tau = (k0 + idx - t) / w
+        pulse, g = _flow_pulse(tau)
+        dsp.place(out, pulse, k0, amp)
+        dsp.place(gate, g, k0, abs(amp))
         t += max(period, 0.3 * P)
         k += 1
-    asp = dsp.highpass(rng.standard_normal(n), 1000.0, sr) * dsp.lowpass(gate, 300.0, sr) * aspiration * 0.5
+    asp = dsp.highpass(rng.standard_normal(n), 1000.0, sr) * noise_scale(sr) * dsp.lowpass(gate, 300.0, sr) \
+        * aspiration * 0.5
     return out + asp
+
+
+def _flow_pulse(u):
+    """Asymmetric flow pulse on u in [0, 1] (70 % raised-cosine opening, 30 % closing) and its analytic
+    derivative (the radiated pressure), normalised so the closure spike is -1. Zero outside [0, 1]."""
+    u = np.asarray(u, float)
+    up = 0.7
+    g = np.where(u < 0, 0.0, np.where(u < up, 0.5 - 0.5 * np.cos(np.pi * u / up),
+                 np.where(u < 1, 0.5 + 0.5 * np.cos(np.pi * (u - up) / (1 - up)), 0.0)))
+    d = np.where(u < 0, 0.0, np.where(u < up, 0.5 * np.pi / up * np.sin(np.pi * u / up),
+                 np.where(u < 1, -0.5 * np.pi / (1 - up) * np.sin(np.pi * (u - up) / (1 - up)), 0.0)))
+    return d / (0.5 * np.pi / (1 - up)), g

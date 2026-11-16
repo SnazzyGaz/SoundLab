@@ -102,8 +102,9 @@ def test_engine_high_rpm_not_tinny():
         y = run("engine", 1.5, rpm=rpm, load=0.8, cylinders=8, firing="crossplane_v8", mechanical=0, whine=0, pops=0)
         f, t, Z = stft(y[SR // 2:], SR)
         return spectral_stats(np.abs(Z), f)[0]
-    assert cen(6000) < 2.5 * cen(1500)
-    assert cen(6000) < 1200
+    # v3: idle is now much darker (no stationary hiss), so the old ratio test no longer means anything;
+    # the absolute ceiling is what guards against tinny revs
+    assert cen(6000) < 900
 
 
 def test_engine_crossplane_v8_burble():
@@ -123,13 +124,13 @@ def test_foghorn_defaults_are_bassy():
     y = run("foghorn", 5.0)
     f0 = f0_estimate(y, SR)[0]
     assert f0 is not None and 60 < f0 < 160  # refs 87-150 Hz; v1 was 250
-    assert band_db(y, 20, 300) > -3  # most energy below 300 Hz
+    assert band_db(y, 20, 300) > -4.5  # about half the energy below 300 Hz (the reference barge ref: -2.6 dB)
 
 
 def test_foghorn_grunt_is_choppy():
     from soundlab.analysis import envelope
     def depth(chop):
-        y = run("foghorn", 5.0, chop=chop, roughness=0.0, blast_s=1.5, grunt_s=1.5, start=0.1)
+        y = run("foghorn", 5.0, mode="grunt", chop=chop, roughness=0.0, blast_s=1.5, grunt_s=1.5, start=0.1)
         e = envelope(y, SR, 5.0)[int(2.0 * SR):int(2.9 * SR)]
         return np.std(20 * np.log10(e / e.max() + 1e-6))
     assert depth(0.9) > depth(0.0) + 2.0
@@ -154,7 +155,8 @@ def test_explosion_starts_sharp_and_is_bass_heavy():
 
 
 def test_explosion_is_a_blast_not_a_vent():
-    """v2: fast rise, short hiss (energy above 2 kHz gone within ~0.6 s), heavy lows early."""
+    """Fast rise, heavy lows early; v3: the high band dies before the low band (refs: big explosions keep
+    broadband energy for ~2 s, so v2's 'HF gone in 0.7 s' rule was dropped)."""
     from soundlab.analysis import envelope
     y = run("explosion", 4.0, size=0.65, at=0.05, debris=0.0)
     e = envelope(y, SR, 2.0)
@@ -163,7 +165,8 @@ def test_explosion_is_a_blast_not_a_vent():
     import scipy.signal as ss
     hi = ss.sosfilt(ss.butter(4, 2000, "high", fs=SR, output="sos"), y)
     h = envelope(hi, SR, 20.0)
-    assert (h > 0.1 * h.max()).sum() / SR < 0.7
+    lo = envelope(ss.sosfilt(ss.butter(4, 200, "low", fs=SR, output="sos"), y), SR, 20.0)
+    assert (h > 0.1 * h.max()).sum() < (lo > 0.1 * lo.max()).sum()
     first = y[int(0.05 * SR):int(0.55 * SR)]
     assert band_db(first, 20, 200) > band_db(first, 2000, 20000) + 6
 

@@ -1,0 +1,30 @@
+{
+ "soundlab": 1,
+ "name": "Fit target: one big explosion (vs explosion ref 21.5 s-end) [fitted values]",
+ "sample_rate": 48000,
+ "duration": 7.339187500000001,
+ "seed": 1,
+ "layers": [
+  {
+   "name": "blast",
+   "model": "explosion",
+   "params": {
+    "size": 0.95487,
+    "fireball_s": 9.81101,
+    "roar": 2.23331,
+    "surge": 0.01562,
+    "debris": 0.2,
+    "drive": 3.7029,
+    "crack": 0.30927,
+    "at": 0.16,
+    "boom_hz": 75.77213
+   }
+  }
+ ],
+ "post": [],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.02,
+  "highpass_hz": 25
+ }
+}

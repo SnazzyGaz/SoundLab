@@ -44,7 +44,7 @@ def read_audio(path: str | Path, mono: bool = True) -> tuple[np.ndarray, int]:
     return x, sr
 
 
-def write_mp3(path: str | Path, x: np.ndarray, sr: int, bitrate: str = "192k") -> Path:
+def write_mp3(path: str | Path, x: np.ndarray, sr: int, bitrate: str = "320k") -> Path:
     if not shutil.which("ffmpeg"):
         raise RuntimeError("ffmpeg not found; MP3 export needs it")
     path = Path(path)

@@ -81,8 +81,8 @@ control takes a breakpoint list `[[time_s, value], ...]`.
 }
 ```
 
-Shipped recipes: `duck`, `engine`, `foghorn`, `explosion`, `match` (reference sounds), `foghorn_pattern`,
-`glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), and `recipes/fit/*_fit.json` (dry recipes
+Shipped recipes: `duck`, `engine`, `foghorn`, `explosion`, `match` (reference sounds), `matchbox` (shake +
+strike + flame), `engine_blips`, `explosion_small`, `foghorn_pattern`, `glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), and `recipes/fit/*_fit.json` (dry recipes
 matched to the reference recordings, the starting points for `soundlab match`). Full format: [docs/recipe-format.md](docs/recipe-format.md).
 
 ## Documentation
@@ -92,6 +92,8 @@ matched to the reference recordings, the starting points for `soundlab match`). 
 - [docs/physics-reference.md](docs/physics-reference.md): formulas, material and mode tables, sources.
 - [docs/models.md](docs/models.md): every block and control (generated from the code).
 - [docs/analysis.md](docs/analysis.md): the stem-split / feature tool and where it is going.
+- [docs/artefacts.md](docs/artefacts.md): the synthesis artefacts found in v2 (grain, hiss, tinny, digital,
+  "plastic bucket"), how they were measured and fixed in 0.3.0.
 - [docs/fitting.md](docs/fitting.md): fitting recipes to recordings (`soundlab match`), the loss, and how to read
   a fit report.
 - [docs/architecture.md](docs/architecture.md): code layout and how AIDAW plugs in.

@@ -318,8 +318,10 @@ Ground reflection: a delayed copy from the mirror-image source interferes with t
 | `listener_height` | `1.7` | m | 0 .. 1000 | listener height |
 | `distance` | `20.0` | m | 0.5 .. 20000 | horizontal distance |
 | `reflection` | `0.7` |  | -1 .. 1 | ground reflection coefficient (hard ~0.9, grass ~0.5) |
+| `ground_hz` | `2000.0` | Hz | 100 .. 20000 | above this the ground reflects less (porous/grassy ground has a finite impedance; asphalt ~8000, grass ~800; estimate after Delany-Bazley) |
+| `turbulence` | `0.5` |  | 0 .. 1 | air turbulence: random wobble of the reflected path that smears the comb notches at high frequencies (a perfectly static comb sounds phasey and synthetic) |
 
-Sources: Farnell 2010 practical 31 (ground comb); ISO 9613-2 (ground effect)
+Sources: Farnell 2010 practical 31 (ground comb); ISO 9613-2 (ground effect); Delany & Bazley 1970 (porous ground impedance); Salomons 2001, Computational Atmospheric Acoustics (coherence loss from turbulence)
 
 ## Stage: room
 
@@ -348,27 +350,30 @@ Outdoor space: discrete echoes from distant reflectors (cliffs, buildings, tree 
 | `tail_s` | `1.5` | s | 0 .. 20 | diffuse tail T60 (0 = none) |
 | `tail_level` | `0.15` |  | 0 .. 2 | diffuse tail level |
 | `tail_lowpass` | `1500.0` | Hz | 100 .. 16000 | tail brightness |
+| `diffusion` | `0.7` |  | 0 .. 1 | how scattered each echo is. Real cliffs, tree lines and buildings return a smeared burst, not a clean copy; 0 = mirror-like slapback |
 
-Sources: Farnell 2010 practical 31; Wikipedia: Thunder (rolling echoes)
+Sources: Farnell 2010 practical 31; Wikipedia: Thunder (rolling echoes); Embleton 1996, Tutorial on sound propagation outdoors
 
 ## Stage: sound
 
 ### `duck`
 
-Mallard call. v2: the syrinx is modelled as a rough, irregular pulse train (rough_pulses: low ~150-250 Hz rate, strong jitter and period doubling) rather than a smooth sung tone, then a nasal vocal tract: broad resonances around 1.2-3.3 kHz (strongest ~2 kHz) with an anti-resonance notch. Each quack swells then stops abruptly; pitch does not arc (an arc reads as a laugh). Female call = 2-10 quacks in a decrescendo; male = quieter, longer, breathier 1-2 note 'raeb'.
+Mallard call. The syrinx is a pulse train (rough_pulses) rather than a smooth sung tone, then a nasal vocal tract: broad resonances around 1.2-3.3 kHz (strongest ~2 kHz) with an anti-resonance notch. Each quack swells then stops abruptly; pitch does not arc (an arc reads as a laugh). Female call = 2-10 quacks in a decrescendo; male = quieter, longer, breathier 1-2 note 'raeb'. v3 (after 'slight grain'): pulses are placed at exact sub-sample times, much less jitter and breath noise (the reference mallard ref shows clean harmonics every ~168 Hz up to 3 kHz; v2's heavy jitter smeared them into grain), a low resonance that lifts the second harmonic (~330 Hz line in every ref quack), and a gentle top roll-off instead of a steep cut.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
 | `voice` | `female` |  | female, male |  |
 | `notes` | `6` | count | 1 .. 10 | quacks per call (female typical 5-6, range 2-10) Source: Cornell All About Birds; Ducks Unlimited. |
-| `f0` | `200.0` | Hz | 100 .. 500 | mean syrinx pulse rate. Our refs show harmonic spacing ~170-210 Hz; literature reports ~180-585 Hz Source: refs/SOURCES.md; Wildfowl journal (Greenewalt 1958). |
+| `f0` | `175.0` | Hz | 100 .. 500 | mean syrinx pulse rate. Our refs show harmonic spacing ~168-210 Hz; literature reports ~180-585 Hz Source: refs/SOURCES.md; Wildfowl journal (Greenewalt 1958). |
 | `formant_hz` | `2100.0` | Hz | 1200 .. 3200 | main nasal resonance (max amplification 1.5-2.5 kHz) Source: Wildfowl journal; our reference analysis. |
 | `rasp` | `0.7` |  | 0 .. 1 | roughness: jitter, period doubling, shimmer and breath noise together. Low = sung/'cartoon', high = real raspy quack |
 | `nasal` | `0.6` |  | 0 .. 1 | depth of the nasal anti-resonance and the high resonance cluster |
-| `note_s` | `0.15` | s | 0.05 .. 0.5 | length of one quack (refs: 0.13-0.2 s) |
+| `note_s` | `0.22` | s | 0.05 .. 0.5 | length of one quack (refs: 0.13-0.27 s) |
 | `gap_s` | `0.1` | s | 0.02 .. 0.8 | silence between quacks (a hurried hen call ~0.1 s; a calm series ~0.4 s) |
 | `decrescendo_db` | `2.0` | dB | 0 .. 8 | level drop per quack |
 | `pitch_fall` | `0.02` |  | 0 .. 0.2 | relative pitch drop per quack |
+| `low_hz` | `330.0` | Hz | 150 .. 800 | low (tracheal) resonance; refs show a strong line at ~330 Hz |
+| `low_level` | `0.25` |  | 0 .. 1.5 | level of the low resonance |
 | `start` | `0.05` | s | 0 .. None | start time |
 
 Sources: Cornell All About Birds: Mallard sounds; Wildfowl: Observations on sound production in the Anatidae; Abs 1970, Vocalizations of the Mallard; Ducks Unlimited duck-calling study; Wikipedia: Syrinx; Herzel et al. 1995 (subharmonics in voice); refs/SOURCES.md (Commons/xeno-canto mallard recordings)
@@ -394,49 +399,56 @@ Combustion engine. v2: per-cylinder exhaust blowdown pressure pulses (not differ
 | `body` | `0.6` |  | 0 .. 1 | low-end weight: muffler chamber resonance + low shelf (our estimate) |
 | `exhaust_noise` | `0.5` |  | 0 .. 1 | broadband blowdown noise (rasp) relative to the tonal pulses |
 | `pipe_ring` | `0.3` |  | 0 .. 0.9 | exhaust pipe resonance feedback; high values ring/whistle |
+| `exhaust_crack` | `0.4` |  | 0 .. 1 | v3: short broadband crack at the start of each blowdown (the exhaust valve opening). Refs show HF energy as clicks locked to the firing, not as steady hiss |
 
 Sources: Baldan et al., SIVE 2015; Farnell 2010 practical 22; Borla: engine sound and drone physics; Wikipedia: Firing order; Heywood 1988, Internal Combustion Engine Fundamentals (blowdown); refs/SOURCES.md (Rover V8, start-idle-rev recordings)
 
 ### `foghorn`
 
-Diaphone foghorn. Compressed air chopped by a reciprocating slotted piston (chopper) into a long conical trumpet (horn). v2: tuned to our reference recordings (fundamentals 87-150 Hz, energy concentrated in the 125-250 Hz octaves, very buzzy harmonics): lower default tone, sharper port edges, a bark at the start (pressure overshoot + pitch scoop), growl (flutter + period doubling) and a choppy grunt where the slowing piston audibly pulses. Several blasts can be chained.
+Air-driven foghorn (diaphone or large air horn). v3, rebuilt after 'sci-fi / digital' feedback: the tone is steady like a real horn (a few per cent scoop at most; real horns do not glide), with slow random pressure and pitch wobble from the air supply and the bell, turbulence noise gated by the air puffs, an asymmetric puff shape (not a square wave, whose missing even harmonics sound synthetic), the horn throat formants that make harmonics 3 and 6 stand out in real recordings, and a natural pressure release tail. The source is rendered 4x oversampled. The v2 grunt (pitch fall with choppy pulsing) and the octave-down growl are still there as options but off by default.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
-| `tone_hz` | `140.0` | Hz | 50 .. 600 | main tone. Our refs: 87-150 Hz; historic Type F ~180-250 Hz Source: refs/SOURCES.md; Terry Pepper: the diaphone. |
+| `tone_hz` | `110.0` | Hz | 50 .. 600 | main tone. Refs: barge horn ~109 Hz; diaphones 87-150 Hz; historic Type F ~180-250 Hz Source: refs/SOURCES.md; Terry Pepper: the diaphone. |
 | `grunt_hz` | `85.0` | Hz | 40 .. 200 | end pitch of the grunt / the low tone Source: Terry Pepper. |
-| `mode` | `grunt` |  | single, grunt, two_tone |  |
+| `mode` | `single` |  | single, grunt, two_tone |  |
 | `blast_s` | `2.2` | s | 0.3 .. 20 | length of the main tone |
-| `attack_s` | `0.2` | s | 0.02 .. 3 | pressure build-up / piston spin-up (estimate) |
+| `attack_s` | `0.12` | s | 0.02 .. 3 | pressure build-up (refs: almost immediate) |
 | `grunt_s` | `0.9` | s | 0.1 .. 6 | length of the falling grunt or the low tone (estimate) |
 | `pressure` | `1.0` |  | 0.3 .. 1.5 | air pressure re nominal 35-40 psi |
-| `roughness` | `0.5` |  | 0 .. 1 | growl: piston flutter + period doubling (0 = clean alarm-like tone) |
-| `chop` | `0.6` |  | 0 .. 1 | depth of the pulsing as the piston slows in the grunt |
+| `roughness` | `0.0` |  | 0 .. 1 | growl: octave-down puff (period doubling) + fast flutter. 0 = clean |
+| `chop` | `0.0` |  | 0 .. 1 | depth of the pulsing as the piston slows in the grunt |
 | `blasts` | `1` | count | 1 .. 6 | number of blasts |
 | `interval_s` | `3.5` | s | 0.5 .. 60 | start-to-start time between blasts |
-| `brightness` | `0.4` |  | 0 .. 1 | how much upper harmonic buzz gets out (lowpass 500 Hz .. 3 kHz); refs have harmonics 2-5 strongest |
+| `brightness` | `0.4` |  | 0 .. 1 | how much upper harmonic buzz gets out (lowpass 500 Hz .. 3 kHz) |
 | `horn_length` | `4.0` | m | 0.5 .. 8 | trumpet length (estimate) |
 | `mouth_radius` | `0.6` | m | 0.05 .. 1.5 | trumpet bell radius; sets the low cutoff c/(2 pi a) (0.6 m -> 91 Hz) |
+| `throat_hz` | `330.0` | Hz | 100 .. 2000 | horn throat formant: harmonics near it and near 2x it stand out (barge ref: harmonics 3 and 6) |
+| `wobble` | `0.5` |  | 0 .. 1 | slow random pressure/pitch wobble (air supply, bell; refs ~0.5-3 Hz) |
+| `release_s` | `0.35` | s | 0.05 .. 3 | pressure release after the valve closes |
+| `scoop` | `0.03` |  | 0 .. 0.4 | pitch rise at the start (fraction); v2 used 0.4 (sounded synthetic) |
 | `start` | `0.1` | s | 0 .. None | start time |
 
-Sources: Terry Pepper, Seeing The Light: the diaphone; Wikipedia: Foghorn; Herzel et al. 1995; refs/SOURCES.md (East Brother Light, echoing foghorn recordings)
+Sources: Terry Pepper, Seeing The Light: the diaphone; Wikipedia: Foghorn; Wikipedia: Air horn; Fletcher & Rossing 1998, The Physics of Musical Instruments ch. 8 (horns); Herzel et al. 1995; refs/SOURCES.md (East Brother Light, echoing foghorn, barge horn reference)
 
 ### `explosion`
 
-Detonation. v2 replaces v1's long swept noise band (which read as gas venting) with the parts a microphone actually records: a Friedlander N-wave (sharp rise, positive phase, negative phase) whose length scales with charge size; a short broadband crack that overloads the mic; a heavy low 'boom' (the pressure pulse ringing a low resonance of ground/air coupling); a rolling broadband roar whose band closes down as it decays; very low rumble; optional secondary blasts and debris. Put distance/ground/outdoor blocks after it for the far field.
+Detonation. v3, rebuilt after 'explosion in a plastic bucket' feedback. The v2 'boom' was a tuned 2-pole resonator ringing at ~120 Hz for ~0.6 s: a narrow, pitched resonance is exactly what a small cavity sounds like. v3 has no tonal parts. It is: a Friedlander N-wave (length grows with charge size) with a broadband crack that overloads the mic; a critically damped (non-ringing) low thump; and the main body, a long turbulent fireball roar of broadband noise with slow random surges, whose high end dies first (air absorption and a cooling fireball) while the low end lasts longest. Big refs stay within 10 dB of the peak for several seconds and fade over 5-7 s. Optional secondary blasts and debris. Put distance/ground/outdoor blocks after it for the far field.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
-| `size` | `0.6` |  | 0 .. 1 | overall scale: N-wave length, boom pitch and length, rumble weight |
+| `size` | `0.6` |  | 0 .. 1 | overall scale: N-wave length, thump weight, roar length and darkness |
 | `sub_blasts` | `0` | count | 0 .. 20 | secondary detonations in the first ~0.5 s |
-| `fireball_s` | `1.6` | s | 0.2 .. 10 | rumble T60 |
+| `fireball_s` | `4.0` | s | 0.2 .. 12 | how long the roar lasts (T60 of the low part) |
 | `debris` | `0.3` |  | 0 .. 1 | falling debris amount |
 | `drive` | `2.5` |  | 0 .. 10 | mic overload on the shock (a close blast overloads any mic) |
 | `crack` | `0.5` |  | 0 .. 1 | level of the short high-frequency crack at the front |
-| `boom_hz` | `0.0` | Hz | 0 .. 200 | low boom frequency; 0 = from size (75 Hz small .. 35 Hz large) |
+| `boom_hz` | `0.0` | Hz | 0 .. 300 | corner of the low thump (no resonance); 0 = from size |
+| `roar` | `0.8` |  | 0 .. 2 | level of the fireball roar re the front |
+| `surge` | `0.5` |  | 0 .. 1 | depth of the slow random surges in the roar |
 | `at` | `0.05` | s | 0 .. None | time of detonation |
 
-Sources: Wikipedia: Blast wave (Friedlander waveform); Kinney & Graham 1985, Explosive Shocks in Air (positive-phase duration grows with cube root of yield); Farnell 2010 practical 31; refs/SOURCES.md (Commons LS100155, oxyhydrogen detonation, huge explosion)
+Sources: Wikipedia: Blast wave (Friedlander waveform); Kinney & Graham 1985, Explosive Shocks in Air (positive-phase duration grows with cube root of yield); Farnell 2010 practical 31; ISO 9613-1 (air absorption: high frequencies die first with distance); refs/SOURCES.md (Commons LS100155, oxyhydrogen detonation, huge explosion, explosion reference recordings)
 
 ### `match`
 
@@ -456,6 +468,26 @@ Match strike and ignition. v2, retimed to our reference recordings: a short stic
 | `start` | `0.05` | s | 0 .. None | start time |
 
 Sources: Avanzini, Serafin & Rocchesso DAFx 2002; Tsugi GameSynth physical modules (match friction); Farnell 2010 practical 11; Wikibooks Designing Sound in SuperCollider: Fire; Wikipedia: Match; Stick-slip phenomenon; Chadwick & James 2011 (fire sound); refs/SOURCES.md (Freesound CC0 match strikes)
+
+### `shaker`
+
+Things rattling in a shaken box (matchbox by default). Physics: the hand moves the box back and forth; at each reversal the loose contents keep going and slam into the far wall and into each other. So every stroke gives a cluster of many tiny impacts (wood on wood: bright, very short) a few ms to tens of ms long, and the bigger hits excite the box itself (a small, very lossy cardboard plate, plus a dull body knock). Between strokes the contents slide (soft noise). After Cook's PhISM shakers.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `rate_hz` | `5.0` | Hz | 0.5 .. 15 | shake strokes per second (each back-and-forth = 2 reversals) |
+| `shake_s` | `0.8` | s | 0.05 .. 30 | how long the shaking lasts |
+| `strokes` | `0` | count | 0 .. 200 | explicit number of reversals (0 = from rate_hz x shake_s) |
+| `items` | `40` | count | 1 .. 300 | number of loose items (matches in a full box: ~40) |
+| `intensity` | `0.7` |  | 0 .. 1 | how hard it is shaken (more and louder impacts, more box knock) |
+| `spread_ms` | `18.0` | ms | 1 .. 100 | how long a reversal's cluster of collisions lasts |
+| `item_hz` | `4500.0` | Hz | 500 .. 15000 | centre of the item click spectrum (thin wood sticks) |
+| `box_size` | `0.05` | m | 0.01 .. 0.5 | box length (sets the body knock and plate modes) |
+| `fill` | `0.8` |  | 0 .. 1 | how full the box is (fuller = more, duller hits, less free flight) |
+| `knock` | `0.5` |  | 0 .. 2 | level of the box body knock |
+| `start` | `0.05` | s | 0 .. None | start time |
+
+Sources: Cook 1997, Physically Informed Sonic Modeling (PhISM shakers), Computer Music Journal 21(3); Farnell 2010 (rattles); matchbox shake reference (analysis only)
 
 ### `fire`
 

@@ -1,0 +1,70 @@
+{
+ "soundlab": 1,
+ "name": "Smaller explosion (field-recording scale, e.g. a demolition charge) about 150 m away",
+ "sample_rate": 48000,
+ "duration": 6.0,
+ "seed": 21,
+ "layers": [
+  {
+   "name": "blast",
+   "model": "explosion",
+   "params": {
+    "size": 0.5,
+    "sub_blasts": 1,
+    "fireball_s": 2.0,
+    "roar": 0.7,
+    "surge": 0.3,
+    "debris": 0.3,
+    "drive": 2.5,
+    "crack": 0.5,
+    "boom_hz": 0
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "distance",
+   "params": {
+    "distance": 150,
+    "spreading": false
+   }
+  },
+  {
+   "model": "ground",
+   "params": {
+    "source_height": 2,
+    "listener_height": 1.7,
+    "distance": 150,
+    "reflection": 0.6
+   }
+  },
+  {
+   "model": "outdoor",
+   "params": {
+    "reflectors": [
+     [
+      300,
+      0.5
+     ],
+     [
+      700,
+      0.4
+     ],
+     [
+      1100,
+      0.3
+     ]
+    ],
+    "tail_s": 5.0,
+    "tail_level": 0.2,
+    "tail_lowpass": 1500,
+    "diffusion": 0.8
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.5,
+  "highpass_hz": 25
+ }
+}
