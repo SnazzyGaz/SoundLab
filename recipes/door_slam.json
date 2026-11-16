@@ -10,12 +10,13 @@
    "name": "main",
    "model": "door_slam",
    "params": {
-    "force": 0.85,
+    "force": 0.8,
     "door_size": 1.0,
-    "latch": 0.45,
-    "rattle": 0.25,
-    "thump": 0.25,
-    "at": 0.03
+    "latch": 0.6,
+    "rattle": 0.35,
+    "thump": 0.7,
+    "at": 0.03,
+    "clack": 0.15
    }
   }
  ],
@@ -23,8 +24,8 @@
   {
    "model": "room",
    "params": {
-    "volume": 50,
-    "absorption": 0.3,
+    "volume": 70,
+    "absorption": 0.25,
     "source_distance": 2.5
    }
   }

@@ -10,13 +10,13 @@
    "name": "main",
    "model": "growl",
    "params": {
-    "f0": 45.0,
-    "size": 1.5,
+    "f0": 85.0,
+    "size": 1.1,
     "roughness": 0.6,
-    "flutter_hz": 22.0,
-    "snarl": 0.3,
-    "length_s": 1.4,
-    "rise": 0.3,
+    "flutter_hz": 18.0,
+    "snarl": 0.4,
+    "length_s": 1.6,
+    "rise": 0.4,
     "at": 0.05
    }
   }

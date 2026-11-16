@@ -120,10 +120,60 @@ def test_door_creak_pitch_follows_slip_rate():
     assert 1.6 < r2 / r1 < 2.5
 
 
-def test_growl_f0_measurable():
-    y = run("growl", 1.6, f0=80.0, roughness=0.0, rise=0.0, snarl=0.0, length_s=1.4)
-    seg = np.abs(signal.hilbert(y[int(0.4 * SR):int(1.0 * SR)]))      # pulse rate = envelope periodicity
-    assert abs(peak_hz(seg - seg.mean(), 25, 300) / 80.0 - 1) < 0.15
+def test_growl_is_voiced_with_its_pitch():
+    # 0.10: the growl must be a voice (periodic glottal pulses), not a friction-like click train
+    from soundlab.analysis import f0_track
+    y = run("growl", 1.8, f0=80.0, roughness=0.0, rise=0.0, snarl=0.0, length_s=1.6)
+    T, F, A, R = f0_track(y, SR, 30, 1500, 0.25)
+    F = np.array(F)
+    v = F[np.isfinite(F)]
+    assert len(v) / len(F) > 0.8 and abs(np.median(v) / 80.0 - 1) < 0.05
+
+
+def test_growl_roughness_adds_subharmonic():
+    def sub(rough):
+        y = run("growl", 1.8, seed=2, f0=80.0, roughness=rough, rise=0.0, snarl=0.0, length_s=1.6)
+        seg = y[int(0.4 * SR):int(1.4 * SR)]
+        S = np.abs(np.fft.rfft(seg * np.hanning(len(seg)))) ** 2
+        f = np.fft.rfftfreq(len(seg), 1 / SR)
+        return S[(f > 34) & (f < 46)].sum() / S[(f > 74) & (f < 86)].sum()
+    assert sub(1.0) > 3 * sub(0.0)
+
+
+def _grain(y, lo=2000, hi=8000):
+    """99.9th percentile of the band envelope over its local (50 ms) mean: ~4-5 for smooth noise, >>5 for crackle."""
+    b, a = signal.butter(4, [lo / (SR / 2), hi / (SR / 2)], "band")
+    e = np.abs(signal.lfilter(b, a, y))
+    return float(np.percentile(e / (np.convolve(e, np.ones(2400) / 2400, "same") + 1e-9), 99.9))
+
+
+def test_wind_and_rain_are_not_grainy():
+    # 0.10 (wind 'very grainy', rain 'too much crackle on top')
+    assert _grain(run("wind", 4.0, trees=1.0)) < 6.0
+    assert _grain(run("rain", 4.0, rate_mm_h=5.0, near=0.3, hiss=0.7, brightness=0.3)) < 6.0
+
+
+def test_door_slam_has_mass():
+    # 0.10 ('two wood planks'): the 60-150 Hz thump outweighs the 1-4 kHz clack
+    y = run("door_slam", 1.0)
+    P = np.abs(np.fft.rfft(y)) ** 2
+    f = np.fft.rfftfreq(len(y), 1 / SR)
+    assert P[(f > 60) & (f < 150)].sum() > 10 * P[(f > 1000) & (f < 4000)].sum()
+
+
+def test_gunshot_has_no_metallic_ring_and_calibres_differ():
+    def tonal(y):
+        S = np.abs(np.fft.rfft(y * np.hanning(len(y)), 1 << 16)) ** 2
+        d = 10 * np.log10(S[300:8000] + 1e-20)
+        return float(np.max(d - signal.medfilt(d, 301)))
+    ys = {c: run("gunshot", 1.0, calibre=c, echo=0.0) for c in ("pistol", "rifle", "shotgun")}
+    for y in ys.values():
+        assert tonal(y) < 25
+    def t30(y):
+        e = np.convolve(y ** 2, np.ones(240) / 240, "same")
+        i = int(np.argmax(e))
+        return int(np.argmax(e[i:] < e[i] * 1e-3))
+    assert t30(ys["shotgun"]) > t30(ys["pistol"])
 
 
 def test_splash_bloop_at_minnaert_frequency():

@@ -12,10 +12,10 @@
    "params": {
     "rate_mm_h": 5.0,
     "surface": "ground",
-    "near": 0.55,
-    "hiss": 0.2,
+    "near": 0.28,
+    "hiss": 0.7,
     "drop_mm": 1.3,
-    "brightness": 0.43
+    "brightness": 0.3
    }
   }
  ],

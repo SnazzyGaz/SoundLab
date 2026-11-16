@@ -12,9 +12,12 @@
    "params": {
     "calibre": "pistol",
     "crack": 0.5,
-    "drive": 1.5,
-    "mech": 0.4,
-    "at": 0.02
+    "drive": 2.0,
+    "mech": 0.25,
+    "at": 0.02,
+    "body": 0.7,
+    "echo": 0.6,
+    "space": "street"
    }
   }
  ],
@@ -24,7 +27,8 @@
    "params": {
     "volume": 600,
     "absorption": 0.2,
-    "source_distance": 5.0
+    "source_distance": 5.0,
+    "wet": 0.35
    }
   }
  ],
@@ -59,6 +63,57 @@
      }
     ]
    }
+  },
+  "space": {
+   "default": "street",
+   "doc": "where it is fired",
+   "choices": {
+    "street": [
+     {
+      "to": "0.space",
+      "op": "set",
+      "value": "street"
+     }
+    ],
+    "room": [
+     {
+      "to": "0.space",
+      "op": "set",
+      "value": "room"
+     }
+    ],
+    "open": [
+     {
+      "to": "0.space",
+      "op": "set",
+      "value": "open"
+     }
+    ]
+   }
+  },
+  "body": {
+   "default": 0.5,
+   "doc": "thin crack .. big boom",
+   "map": [
+    {
+     "to": "0.body",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    }
+   ]
   },
   "crack": {
    "default": 0.5,
@@ -134,6 +189,9 @@
  "vary": {
   "0.drive": {
    "rel": 0.1
+  },
+  "0.body": {
+   "abs": 0.05
   }
  }
 }

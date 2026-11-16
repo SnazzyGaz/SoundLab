@@ -12,8 +12,8 @@
    "params": {
     "size": 0.08,
     "speed": 3.0,
-    "bloop": 0.6,
-    "droplets": 0.5,
+    "bloop": 0.35,
+    "droplets": 0.4,
     "at": 0.03
    }
   }

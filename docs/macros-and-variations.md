@@ -83,7 +83,7 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 | `footstep.json` | footstep | `shoe` (trainer, boot, heel), `surface` (wood, stone, gravel), `size`, `intensity`, `pace`, `creak`, `distance` |
 | `glass_break.json` | glass | `size`, `intensity`, `floor` (hard, wood, soft), `distance` |
 | `glass_hit_room.json` | impact | `size`, `intensity`, `distance` |
-| `gunshot.json` | weapon | `calibre` (pistol, rifle, shotgun), `crack`, `distance` |
+| `gunshot.json` | weapon | `calibre` (pistol, rifle, shotgun), `space` (street, room, open), `body`, `crack`, `distance` |
 | `hit.json` | impact | `object` (board, door, dowel), `material` (wood, metal, glass, plastic, stone, cardboard), `size`, `intensity`, `hardness`, `distance` |
 | `match.json` | foley | `size`, `intensity`, `wetness`, `distance` |
 | `matchbox.json` | foley | `intensity`, `size`, `wetness`, `distance` |

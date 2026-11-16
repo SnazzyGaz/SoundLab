@@ -397,3 +397,39 @@ friction noise with occasional snaps. Macros: `material` (paper/plastic/leaves/c
 **Splash (`splash`).** Impact slap (darker for bigger objects), the air cavity pinching off into a big bubble
 (Minnaert 'bloop' f = 3.26 / r, chirping up as it rises), a fading cloud of small bubbles, droplets falling back.
 Macros: `size`, `intensity`, `distance`.
+
+### 0.10: fixes after the v9 review (these replace the matching notes above)
+
+Notes: "gunshot sounds like a stone hitting a mildly metallic wall ... water a bit gamey and lasery, crunchy
+... door slam weak and light, like two wood planks ... creature like something pushed along a floor ... wind
+very grainy, wind gap better ... rain a bit too much crackle on top." Each was fixed at its cause:
+
+- **Gunshot.** Cause: only a 1 ms Friedlander pulse (a click with a low tail = a stone hit) plus a ringing
+  three-mode 'action' (the metal). Now: blast + dense broadband gas burst (tens of ms) + low-mid gas boom, all
+  overdriven together (oversampled soft clip = loud, compressed), N-wave crack for rifles, a dry noise clack,
+  and the environment in the model: slap echoes off walls/ground and a dark tail (`space`: street / room /
+  open). Calibres differ in blast length, body and boom (`calibre` macro: pistol, rifle, shotgun; new `body`
+  and `space` macros). The CC0 band distance improved a little (9.0 -> 8.0 and 5.3 -> 6.3 dB), not the goal.
+- **Splash.** Cause: the pinch-off bubble used the drop-bubble pitch rise (xi 0.6), so a 270 Hz tone swept up
+  ~5x over 0.4 s: a laser chirp; the bubble cloud and droplets were more pure chirps plus 4-sample clicks
+  (crunch). Now: the body is a turbulent broadband wash; the bloop is damped 4x by the churning surface, barely
+  rises and sits low; small bubbles overlap into a soft fizz under a 3.5 kHz low-pass; droplets are 2-5 ms
+  low-passed patters, only 1 in 5 with a tiny damped bubble. Top-band spikiness halved (measured).
+- **Door slam.** Cause: in 0.9 I matched a CC0 slam that was itself a light door and removed the low end. Listening
+  wins: now a heavy leaf on a soft seal (4-8 ms contact) drives damped leaf+frame+wall modes at ~70-200 Hz
+  (the weight), the frame shudders, the latch bolt clunks (damped metal ~0.7-2.6 kHz), the panel rings darkly
+  from its hard edge hitting the stop, the bright clack is a small separate control (`clack`), and the room is
+  a bit bigger. 60-150 Hz now carries >10x the energy of 1-4 kHz (a test checks it).
+- **Creature growl.** Cause: narrow 1.2 ms pulses at 45 Hz: a sparse click train, which is exactly what
+  stick-slip friction sounds like. Now a voiced source: Rosenberg glottal pulses with a real open phase,
+  pitch 85 Hz with chaotic wander, jitter, shimmer and period doubling (the 42 Hz subharmonic is the menace),
+  breath noise gated by the airflow, slow swells, through a long open tract (tube formants (2n-1)c/4L, 50 cm).
+  YIN now finds a pitch in 98 % of frames at zero roughness (the old growl: 1-21 %, like the rough refs). Band
+  balance is now 4.3 dB from the big-creature CC0 growl (was 13.4).
+- **Wind.** Cause: the tree layer was thousands of separate clicks per second (the grain; `wind_gap` has no
+  trees, which is why it sounded better). Now leaves are continuous filtered noise with a smooth 5-15 Hz
+  flutter and gust swells. Top-band spike measure 10.2 -> 4.1, the same as `wind_gap` (a test checks it).
+- **Rain.** Cause: each near drop was a one-sample impulse through a band-pass (a click). Now a drop is a 1-2.6 ms
+  smooth pulse low-passed at 5 kHz, near drops are quieter (0.28), and the diffuse wash is louder, with a
+  smooth fast patter and a darker top. Top-band spike measure 8.3 -> 4.9, at the floor of plain noise. The 0.9
+  fit (hiss 0.2) is overruled by ear; band distance to the heavy-rain refs stays ~3 dB.

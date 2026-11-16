@@ -695,15 +695,16 @@ Sources: Wikipedia: Stick-slip phenomenon; Avanzini, Serafin & Rocchesso 2002 (f
 
 ### `door_slam`
 
-A door slammed shut: the leaf hits the frame and stop (a big, damped wooden panel driven by a 3-6 ms contact through the seal), the latch bolt snaps in (a small, short metal click), the house structure thumps, the door rattles back once or twice in the frame, and the room answers.
+A heavy door slammed shut. 0.10 (after 'two wood planks hitting'): the mass is what you hear. A 25-40 kg leaf stops against the frame through a soft seal (4-8 ms contact), so most of the energy goes into low, damped motion: the leaf, frame and wall swing together (~60-150 Hz thump), the frame shudders (a few small, low rebounds), the latch bolt clunks home (a damped metal clunk, ~0.6-1.5 kHz, not a click), the leaf's panel modes ring only weakly and darkly, and the room answers. The bright wood-on-wood clack is kept small.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
 | `force` | `0.7` |  | 0 .. 1 | how hard (closing speed) |
-| `door_size` | `1.0` |  | 0.3 .. 2 | door size (1 = 2.0 x 0.8 x 0.04 m) |
-| `latch` | `0.6` |  | 0 .. 1 | latch click level |
-| `rattle` | `0.4` |  | 0 .. 1 | rebound rattle in the frame |
-| `thump` | `0.25` |  | 0 .. 1 | low structure thump (keep low: a boomy slam reads as a cupboard on a drum) |
+| `door_size` | `1.0` |  | 0.3 .. 2 | door size/mass (1 = 2.0 x 0.8 x 0.04 m solid door, ~30 kg) |
+| `latch` | `0.6` |  | 0 .. 1 | latch clunk level |
+| `rattle` | `0.4` |  | 0 .. 1 | frame shudder / rebound rattle |
+| `thump` | `0.7` |  | 0 .. 1 | low mass thump of leaf + frame + wall (the weight of the door) |
+| `clack` | `0.15` |  | 0 .. 1 | bright wood-on-wood edge clack (keep low for heavy doors) |
 | `at` | `0.03` | s | 0 .. None |  |
 
 Sources: van den Doel et al. 2001 (modal impacts); Farnell 2010 (doors)
@@ -740,34 +741,37 @@ Sources: Farnell 2010 (bullets, ricochets); van den Doel et al. 2001
 
 ### `gunshot`
 
-A simple gunshot: the muzzle blast is a Friedlander pressure pulse (positive phase ~1-3 ms for a pistol, longer for big calibres), heavily overdriving any recorder (soft clipping, here oversampled), a supersonic bullet adds a sharp N-wave crack, and the action clacks. Put it in `room` or `outdoor` for the tail that makes it read as a gunshot.
+A gunshot (0.10, after 'a stone hitting a mildly metallic wall'). Layers, each physical: (1) the muzzle blast, a Friedlander pressure pulse (positive phase ~1-3 ms by calibre) that starts the sound with a very fast, loud broadband crack; (2) the expanding, turbulent propellant gas: a dense broadband burst decaying in tens of ms (the body); (3) the low-mid boom of the gas cloud pushing air (a low-passed burst, ~40-90 ms); all three drive the recorder or ear into overload (oversampled soft clip: loud, compressed, no aliasing); (4) the supersonic bullet's N-wave crack (rifles; none for shotguns); (5) the environment: discrete slap echoes off nearby walls/ground and a dark diffuse tail. No ringing parts: the action clack is a dry noise burst.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
 | `calibre` | `pistol` |  | pistol, rifle, shotgun |  |
-| `crack` | `0.5` |  | 0 .. 1 | supersonic crack level (0 for subsonic) |
-| `drive` | `1.5` |  | 0 .. 4 | recorder overload (soft clip) |
-| `mech` | `0.4` |  | 0 .. 1 | action/slide clack level |
+| `crack` | `0.5` |  | 0 .. 1 | supersonic crack level (scaled by calibre; shotguns have none) |
+| `drive` | `2.0` |  | 0 .. 4 | overload of the recorder/ear (soft clip): more = louder, denser |
+| `body` | `0.7` |  | 0 .. 1 | gas body + low boom level |
+| `echo` | `0.6` |  | 0 .. 1 | slap echoes and tail level |
+| `space` | `street` |  | street, room, open | where: street (walls near, strong slaps), room (dense, short), open field (one late ground/treeline echo, long dark tail) |
+| `mech` | `0.25` |  | 0 .. 1 | action/slide clack level (dry) |
 | `at` | `0.02` | s | 0 .. None |  |
 
-Sources: Wikipedia: Blast wave (Friedlander); Maher 2006, Modeling and signal processing of acoustic gunshot recordings; Farnell 2010 (guns)
+Sources: Wikipedia: Blast wave (Friedlander); Maher 2006, Modeling and signal processing of acoustic gunshot recordings; Beck, Nakasone & Marr 2011 (muzzle blast variation); Farnell 2010 (guns)
 
 ### `growl`
 
-A creature growl: source-filter. The source is a rough, irregular pulse train (vocal folds / false folds slapping at a low rate, strong jitter, period doubling = subharmonics, plus a slow 'flutter' amplitude modulation that gives the growl its rattle); the filter is a large vocal tract (formants scale as 1 / tract length: a bigger animal has lower formants). Breath noise rides on the pulses.
+A creature growl, voiced (0.10, after 'something pushed along a floor'). The old source was narrow clicks at ~45 Hz: a click train at that rate is what stick-slip friction sounds like. Now: vocal-fold pulses with a real open phase (Rosenberg flow, open quotient ~0.6), pitch ~60-120 Hz with chaotic wander, jitter, shimmer and period doubling (the subharmonic an octave down is the growl's menace), through a long open vocal tract (formants of a tube closed at the glottis, F_n = (2n-1) c / 4L; bigger creature = longer tract = lower, denser formants), breath noise gated by the airflow and shaped by the same tract, and slow amplitude swells.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
-| `f0` | `75.0` | Hz | 25 .. 400 | mean pulse rate (big cat growl ~ 30-100 Hz; dog ~ 100-250, est.) |
-| `size` | `1.0` |  | 0.3 .. 3 | creature size (scales the tract down in pitch; 1 = ~30 cm tract) |
-| `roughness` | `0.6` |  | 0 .. 1 | jitter, subharmonics and shimmer |
-| `flutter_hz` | `22.0` | Hz | 5 .. 60 | rattle/flutter rate of the growl |
-| `snarl` | `0.3` |  | 0 .. 1 | open, bright snarl (higher formants, more breath) |
-| `length_s` | `1.4` | s | 0.2 .. 6 | growl length |
-| `rise` | `0.3` |  | 0 .. 1 | pitch/level rise toward the middle (a menacing swell) |
+| `f0` | `85.0` | Hz | 25 .. 400 | voice pitch (big cat roar/growl ~ 60-120 Hz with subharmonics; dog ~ 150-300) |
+| `size` | `1.0` |  | 0.3 .. 3 | creature size (1 = ~45 cm vocal tract; formants ~ 1/size) |
+| `roughness` | `0.6` |  | 0 .. 1 | jitter, shimmer, subharmonics and pitch chaos |
+| `flutter_hz` | `18.0` | Hz | 5 .. 60 | rate of the gentle rattle in the airflow |
+| `snarl` | `0.3` |  | 0 .. 1 | open, bright snarl (raised formants, more breath) |
+| `length_s` | `1.6` | s | 0.2 .. 6 | growl length |
+| `rise` | `0.4` |  | 0 .. 1 | swells: pitch/level rise toward the middle |
 | `at` | `0.05` | s | 0 .. None |  |
 
-Sources: Titze 1994 (voice source); Fitch 1997 (formant dispersion and body size); Herzel et al. 1995 (subharmonics); Peters et al. 2009 (big cat vocal anatomy)
+Sources: Titze 1994 (voice source); Rosenberg 1971 (glottal pulse); Fitch 1997 (formant dispersion and body size); Herzel et al. 1995 (subharmonics); Peters et al. 2009 (big cat vocal anatomy)
 
 ### `rustle`
 
@@ -785,14 +789,14 @@ Sources: Houle & Sethna 1996, Phys Rev E 54 (acoustic emission from crumpling pa
 
 ### `splash`
 
-An object dropping into water: the impact slap (short, its brightness falls with size), the air cavity pinching off into a big bubble (Minnaert 'bloop', f = 3.26 / r), a cloud of smaller bubbles fading, then droplets falling back (each a tiny drip with its own bubble).
+An object dropping into water (0.10, after 'gamey and lasery, crunchy on top'). The splash is mostly a broadband, turbulent wash (the crown and the water thrown up, a few hundred ms), started by a soft impact slap. The pinch-off bubble ('bloop', Minnaert f = 3.26 / r) is real but in a splash it is strongly damped by the churning surface and barely rises in pitch, so it sits low and short under the wash; small bubbles overlap into a fizz rather than separate chirps. Droplets falling back are soft patters (low-passed, a few ms), only a few with a tiny damped bubble.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
 | `size` | `0.08` | m | 0.01 .. 0.6 | object size |
 | `speed` | `3.0` | m/s | 0.5 .. 12 | entry speed |
-| `bloop` | `0.6` |  | 0 .. 1 | level of the pinch-off bubble |
-| `droplets` | `0.5` |  | 0 .. 1 | level of the falling-back droplets |
+| `bloop` | `0.35` |  | 0 .. 1 | level of the pinch-off bubble |
+| `droplets` | `0.4` |  | 0 .. 1 | level of the falling-back droplets |
 | `at` | `0.03` | s | 0 .. None |  |
 
 Sources: Minnaert 1933; Prosperetti & Oguz 1993; van den Doel 2005; Phillips et al. 2018

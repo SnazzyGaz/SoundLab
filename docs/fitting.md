@@ -189,3 +189,10 @@ Changes driven by the band checks (before -> after, distance in dB RMS over the 
 - **Door creak**: refs range from 26 Hz ticking to a 1.1 kHz squeal; ours (260 Hz) sits between; 5.5 dB to one.
 
 Not fitted: wind (3.6 dB to the trees ref as is), swing, clash, bullets, gunshot, punch, rustles, splash.
+
+### 0.10.0: ear over metrics
+
+After a listening check, rain (fitted hiss 0.2 overruled: louder diffuse wash, softer near drops) and the door slam
+(the 0.9 CC0 match was a light door) were changed by ear. Band distances now: rain 3.2/3.4 dB to the two
+heavy-rain refs (unchanged), door slam 13.6/15.8 dB (heavier than both refs, on purpose), growl 4.3 dB to
+the big-creature ref (was 13.4), gunshot 8.0/6.3 dB (was 9.0/5.3). No new fits.
