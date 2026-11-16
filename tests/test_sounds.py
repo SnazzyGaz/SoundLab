@@ -124,7 +124,7 @@ def test_foghorn_defaults_are_bassy():
     y = run("foghorn", 5.0)
     f0 = f0_estimate(y, SR)[0]
     assert f0 is not None and 60 < f0 < 160  # refs 87-150 Hz; v1 was 250
-    assert band_db(y, 20, 300) > -4.5  # about half the energy below 300 Hz (the reference barge ref: -2.6 dB)
+    assert band_db(y, 20, 300) > -4.5  # about half the energy below 300 Hz (barge horn reference: -2.6 dB)
 
 
 def test_foghorn_grunt_is_choppy():

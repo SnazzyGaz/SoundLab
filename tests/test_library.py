@@ -160,7 +160,7 @@ def am_index(y, lo=500, hi=4000):
 
 
 def test_rain_wash_is_stationary():
-    # 0.11 ('shuddering like paper bags'): no flutter in the wash
+    # no flutter in the wash (it sounds like paper bags shuddering)
     y = run("rain", 6.0, rate_mm_h=5.0, near=0.0, hiss=1.0)[SR // 2:]
     assert am_index(y) < 0.12
 
@@ -173,13 +173,13 @@ def _grain(y, lo=2000, hi=8000):
 
 
 def test_wind_and_rain_are_not_grainy():
-    # 0.10 (wind 'very grainy', rain 'too much crackle on top')
+    # wind must not be grainy, rain must not crackle on top
     assert _grain(run("wind", 4.0, trees=1.0)) < 6.0
     assert _grain(run("rain", 4.0, rate_mm_h=5.0, near=0.3, hiss=0.7, brightness=0.3)) < 6.0
 
 
 def test_door_slam_has_mass():
-    # 0.10 ('two wood planks'): the 60-150 Hz thump outweighs the 1-4 kHz clack
+    # a heavy door, not two wood planks: the 60-150 Hz thump outweighs the 1-4 kHz clack
     y = run("door_slam", 1.0)
     P = np.abs(np.fft.rfft(y)) ** 2
     f = np.fft.rfftfreq(len(y), 1 / SR)
@@ -221,7 +221,7 @@ def test_bullet_materials_differ():
 
 
 def test_gunshot_bright_shock_and_big_tail():
-    # 0.11 ('potato gun / air gun'): a bright first millisecond and a loud, long reflective tail
+    # a firearm, not an air gun: a bright first millisecond and a loud, long reflective tail
     y = run("gunshot", 3.0, at=0.02)
     i0 = int(0.02 * SR)
     first = y[i0:i0 + int(0.003 * SR)]

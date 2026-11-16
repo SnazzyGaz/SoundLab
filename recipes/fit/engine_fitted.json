@@ -1,6 +1,6 @@
 {
  "soundlab": 1,
- "name": "Fit target: V8 idle and three revs (vs V8 ref 13.0-19.0 s) [fitted values]",
+ "name": "Fit target: V8 idle and three revs (fitted to a V8 reference recording) [fitted values]",
  "sample_rate": 48000,
  "duration": 6.0,
  "seed": 1,

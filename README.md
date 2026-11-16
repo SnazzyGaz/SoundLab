@@ -8,14 +8,21 @@ physically informed stochastic models whose controls still map to real quantitie
 By Garyck Arntzen ([@_mintydoge](https://x.com/_mintydoge)). MIT licence. Standalone project; AIDAW uses it as
 a library/plugin.
 
-Status: **0.12.0**: a slider app in the browser (`soundlab gui`) and a browser blind listening test (`/blindtest`, "real or synthesised?"). 0.11.0: second listening round: firearm gunshot (shock, roar, saturation, slapback tail), physical splash (impact, crown, cavity bloop, droplet spray), guttural growl (LF pulses, uvular trill, wet throat), calmer wind leaves, stationary rain wash. 0.10.0: first rework of those sounds after a listening check (see docs/playing-guide.md). 0.9.0: a game-ready library of 36 recipes + 7 generic-block demos. New in 0.9: wind (gusts, trees, whistling gap), rain (light to heavy on ground/leaves/roof/window/puddle), glass break (fracture + shard debris), sword swing (with Doppler), sword clash and metal clang, door creak (hinge stick-slip) and slam, punch, bullet impacts (wood/metal/concrete), a simple gunshot, a creature growl (rough source + vocal tract), paper and cloth rustle, splash; plus the blind checkpoint kit (`tools/checkpoint.py`). In 0.8.1 heel and toe flam into one step (35 ms gap). New in 0.8: a body-weight `footstep` model (shoe: trainer/boot/heel; surface:
-wood/stone/gravel), the default `hit` is now a damped board knock (the old quick resonant sound is
-`dowel.json` / `-m object=dowel`), and a physical `coin` (drop with bounces and Euler's-disk wobble, plus a
-jingle; the retro blip stays as `blocks/coin_pickup.json`). Every recipe has macro sliders (size, distance, intensity, material, ...), seeded
-variations, batch export with sensible names and a quick audition loop. Physical models for the five reference sounds tuned by ear and to reference clips, plus a
-generic synth toolkit (oscillators, FM, noise, grains, filters, envelopes, distortion, delay, chorus, reverb)
-for non-physical game sounds. Next: the blind checkpoint (step 5) and the shelved sound notes in the roadmap. See
-[docs/roadmap.md](docs/roadmap.md).
+What's in it:
+
+- **36 recipes** for game sound: footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind,
+  rain, glass break, sword swing and clash, metal clang, door creak and slam, punch, bullet impacts, gunshot
+  (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splash, engines, explosions, fire, water,
+  a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.
+- **Macro sliders** on every recipe (size, distance, intensity, material, ...), **seeded variations** and
+  **batch export** with sensible file names.
+- A **slider app** in the browser (`soundlab gui`) with play, waveform/spectrogram preview and export.
+- A **blind listening test** in the browser (`/blindtest`, "real or synthesised?") and an A/B kit.
+- Fitting tools: analyse a recording, fit a recipe's controls to it (`soundlab match`), compare renders.
+- A generic synth toolkit (oscillators, FM, noise, grains, filters, envelopes, distortion, delay, chorus,
+  reverb) for non-physical sounds.
+
+See [docs/roadmap.md](docs/roadmap.md) for what is planned.
 
 ## The five stages
 
@@ -150,8 +157,8 @@ matched to the reference recordings, the starting points for `soundlab match`). 
 - [docs/physics-reference.md](docs/physics-reference.md): formulas, material and mode tables, sources.
 - [docs/models.md](docs/models.md): every block and control (generated from the code).
 - [docs/analysis.md](docs/analysis.md): the stem-split / feature tool and where it is going.
-- [docs/artefacts.md](docs/artefacts.md): the synthesis artefacts found in v2 (grain, hiss, tinny, digital,
-  "plastic bucket"), how they were measured and fixed in 0.3.0.
+- [docs/artefacts.md](docs/artefacts.md): synthesis artefacts (grain, hiss, tinny, digital,
+  "plastic bucket"), how they were measured and fixed.
 - [docs/macros-and-variations.md](docs/macros-and-variations.md): macro sliders, variations, batch export,
   naming, audition.
 - [docs/synth-blocks.md](docs/synth-blocks.md): the generic synthesis blocks (non-physical sounds, layering).

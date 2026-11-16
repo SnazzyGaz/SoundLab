@@ -1,6 +1,6 @@
 {
  "soundlab": 1,
- "name": "Fit target: matchbox shake (vs matchbox ref 0-2.15 s) [fitted values]",
+ "name": "Fit target: matchbox shake (fitted to a matchbox shake reference recording) [fitted values]",
  "sample_rate": 48000,
  "duration": 2.15,
  "seed": 11,

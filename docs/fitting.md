@@ -16,7 +16,7 @@ Writes `fits/duck/`:
 - `comparison.png`: long-term spectrum and onset-aligned envelope, reference vs before vs after.
 - `fitted_preview.wav`: the fitted render at 24 kHz.
 
-## Rules (0.6.0)
+## Rules
 
 1. **Pitch first** (default). The reference's fundamental is measured; every pitch control in the fit set
    (`f0`, `tone_hz`, `freq`) is set to it, checked on a render (within 5 cents) and **locked**, then the other
@@ -28,7 +28,7 @@ Writes `fits/duck/`:
    on it and flags a fit that got worse there as likely overfitted. Without one, the report says
    **Missing** in bold and the fit should not be adopted. Every fit also writes listening renders in `ear/`: the fitted recipe, then
    each numeric macro at 0.15 and 0.85 (others at default) and every non-default choice of a choice macro
-   (0.7.0). Recipes without macros fall back to all fitted controls moved 25 % of their range down / up.
+   Recipes without macros fall back to all fitted controls moved 25 % of their range down / up.
 3. **Reference audio stays private.** Reference clips and anything derived from them (stems, crops,
    previews, fit output folders) live outside the repo. `tests/test_no_reference_audio.py` fails if any audio
    file is in the repo tree or tracked by git. Point `-o` outside the repo.
@@ -98,12 +98,11 @@ duck's periodicity, the explosion's rise time and how long its hiss lasts, and t
 energy below 250 Hz.
 
 
-## Fits to the reference recordings (0.3.0)
+## Fits to reference recordings
 
-`recipes/fit/*_fitted.json` are dry recipes already holding the fitted values for the crops in
-`refs/targets.json` (duck: one quack; engine: idle + three blips; foghorn: one blast; explosion: one big
-blast; match: strike + flame; shaker: the box shake). Fit reports are in the research folder
-(`fits/<sound>/`). Before -> after (distance total):
+`recipes/fit/*_fitted.json` are dry recipes already holding the fitted values for crops of reference
+recordings kept outside the repo (duck: one quack; engine: idle + three blips; foghorn: one blast; explosion: one big
+blast; match: strike + flame; shaker: the box shake). Fit reports stay outside the repo. Before -> after (distance total):
 
 | sound | before | after |
 |---|---|---|
@@ -114,18 +113,18 @@ blast; match: strike + flame; shaker: the box shake). Fit reports are in the res
 | match | 0.548 | 0.444 (the flame model changed between the two passes) |
 | shaker | 0.670 | 0.603 |
 
-v4 refits (new shaker and match models): shaker 0.761 -> 0.656 (dry, one fit pass), match 0.437 -> 0.423. The
+Refits after the shaker and match models were rebuilt: shaker 0.761 -> 0.656 (dry, one fit pass), match 0.437 -> 0.423. The
 `matchbox` scene deliberately uses fewer items (60) and less slide than the fit asked for: the distance
-prefers a dense high-frequency fizz, which is the "frying" sound.
+prefers a dense high-frequency fizz, which sounds like frying.
 
-## Fits to CC0 recordings (0.8.0)
+## Fits to CC0 recordings
 
 References: Freesound previews licensed CC0, kept OUTSIDE the repo (research folder `refs/cc0/`, with a
 SOURCES file listing URL, author and licence). Reference only; no audio or stems ship. Distance totals (lower is
 better) from `fit.compare_signals` at 24 kHz; "hold-out" = a second recording or a different step not used for
 fitting.
 
-| recipe | fit clip | v0.7 | v0.8 | hold-outs: v0.7 -> v0.8 |
+| recipe | fit clip | before | after | hold-outs: before -> after |
 |---|---|---|---|---|
 | `footstep` (boot, wood) | wood-floor walk, one step | 0.499 | 0.383 | other wood recording 1.220 -> 0.902; another step 0.573 -> 0.472 |
 | `hit` (board) | door knock | 1.046 | 0.692 | second door knock 1.122 -> 0.906; single wood knock 1.205 -> 0.584 |
@@ -138,30 +137,30 @@ How each was done, honestly:
   theory) was set from that before anything else was tuned. The footstep and knock have no pitch control;
   their floor/panel modes were left to the fit.
 - **footstep:** CMA-ES (90 renders) on intensity, roll time, floor scale, damping, scuff and weight. The fit
-  pushed the walker's weight to the lower bound (45 kg); we kept 75 kg (an adult body weight; the `size`
+  pushed the walker's weight to the lower bound (45 kg); we kept 75 kg (an adult's body weight; the `size`
   macro goes lighter) and took the rest. That costs some of the gain (fit clip 0.339 -> 0.383) but both
   hold-outs still improve. Stone was fitted the same way (leather shoes on concrete): small gain, kept as
   offsets in the `surface: stone` choice; the second concrete recording got very slightly worse (0.930 ->
   0.938). A gravel fit made both gravel hold-outs worse, so it was not kept.
 - **hit (board):** CMA-ES (90 renders) on thickness, damping, contact time, contact noise, thump, length and
   noise centre. One hold-out improved a lot, the other door knock got worse than our first hand-set board
-  (0.847 -> 0.906) though still far better than v0.7. Recorded knocks are knuckle knocks, darker than a stick.
+  (0.847 -> 0.906) though still far better than before. Recorded knocks are knuckle knocks, darker than a stick.
 - **coin:** a 7-control CMA-ES fit pushed two controls to their bounds and made the coin-on-ground hold-out
   worse (0.521 -> 0.641), so it was rejected. Kept instead: one control (floor level 1 -> 2) plus the wobble
   rework (rolling micro-contacts), which improves the fit clip and both hold-outs.
 
-### 0.8.1: heel-to-toe gap set by ear
+### Heel-to-toe gap: listening over the metric
 
-The 0.8.0 footstep's heel and toe sounded like two separate hits (gap 0.2 s, which came from the fit). The gap
-is now 35 ms by default (~20-60 ms with shoe, weight and the `pace` macro), so heel and toe flam into one step.
-The CC0 recordings preferred the long gap: with 35 ms the wood distances go back to roughly v0.7 levels (fit
+With the fitted gap of 0.2 s, heel and toe sound like two separate hits. The gap
+is 35 ms by default (~20-60 ms with shoe, weight and the `pace` macro), so heel and toe flam into one step.
+The CC0 recordings preferred the long gap: with 35 ms the wood distances go back to roughly pre-fit levels (fit
 clip 0.383 -> 0.496; hold-outs 0.902 -> 1.228 and 0.472 -> 0.579), stone 0.566 -> 0.577 (hold-outs 0.666 ->
 0.750, 0.938 -> 0.745), gravel 0.751 -> 0.794 (hold-outs 0.549 -> 0.610, 0.562 -> 0.709). A refit of the other
 footstep controls with the gap locked gained little (0.496 -> 0.456) and pushed three controls to their
-bounds, so it was not kept. Here the ear overrides the metric: those recordings seem to be slow walks with a
+bounds, so it was not kept. Here listening overrides the metric: those recordings seem to be slow walks with a
 distinct toe-down, and a single-number spectral distance rewards copying that.
 
-## Game library checks against CC0 recordings (0.9.0)
+## Game library checks against CC0 recordings
 
 Refs: Freesound CC0 previews picked automatically from searches (2 per sound, rain roof/window found none),
 kept in `soundlab-research/refs/cc0` with `SOURCES.md`; never in the repo. They are loose matches: a
@@ -190,16 +189,12 @@ Changes driven by the band checks (before -> after, distance in dB RMS over the 
 
 Not fitted: wind (3.6 dB to the trees ref as is), swing, clash, bullets, gunshot, punch, rustles, splash.
 
-### 0.10.0: ear over metrics
+### Listening over metrics
 
-After a listening check, rain (fitted hiss 0.2 overruled: louder diffuse wash, softer near drops) and the door slam
-(the 0.9 CC0 match was a light door) were changed by ear. Band distances now: rain 3.2/3.4 dB to the two
-heavy-rain refs (unchanged), door slam 13.6/15.8 dB (heavier than both refs, on purpose), growl 4.3 dB to
-the big-creature ref (was 13.4), gunshot 8.0/6.3 dB (was 9.0/5.3). No new fits.
+Rain (fitted hiss 0.2 overruled: louder diffuse wash, softer near drops) and the door slam (the CC0 match was
+a light door) were then set by listening. Band distances: rain 5.2/3.5 dB to the two heavy-rain refs, door
+slam 13.6/15.8 dB (heavier than both refs, on purpose), growl 4-5 dB to the big-creature ref.
 
-### 0.11.0: what the refs were used for
-
-No fits. Five CC0 firearm recordings (gunshot_1/2, gun_shotgun_2/3; one more shotgun preview failed to
-download) gave the gunshot's attack, first-5 ms brightness and tail ratios; four growls + one tiger growl gave
-the trill rate (18-22 Hz). Rain's band distance to the heavy-rain refs: 5.2 / 3.5 dB; growl 4-5 dB to the
-big-creature ref. Listening decides.
+The gunshot and growl are not fitted. Five CC0 firearm recordings (gunshot_1/2, gun_shotgun_2/3) gave the
+gunshot's attack, first-5 ms brightness and tail ratios; four growls and one tiger growl gave the trill rate
+(18-22 Hz). Listening decides over the metrics.

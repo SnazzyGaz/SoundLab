@@ -550,10 +550,10 @@ def holdout(result, ref, ref_sr, ref_start=None, ref_end=None, weights=None, nam
 
 
 def ear_renders(result, out_dir, shift=0.25, sr=48000, positions=(0.15, 0.85)):
-    """Listening renders: the fitted recipe, then the fitted recipe at a few MACRO positions (v0.7: each
+    """Listening renders: the fitted recipe, then the fitted recipe at a few MACRO positions (each
     numeric macro at 0.15 and 0.85 with the others at default, every choice of a choice macro). A fit that
     only works at one setting shows up here. Recipes without macros fall back to every fitted control moved
-    `shift` of its range toward its low and high end (v0.6 behaviour)."""
+    `shift` of its range toward its low and high end."""
     from .audio_io import write_wav
     od = Path(out_dir) / "ear"
     od.mkdir(parents=True, exist_ok=True)
@@ -643,7 +643,7 @@ def report(result, ref_x, out_dir, ref_name="reference", recipe_name="recipe"):
                      f"{'ok' if h['improved'] else 'WORSE: likely overfitted to the fit clip'} |")
     else:
         L.append("**Missing.** No hold-out recording was given (`--holdout`). Do not adopt this fit until it has "
-                 "been scored on a second recording of the same sound and checked by ear.")
+                 "been scored on a second recording of the same sound and listened to.")
     if result.get("ear"):
         L += ["", "Listening renders: " + ", ".join(Path(f).name for f in result["ear"]) +
               " (fitted, then macro positions; or, without macros, all fitted controls 25 % of their range lower / higher)."]

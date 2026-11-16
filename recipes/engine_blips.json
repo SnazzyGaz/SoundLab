@@ -1,6 +1,6 @@
 {
  "soundlab": 1,
- "name": "V8 idling, three throttle blips (follows the shape of the reference V8 reference), 4 m away",
+ "name": "V8 idling, three throttle blips (idle, blip shape after a real V8 recording), 4 m away",
  "sample_rate": 48000,
  "duration": 7.0,
  "seed": 11,

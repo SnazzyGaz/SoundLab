@@ -1,6 +1,6 @@
 {
  "soundlab": 1,
- "name": "Fit target: one big explosion (vs explosion ref 21.5 s-end) [fitted values]",
+ "name": "Fit target: one big explosion (fitted to a reference explosion recording) [fitted values]",
  "sample_rate": 48000,
  "duration": 7.339187500000001,
  "seed": 1,

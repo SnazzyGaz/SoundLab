@@ -28,9 +28,9 @@ def norm(x):
        "tract: broad "
        "resonances around 1.2-3.3 kHz (strongest ~2 kHz) with an anti-resonance notch. Each quack swells then "
        "stops abruptly; pitch does not arc (an arc reads as a laugh). Female call = 2-10 quacks in a decrescendo; "
-       "male = quieter, longer, breathier 1-2 note 'raeb'. v3 (after 'slight grain'): pulses are placed at exact "
-       "sub-sample times, much less jitter and breath noise (the reference mallard ref shows clean harmonics every "
-       "~168 Hz up to 3 kHz; v2's heavy jitter smeared them into grain), a low resonance that lifts the second "
+       "male = quieter, longer, breathier 1-2 note 'raeb'. Pulses are placed at exact "
+       "sub-sample times with little jitter and breath noise (real mallard calls show clean harmonics every "
+       "~168 Hz up to 3 kHz; heavy jitter smears them into grain), a low resonance that lifts the second "
        "harmonic (~330 Hz line in every ref quack), and a gentle top roll-off instead of a steep cut.",
        [
            Param("voice", "female", "", choices=("female", "male")),
@@ -134,11 +134,11 @@ FIRING = {
            Param("pipe_ring", 0.3, "", 0, 0.9, "exhaust pipe resonance feedback; high values ring/whistle"),
            Param("edge", 0.8, "", 0, 1, "v5: steepness of the blowdown pressure rise. 0 = slow smooth bump (dark, "
                  "v2-v4), 1 = sharp valve-opening front (bright, clear exhaust note)"),
-           Param("rasp", 0.3, "", 0, 1.5, "v5: smooth broadband exhaust/flow turbulence (0.7-9 kHz), softly following the "
-                 "firing. the reference V8 has a flat, smooth top above 400 Hz (frame kurtosis ~0); without it the engine sounds "
+           Param("rasp", 0.3, "", 0, 1.5, "smooth broadband exhaust/flow turbulence (0.7-9 kHz), softly following the "
+                 "firing. A real V8 has a flat, smooth top above 400 Hz (frame kurtosis ~0); without it the engine sounds "
                  "muffled, and with spiky cracks instead it sounds crackly"),
-           Param("exhaust_crack", 0.0, "", 0, 1, "v3: short broadband crack at the start of each blowdown (the "
-                 "exhaust valve opening). Off by default since v5: it read as crackling on top; use `edge` for "
+           Param("exhaust_crack", 0.0, "", 0, 1, "short broadband crack at the start of each blowdown (the "
+                 "exhaust valve opening). Off by default: it reads as crackling on top; use `edge` for "
                  "brightness instead"),
        ],
        ["Baldan et al., SIVE 2015", "Farnell 2010 practical 22", "Borla: engine sound and drone physics",
@@ -276,7 +276,7 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
 
 # =================================================================== foghorn
 @model("foghorn", "sound",
-       "Air-driven foghorn (diaphone or large air horn). v3, rebuilt after 'sci-fi / digital' feedback: the tone "
+       "Air-driven foghorn (diaphone or large air horn), not a sci-fi horn: the tone "
        "is steady like a real horn (a few per cent scoop at most; real horns do not glide), with slow random "
        "pressure and pitch wobble from the air supply and the bell, turbulence noise gated by the air puffs, "
        "an asymmetric puff shape (not a square wave, whose missing even harmonics sound synthetic), the horn "
@@ -390,9 +390,9 @@ def ctrl_at(value, times, log=False):
 
 # =================================================================== explosion
 @model("explosion", "sound",
-       "Detonation. v3, rebuilt after 'explosion in a plastic bucket' feedback. The v2 'boom' was a tuned 2-pole "
+       "Detonation, not an explosion in a plastic bucket. A 'boom' made as a tuned 2-pole "
        "resonator ringing at ~120 Hz for ~0.6 s: a narrow, pitched resonance is exactly what a small cavity "
-       "sounds like. v3 has no tonal parts. It is: a Friedlander N-wave (length grows with charge size) with a "
+       "sounds like, so this model has no tonal parts. It is: a Friedlander N-wave (length grows with charge size) with a "
        "broadband crack that overloads the mic; a critically damped (non-ringing) low thump; and the main body, "
        "a long turbulent fireball roar of broadband noise with slow random surges, whose high end dies first "
        "(air absorption and a cooling fireball) while the low end lasts longest. Big refs stay within 10 dB of "
@@ -524,7 +524,7 @@ def match(ctx: Ctx, x, strike_s, strike_speed, strike_force, ignite, flare_s, fl
         f1 = dsp.lowpass(rng.standard_normal(m), 6.0, sr)
         f2 = dsp.lowpass(rng.standard_normal(m), 30.0, sr)
         flut = np.exp(0.45 * f1 / (np.std(f1) + 1e-12) + 0.25 * f2 / (np.std(f2) + 1e-12))
-        # a small flame's hiss is a soft band around 1-4 kHz (the reference match ref: the flame is a low rumble with
+        # a small flame's hiss is a soft band around 1-4 kHz (a real match flame is a low rumble with
         # sparse crackle; a bright 2-20 kHz hiss band was the remaining 'tinny' part)
         hiss = dsp.highpass(dsp.pink(rng, m), 900.0 + 300 * brightness, sr)
         hiss = dsp.lowpass(hiss, 2500.0 + 1500.0 * brightness, sr, 0.5)
@@ -552,26 +552,26 @@ def match(ctx: Ctx, x, strike_s, strike_speed, strike_force, ignite, flare_s, fl
        "body knock). Between strokes the contents slide (soft noise). After Cook's PhISM shakers.",
        [
            Param("rate_hz", 3.0, "Hz", 0.5, 15, "shake strokes per second (each back-and-forth = 2 reversals; "
-                 "the reference clip ~3)"),
+                 "typical ~3)"),
            Param("shake_s", 0.8, "s", 0.05, 30, "how long the shaking lasts"),
            Param("strokes", 0, "count", 0, 200, "explicit number of reversals (0 = from rate_hz x shake_s)"),
            Param("items", 40, "count", 1, 300, "number of loose items (matches in a full box: ~40)"),
            Param("intensity", 0.7, "", 0, 1, "how hard it is shaken (more and louder impacts, more box knock)"),
-           Param("spread_ms", 50.0, "ms", 1, 150, "how long a reversal's cluster of collisions lasts (the reference clip: "
+           Param("spread_ms", 50.0, "ms", 1, 150, "how long a reversal's cluster of collisions lasts (typically "
                  "bursts of ~50-100 ms)"),
            Param("item_hz", 4500.0, "Hz", 500, 15000, "centre of the item click spectrum (thin wood sticks)"),
            Param("box_size", 0.05, "m", 0.01, 0.5, "box length (sets the body knock and plate modes)"),
            Param("fill", 0.8, "", 0, 1, "how full the box is (fuller = more, duller hits, less free flight)"),
            Param("knock", 0.5, "", 0, 2, "level of the box body knock"),
-           Param("handling", 0.05, "", 0, 2, "low rumble of the hand moving the box near the mic (the reference clip has a "
-                 "little below ~100 Hz). v5: default 0.05; at 0.3-0.9 it made the box sound heavy, like a dog pawing at "
+           Param("handling", 0.05, "", 0, 2, "low rumble of the hand moving the box near the mic (a real "
+                 "shake has a little below ~100 Hz). At 0.3-0.9 the box sounds heavy, like a dog pawing at "
                  "a door"),
-           Param("card_mm", 0.5, "mm", 0.2, 3, "v5: box wall thickness. A matchbox is thin card (~0.5 mm): its "
+           Param("card_mm", 0.5, "mm", 0.2, 3, "box wall thickness. A matchbox is thin card (~0.5 mm): its "
                  "modes sit high and die in a few ms"),
            Param("slide", 0.15, "", 0, 1, "level of the soft sliding between strokes"),
            Param("start", 0.05, "s", 0, None, "start time"),
        ], ["Cook 1997, Physically Informed Sonic Modeling (PhISM shakers), Computer Music Journal 21(3)",
-           "Farnell 2010 (rattles)", "matchbox shake reference (analysis only)"])
+           "Farnell 2010 (rattles)", "matchbox shake reference recording (analysis only)"])
 def shaker(ctx: Ctx, x, rate_hz, shake_s, strokes, items, intensity, spread_ms, item_hz, box_size, fill, knock,
            handling, card_mm, slide, start):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
@@ -613,7 +613,7 @@ def shaker(ctx: Ctx, x, rate_hz, shake_s, strokes, items, intensity, spread_ms, 
     # item clicks: two damped stick/box resonances (refs: peaks ~1.5 and ~3.5 kHz), no bare high-pass part
     # v5: a fir stick 45 x 2 mm has its first free-free bending mode near f1 = 1.03 c t / L^2 ~ 4.8 kHz
     # (c ~ 4700 m/s along the grain); the 2nd sits at 2.76 f1 (very damped). The card wall adds 1-3 kHz.
-    # the reference is roughly flat from 800 Hz to 6.4 kHz (octave bands within ~2 dB)
+    # a real matchbox shake is roughly flat from 800 Hz to 6.4 kHz (octave bands within ~2 dB)
     it = dsp.bandpass(clicks, item_hz, sr, 1.4) + 0.3 * dsp.bandpass(clicks, item_hz * 2.76, sr, 1.5) \
         + 0.45 * dsp.bandpass(clicks, item_hz * 0.4, sr, 0.9)
     it = dsp.lowpass(it, 11000.0, sr, 0.5)

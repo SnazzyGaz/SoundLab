@@ -1,6 +1,6 @@
 # Blind test (roadmap step 5)
 
-The stop-and-judge test agreed in the plan review: can a listener tell SoundLab renders from real recordings
+The stop-and-judge test: can a listener tell SoundLab renders from real recordings
 of the same sound? Pass mark for **physical sounds: under 60 % correctly identified** (50 % = pure guessing).
 
 There are two ways to run it. The **browser test** is the easy one: listeners hear one clip at a time and
@@ -55,8 +55,7 @@ are not scored against the new clips.
 3. They type their name or initials, press Play, answer Real or Synthesised (plus how sure, and optionally
    what gave it away), and move on. Each listener gets their own random order. Answers are saved after every
    clip in `<pack>/answers/<name>.json`, so they can stop and continue later with the same name.
-4. Aim for at least two listeners who did not tune the sounds. Tuners can take it too; their answers are listed
-   separately per name.
+4. Aim for at least two listeners who did not tune the sounds. Answers are listed separately per name.
 
 The app only listens on this computer (127.0.0.1). To test someone remotely, zip the pack and have them
 run SoundLab themselves, then copy their `answers/<name>.json` back into your pack.
@@ -70,11 +69,10 @@ the verdict (pass = spotted under 60 %), how often real clips were called synthe
 `--json` for machine use. The same reading-it-honestly rules as below apply: one sound's result from a few
 clips is only a hint, the pooled figure is the verdict.
 
-### The box pack (CC0 recordings)
+### A starter pack from CC0 recordings
 
-On the build box the pack at `soundlab-out/blindtest/` was built from the CC0 reference recordings in
-`soundlab-research/library/` (outside the repo, sources in `soundlab-research/refs/cc0/SOURCES.md`): 19
-sounds, 2 real + 2 engine clips each, 76 clips. Your own library samples can replace or add to them.
+CC0 recordings (e.g. from Freesound) make a good first library: 19 of the recipe sounds can be covered with
+2-3 CC0 takes each. Keep them outside the repo, with a note of each file's source and licence.
 
 ## A/B kit
 
@@ -83,7 +81,7 @@ sounds, 2 real + 2 engine clips each, 76 clips. Your own library samples can rep
 - **Engine renders**: any folder from `soundlab batch` (its `manifest.json` names each file by recipe), or
   sub-folders per sound.
 - **Library samples (yours)**: real recordings of the same sounds, from a licensed sample library or your
-  own recordings. Never the private reference clips. Lay them out as one sub-folder per sound
+  own recordings. Lay them out as one sub-folder per sound
   (`library/rain/take1.wav`) or flat files named `<sound>__anything.wav` (`rain__heavy_roof.wav`). The
   sound names must match recipe names (`rain`, `door_slam`, `creature_growl`, ...; dashes and case are
   ignored). These files stay outside the repo; only the listening set contains them.
@@ -106,7 +104,7 @@ the engine on a random side. It also writes:
 
 ### Run it
 
-1. At least two listeners who did not tune the recipes; a tuner may take part but is scored separately (one
+1. At least two listeners who did not tune the recipes, each scored separately (one
    answer sheet per listener; build with a different `--seed` per listener for a fresh order).
 2. Same playback chain for everyone (headphones or decent speakers), no time pressure, replay freely.
 3. For each trial: which one is the engine, A or B? Guess when unsure; never leave a row blank. Notes on

@@ -1,7 +1,7 @@
-"""Foley models added in v0.8: a body-weight footstep and a real metal coin (drop / jingle).
+"""Foley models: a body-weight footstep and a real metal coin (drop / jingle).
 
-Written after the reference v0.7 notes: the v0.7 footstep (two hard hits on an oak plate) read as tapping on wood,
-and the coin recipe was the retro arcade blip. Numbers marked (est.) are our estimates; the rest cite sources.
+A footstep is not two hard hits on an oak plate (that reads as tapping on wood), and a coin is not an arcade
+blip. Numbers marked (est.) are our estimates; the rest cite sources.
 Shape of both models is checked against CC0 Freesound recordings kept OUTSIDE the repo (reference only).
 """
 from __future__ import annotations
@@ -108,7 +108,7 @@ SURFACES = {
                  "brighter contact, more slap and scuff)", source="heel vertical speed ~0.4 m/s at strike (est. "
                  "from gait literature)"),
            Param("roll_s", 0.035, "s", 0.01, 0.3, "heel-to-toe gap: in a heel-toe walk the toe lands ~20-60 ms after "
-                 "the heel, so the two flam into one step (v0.8.1, after 0.2 s sounded like two hits). Scaled a "
+                 "the heel, so the two flam into one step (a 0.2 s gap sounds like two hits). Scaled a "
                  "little by shoe (soft trainer longer, hard heel shorter) and weight"),
            Param("creak", 0.3, "", 0, 1, "wood only: chance and level of a board creak during loading"),
            Param("scuff", 0.4, "", 0, 1, "friction noise as the foot rolls (stone/wood)"),

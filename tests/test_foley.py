@@ -124,7 +124,7 @@ def test_coin_jingle_and_retro_coin_kept():
 
 
 def test_heel_and_toe_flam_into_one_step():
-    """heel and toe must come almost as one. Gap ~20-60 ms, scaled a little by shoe/pace."""
+    """Heel and toe must come almost as one. Gap ~20-60 ms, scaled a little by shoe/pace."""
     from soundlab.models.foley import SHOES
     from soundlab.recipe import render as rr
     rec = soundlab.load_recipe(str(RECIPES / "footstep.json"))

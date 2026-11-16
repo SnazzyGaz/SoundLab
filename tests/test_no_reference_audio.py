@@ -1,6 +1,6 @@
-"""v0.6 rule: never ship reference clips or stems derived from them.
+"""Rule: never ship reference clips or stems derived from them.
 
-Reference recordings (e.g. private reference clips) are used for tuning during development only and live
+Reference recordings are used for tuning during development only and live
 OUTSIDE the repository (soundlab-research/refs). This test fails if any audio file is tracked by git or sits
 anywhere in the working tree, except paths listed in tests/audio_allowlist.txt (empty: nothing is allowed).
 """

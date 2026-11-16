@@ -2,8 +2,8 @@
 metal clang, door creak and slam, body hit, bullet impact, gunshot, creature growl, rustle, splash.
 
 Physics where the mechanism decides the sound (stick-slip hinge, shard ring, Minnaert bubbles, aeolian tones,
-Friedlander blast), physically informed noise otherwise. Numbers marked (est.) are our estimates. listening 
-notes guide the defaults: no digital artefacts, no machine-regular repetition, no small-cavity ringing, no
+Friedlander blast), physically informed noise otherwise. Numbers marked (est.) are our estimates. Design
+goals for the defaults: no digital artefacts, no machine-regular repetition, no small-cavity ringing, no
 tinny tops, no heavy low end on light objects.
 """
 from __future__ import annotations
@@ -97,9 +97,8 @@ def wind(ctx: Ctx, x, speed, gustiness, gust_hz, howl, whistle, gap_mm, trees, r
         w = dsp.svf(dsp.white(rng, n), f_w, 40.0, sr, "bpn") + 0.3 * dsp.svf(dsp.white(rng, n), f_w * 2.02, 30.0, sr, "bpn")
         out += whistle * 0.7 * _norm(w * on * amp ** 0.5)
     if trees > 0:
-        # 0.10: continuous leaf noise instead of clicks (grain). 0.11 ('a plastic bag waving'): the 9 Hz
-        # flutter was too deep and too regular. Now only a shallow, irregular wobble (two unrelated rates) and a
-        # lower level; off by default in wind.json (the `trees` macro brings it in).
+        # continuous leaf noise, not clicks (clicks read as grain). A deep, regular 9 Hz flutter sounds like a
+        # plastic bag waving, so only a shallow, irregular wobble (two unrelated rates) at a low level; off by default in wind.json (the `trees` macro brings it in).
         flut = np.exp(0.10 * smooth_random(rng, n, sr, 3.3) + 0.06 * smooth_random(rng, n, sr, 11.7))
         leaves = dsp.lowpass(dsp.bandpass(dsp.pink(rng, n), 1800.0 + 600.0 * min(speed / 10.0, 2.0), sr, 0.4),
                              5000.0, sr) * flut * amp ** 0.7
@@ -140,7 +139,7 @@ def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     su = RAIN_SURFACES[surface]
     R = rate_mm_h
-    # 0.11 ('shuddering like paper bags'): only a gentle, slow variation; the wash itself is stationary
+    # only a gentle, slow variation (faster AM sounds like paper bags shuddering); the wash itself is stationary
     swell = np.exp(0.05 * smooth_random(rng, n, sr, 0.1))
     out = np.zeros(n)
     if near > 0:
@@ -150,7 +149,7 @@ def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness):
         amp = (D / drop_mm) ** 1.5
         imp = np.zeros(n)
         np.add.at(imp, idx, amp * rng.uniform(0.5, 1.0, len(idx)))
-        # 0.10 ('too much crackle on top'): a drop is not a one-sample click. Its impact lasts ~0.5-2 ms
+        # a drop is not a one-sample click (clicks crackle on top). Its impact lasts ~0.5-2 ms
         # (a 2 mm drop at ~6 m/s spreading), so each drop is a smooth pulse; three widths so they are not cloned.
         soft = np.zeros(n)
         for k, w_ms in enumerate((1.0, 1.7, 2.6)):
@@ -409,7 +408,7 @@ def door_creak(ctx: Ctx, x, open_s, pitch_hz, pressure, wander, hinge, door_size
 
 
 @model("door_slam", "sound",
-       "A heavy door slammed shut. 0.10 (after 'two wood planks hitting'): the mass is what you hear. "
+       "A heavy door slammed shut. The mass is what you hear (without it, it sounds like two wood planks hitting). "
        "A 25-40 kg leaf stops against the frame through a soft seal (4-8 ms contact), so most of the energy goes "
        "into low, damped motion: the leaf, frame and wall swing together (~60-150 Hz thump), the frame shudders "
        "(a few small, low rebounds), the latch bolt clunks home (a damped metal clunk, ~0.6-1.5 kHz, not a "
@@ -585,7 +584,7 @@ GUNS = {
 
 
 @model("gunshot", "sound",
-       "A firearm shot (0.11, after 'a potato gun / air-gun punch'). What makes it a firearm, in order: "
+       "A firearm shot (not an air-gun punch). What makes it a firearm, in order: "
        "(1) the muzzle shock: a near-instant pressure jump (microseconds) lasting a fraction of a millisecond, "
        "so the first millisecond is very loud and full of high frequencies; (2) the propellant combustion "
        "roar: bright, broadband, turbulent flame/gas, tens of ms; (3) only a modest low gas push (too much "
@@ -733,7 +732,7 @@ def trill_gate(rng, n, sr, rate_hz, depth, irregular=0.2):
 
 
 @model("growl", "sound",
-       "A creature growl, guttural and voiced (0.11, after 'a wooden chair pushed on a wood floor'). "
+       "A creature growl, guttural and voiced. "
        "Source-filter. Source: LF-style vocal-fold pulses (smooth opening, soft exponential return phase, no hard "
        "clicks) with chaotic pitch, jitter, shimmer and strong period doubling (subharmonics); a uvular / "
        "ventricular-fold trill at ~18-35 Hz chokes the airflow irregularly each cycle (the 'uvulation' - CC0 "
@@ -827,7 +826,7 @@ def rustle(ctx: Ctx, x, material, moves, length_s, intensity, at):
 
 # =================================================================== splash
 @model("splash", "sound",
-       "An object dropping into water (0.11, after 'bird wings flapping and a minor droplet'). In order: "
+       "An object dropping into water. In order: "
        "(1) the impact: the object slaps the surface - a sharp, short broadband crack (a few ms), with a dull "
        "thud for big objects; (2) the crown and sheet of water thrown up: a short, smooth noise burst (no "
        "amplitude modulation - a fluttering noise envelope is what read as wing flaps); (3) the air cavity "

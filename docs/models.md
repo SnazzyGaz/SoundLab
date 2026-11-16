@@ -358,7 +358,7 @@ Sources: Farnell 2010 practical 31; Wikipedia: Thunder (rolling echoes); Embleto
 
 ### `duck`
 
-Mallard call. The syrinx is a pulse train (rough_pulses) rather than a smooth sung tone, then a nasal vocal tract: broad resonances around 1.2-3.3 kHz (strongest ~2 kHz) with an anti-resonance notch. Each quack swells then stops abruptly; pitch does not arc (an arc reads as a laugh). Female call = 2-10 quacks in a decrescendo; male = quieter, longer, breathier 1-2 note 'raeb'. v3 (after 'slight grain'): pulses are placed at exact sub-sample times, much less jitter and breath noise (the reference mallard ref shows clean harmonics every ~168 Hz up to 3 kHz; v2's heavy jitter smeared them into grain), a low resonance that lifts the second harmonic (~330 Hz line in every ref quack), and a gentle top roll-off instead of a steep cut.
+Mallard call. The syrinx is a pulse train (rough_pulses) rather than a smooth sung tone, then a nasal vocal tract: broad resonances around 1.2-3.3 kHz (strongest ~2 kHz) with an anti-resonance notch. Each quack swells then stops abruptly; pitch does not arc (an arc reads as a laugh). Female call = 2-10 quacks in a decrescendo; male = quieter, longer, breathier 1-2 note 'raeb'. Pulses are placed at exact sub-sample times with little jitter and breath noise (real mallard calls show clean harmonics every ~168 Hz up to 3 kHz; heavy jitter smears them into grain), a low resonance that lifts the second harmonic (~330 Hz line in every ref quack), and a gentle top roll-off instead of a steep cut.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
@@ -400,14 +400,14 @@ Combustion engine. v2: per-cylinder exhaust blowdown pressure pulses (not differ
 | `exhaust_noise` | `0.5` |  | 0 .. 1 | broadband blowdown noise (rasp) relative to the tonal pulses |
 | `pipe_ring` | `0.3` |  | 0 .. 0.9 | exhaust pipe resonance feedback; high values ring/whistle |
 | `edge` | `0.8` |  | 0 .. 1 | v5: steepness of the blowdown pressure rise. 0 = slow smooth bump (dark, v2-v4), 1 = sharp valve-opening front (bright, clear exhaust note) |
-| `rasp` | `0.3` |  | 0 .. 1.5 | v5: smooth broadband exhaust/flow turbulence (0.7-9 kHz), softly following the firing. the reference V8 has a flat, smooth top above 400 Hz (frame kurtosis ~0); without it the engine sounds muffled, and with spiky cracks instead it sounds crackly |
-| `exhaust_crack` | `0.0` |  | 0 .. 1 | v3: short broadband crack at the start of each blowdown (the exhaust valve opening). Off by default since v5: it read as crackling on top; use `edge` for brightness instead |
+| `rasp` | `0.3` |  | 0 .. 1.5 | smooth broadband exhaust/flow turbulence (0.7-9 kHz), softly following the firing. A real V8 has a flat, smooth top above 400 Hz (frame kurtosis ~0); without it the engine sounds muffled, and with spiky cracks instead it sounds crackly |
+| `exhaust_crack` | `0.0` |  | 0 .. 1 | short broadband crack at the start of each blowdown (the exhaust valve opening). Off by default: it reads as crackling on top; use `edge` for brightness instead |
 
 Sources: Baldan et al., SIVE 2015; Farnell 2010 practical 22; Borla: engine sound and drone physics; Wikipedia: Firing order; Heywood 1988, Internal Combustion Engine Fundamentals (blowdown); refs/SOURCES.md (Rover V8, start-idle-rev recordings)
 
 ### `foghorn`
 
-Air-driven foghorn (diaphone or large air horn). v3, rebuilt after 'sci-fi / digital' feedback: the tone is steady like a real horn (a few per cent scoop at most; real horns do not glide), with slow random pressure and pitch wobble from the air supply and the bell, turbulence noise gated by the air puffs, an asymmetric puff shape (not a square wave, whose missing even harmonics sound synthetic), the horn throat formants that make harmonics 3 and 6 stand out in real recordings, and a natural pressure release tail. The source is rendered 4x oversampled. The v2 grunt (pitch fall with choppy pulsing) and the octave-down growl are still there as options but off by default.
+Air-driven foghorn (diaphone or large air horn), not a sci-fi horn: the tone is steady like a real horn (a few per cent scoop at most; real horns do not glide), with slow random pressure and pitch wobble from the air supply and the bell, turbulence noise gated by the air puffs, an asymmetric puff shape (not a square wave, whose missing even harmonics sound synthetic), the horn throat formants that make harmonics 3 and 6 stand out in real recordings, and a natural pressure release tail. The source is rendered 4x oversampled. The v2 grunt (pitch fall with choppy pulsing) and the octave-down growl are still there as options but off by default.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
@@ -435,7 +435,7 @@ Sources: Terry Pepper, Seeing The Light: the diaphone; Wikipedia: Foghorn; Wikip
 
 ### `explosion`
 
-Detonation. v3, rebuilt after 'explosion in a plastic bucket' feedback. The v2 'boom' was a tuned 2-pole resonator ringing at ~120 Hz for ~0.6 s: a narrow, pitched resonance is exactly what a small cavity sounds like. v3 has no tonal parts. It is: a Friedlander N-wave (length grows with charge size) with a broadband crack that overloads the mic; a critically damped (non-ringing) low thump; and the main body, a long turbulent fireball roar of broadband noise with slow random surges, whose high end dies first (air absorption and a cooling fireball) while the low end lasts longest. Big refs stay within 10 dB of the peak for several seconds and fade over 5-7 s. Optional secondary blasts and debris. Put distance/ground/outdoor blocks after it for the far field.
+Detonation, not an explosion in a plastic bucket. A 'boom' made as a tuned 2-pole resonator ringing at ~120 Hz for ~0.6 s: a narrow, pitched resonance is exactly what a small cavity sounds like, so this model has no tonal parts. It is: a Friedlander N-wave (length grows with charge size) with a broadband crack that overloads the mic; a critically damped (non-ringing) low thump; and the main body, a long turbulent fireball roar of broadband noise with slow random surges, whose high end dies first (air absorption and a cooling fireball) while the low end lasts longest. Big refs stay within 10 dB of the peak for several seconds and fade over 5-7 s. Optional secondary blasts and debris. Put distance/ground/outdoor blocks after it for the far field.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
@@ -477,22 +477,22 @@ Things rattling in a shaken box (matchbox by default). Physics: the hand moves t
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
-| `rate_hz` | `3.0` | Hz | 0.5 .. 15 | shake strokes per second (each back-and-forth = 2 reversals; the reference clip ~3) |
+| `rate_hz` | `3.0` | Hz | 0.5 .. 15 | shake strokes per second (each back-and-forth = 2 reversals; typical ~3) |
 | `shake_s` | `0.8` | s | 0.05 .. 30 | how long the shaking lasts |
 | `strokes` | `0` | count | 0 .. 200 | explicit number of reversals (0 = from rate_hz x shake_s) |
 | `items` | `40` | count | 1 .. 300 | number of loose items (matches in a full box: ~40) |
 | `intensity` | `0.7` |  | 0 .. 1 | how hard it is shaken (more and louder impacts, more box knock) |
-| `spread_ms` | `50.0` | ms | 1 .. 150 | how long a reversal's cluster of collisions lasts (the reference clip: bursts of ~50-100 ms) |
+| `spread_ms` | `50.0` | ms | 1 .. 150 | how long a reversal's cluster of collisions lasts (typically bursts of ~50-100 ms) |
 | `item_hz` | `4500.0` | Hz | 500 .. 15000 | centre of the item click spectrum (thin wood sticks) |
 | `box_size` | `0.05` | m | 0.01 .. 0.5 | box length (sets the body knock and plate modes) |
 | `fill` | `0.8` |  | 0 .. 1 | how full the box is (fuller = more, duller hits, less free flight) |
 | `knock` | `0.5` |  | 0 .. 2 | level of the box body knock |
-| `handling` | `0.05` |  | 0 .. 2 | low rumble of the hand moving the box near the mic (the reference clip has a little below ~100 Hz). v5: default 0.05; at 0.3-0.9 it made the box sound heavy, like a dog pawing at a door |
-| `card_mm` | `0.5` | mm | 0.2 .. 3 | v5: box wall thickness. A matchbox is thin card (~0.5 mm): its modes sit high and die in a few ms |
+| `handling` | `0.05` |  | 0 .. 2 | low rumble of the hand moving the box near the mic (a real shake has a little below ~100 Hz). At 0.3-0.9 the box sounds heavy, like a dog pawing at a door |
+| `card_mm` | `0.5` | mm | 0.2 .. 3 | box wall thickness. A matchbox is thin card (~0.5 mm): its modes sit high and die in a few ms |
 | `slide` | `0.15` |  | 0 .. 1 | level of the soft sliding between strokes |
 | `start` | `0.05` | s | 0 .. None | start time |
 
-Sources: Cook 1997, Physically Informed Sonic Modeling (PhISM shakers), Computer Music Journal 21(3); Farnell 2010 (rattles); matchbox shake reference (analysis only)
+Sources: Cook 1997, Physically Informed Sonic Modeling (PhISM shakers), Computer Music Journal 21(3); Farnell 2010 (rattles); matchbox shake reference recording (analysis only)
 
 ### `fire`
 
@@ -555,7 +555,7 @@ A walking footstep: body weight, not a tap. Heel strike = a long, soft force pul
 | `surface` | `wood` |  | wood, stone, gravel | wood boards, stone/concrete, gravel |
 | `weight_kg` | `75.0` | kg | 30 .. 150 | walker's weight: more weight = longer, lower, louder push |
 | `intensity` | `0.5` |  | 0 .. 1 | sneaking .. stomping (heel speed ~0.2-0.7 m/s; harder = shorter, brighter contact, more slap and scuff) Source: heel vertical speed ~0.4 m/s at strike (est. from gait literature). |
-| `roll_s` | `0.035` | s | 0.01 .. 0.3 | heel-to-toe gap: in a heel-toe walk the toe lands ~20-60 ms after the heel, so the two flam into one step (v0.8.1, after 0.2 s sounded like two hits). Scaled a little by shoe (soft trainer longer, hard heel shorter) and weight |
+| `roll_s` | `0.035` | s | 0.01 .. 0.3 | heel-to-toe gap: in a heel-toe walk the toe lands ~20-60 ms after the heel, so the two flam into one step (a 0.2 s gap sounds like two hits). Scaled a little by shoe (soft trainer longer, hard heel shorter) and weight |
 | `creak` | `0.3` |  | 0 .. 1 | wood only: chance and level of a board creak during loading |
 | `scuff` | `0.4` |  | 0 .. 1 | friction noise as the foot rolls (stone/wood) |
 | `floor_scale` | `1.0` |  | 0.4 .. 2.5 | scales the floor's mode frequencies (stiffer/smaller floor > 1) |
@@ -695,7 +695,7 @@ Sources: Wikipedia: Stick-slip phenomenon; Avanzini, Serafin & Rocchesso 2002 (f
 
 ### `door_slam`
 
-A heavy door slammed shut. 0.10 (after 'two wood planks hitting'): the mass is what you hear. A 25-40 kg leaf stops against the frame through a soft seal (4-8 ms contact), so most of the energy goes into low, damped motion: the leaf, frame and wall swing together (~60-150 Hz thump), the frame shudders (a few small, low rebounds), the latch bolt clunks home (a damped metal clunk, ~0.6-1.5 kHz, not a click), the leaf's panel modes ring only weakly and darkly, and the room answers. The bright wood-on-wood clack is kept small.
+A heavy door slammed shut. The mass is what you hear (without it, it sounds like two wood planks hitting). A 25-40 kg leaf stops against the frame through a soft seal (4-8 ms contact), so most of the energy goes into low, damped motion: the leaf, frame and wall swing together (~60-150 Hz thump), the frame shudders (a few small, low rebounds), the latch bolt clunks home (a damped metal clunk, ~0.6-1.5 kHz, not a click), the leaf's panel modes ring only weakly and darkly, and the room answers. The bright wood-on-wood clack is kept small.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
@@ -741,7 +741,7 @@ Sources: Farnell 2010 (bullets, ricochets); van den Doel et al. 2001
 
 ### `gunshot`
 
-A firearm shot (0.11, after 'a potato gun / air-gun punch'). What makes it a firearm, in order: (1) the muzzle shock: a near-instant pressure jump (microseconds) lasting a fraction of a millisecond, so the first millisecond is very loud and full of high frequencies; (2) the propellant combustion roar: bright, broadband, turbulent flame/gas, tens of ms; (3) only a modest low gas push (too much low-mid is the 'poof' of an air cannon); (4) all of it saturates the microphone/ear: hard, almost painful clipping and compression (oversampled, so no aliasing); (5) the supersonic N-wave for rifles; (6) the dry clack of the action; (7) the reflections: loud slapback off walls/ground and a long reverberant tail, which is what gives a gunshot its size (CC0 recordings: still ~-12 dB 0.3-0.6 s after the shot, ~-15..-20 dB up to 1 s).
+A firearm shot (not an air-gun punch). What makes it a firearm, in order: (1) the muzzle shock: a near-instant pressure jump (microseconds) lasting a fraction of a millisecond, so the first millisecond is very loud and full of high frequencies; (2) the propellant combustion roar: bright, broadband, turbulent flame/gas, tens of ms; (3) only a modest low gas push (too much low-mid is the 'poof' of an air cannon); (4) all of it saturates the microphone/ear: hard, almost painful clipping and compression (oversampled, so no aliasing); (5) the supersonic N-wave for rifles; (6) the dry clack of the action; (7) the reflections: loud slapback off walls/ground and a long reverberant tail, which is what gives a gunshot its size (CC0 recordings: still ~-12 dB 0.3-0.6 s after the shot, ~-15..-20 dB up to 1 s).
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
@@ -758,7 +758,7 @@ Sources: Wikipedia: Blast wave (Friedlander); Maher 2006, Modeling and signal pr
 
 ### `growl`
 
-A creature growl, guttural and voiced (0.11, after 'a wooden chair pushed on a wood floor'). Source-filter. Source: LF-style vocal-fold pulses (smooth opening, soft exponential return phase, no hard clicks) with chaotic pitch, jitter, shimmer and strong period doubling (subharmonics); a uvular / ventricular-fold trill at ~18-35 Hz chokes the airflow irregularly each cycle (the 'uvulation' - CC0 tiger/growl recordings flutter at 18-22 Hz); wet throat turbulence (noise gated by the airflow and the trill). Filter: a long open tract (tube formants (2n-1) c / 4L) with BROAD resonances: narrow ones ring after every pulse like a wooden board, which was the 'chair on a floor'. A chest band carries the bass.
+A creature growl, guttural and voiced. Source-filter. Source: LF-style vocal-fold pulses (smooth opening, soft exponential return phase, no hard clicks) with chaotic pitch, jitter, shimmer and strong period doubling (subharmonics); a uvular / ventricular-fold trill at ~18-35 Hz chokes the airflow irregularly each cycle (the 'uvulation' - CC0 tiger/growl recordings flutter at 18-22 Hz); wet throat turbulence (noise gated by the airflow and the trill). Filter: a long open tract (tube formants (2n-1) c / 4L) with BROAD resonances: narrow ones ring after every pulse like a wooden board, which was the 'chair on a floor'. A chest band carries the bass.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
@@ -791,7 +791,7 @@ Sources: Houle & Sethna 1996, Phys Rev E 54 (acoustic emission from crumpling pa
 
 ### `splash`
 
-An object dropping into water (0.11, after 'bird wings flapping and a minor droplet'). In order: (1) the impact: the object slaps the surface - a sharp, short broadband crack (a few ms), with a dull thud for big objects; (2) the crown and sheet of water thrown up: a short, smooth noise burst (no amplitude modulation - a fluttering noise envelope is what read as wing flaps); (3) the air cavity collapsing into the pinch-off bubble: a damped low 'bloop' (Minnaert f = 3.26 / r) with the small natural pitch rise; (4) the spray falling back: many small droplets (tens to hundreds) over ~0.3-1 s, each a soft tick with, often, its own tiny entrained bubble (a 'plip' at 1-6 kHz that dies in a few ms). Overlapping, they make the dense patter that says 'water'.
+An object dropping into water. In order: (1) the impact: the object slaps the surface - a sharp, short broadband crack (a few ms), with a dull thud for big objects; (2) the crown and sheet of water thrown up: a short, smooth noise burst (no amplitude modulation - a fluttering noise envelope is what read as wing flaps); (3) the air cavity collapsing into the pinch-off bubble: a damped low 'bloop' (Minnaert f = 3.26 / r) with the small natural pitch rise; (4) the spray falling back: many small droplets (tens to hundreds) over ~0.3-1 s, each a soft tick with, often, its own tiny entrained bubble (a 'plip' at 1-6 kHz that dies in a few ms). Overlapping, they make the dense patter that says 'water'.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|

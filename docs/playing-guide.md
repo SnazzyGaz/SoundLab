@@ -52,9 +52,9 @@ filter is a quack.
 Tips: keep `pitch_fall` small; any pitch movement inside a quack makes it read as a voice. For a hunter's duck
 call (a reed instrument), lower `rasp` to 0.3-0.4.
 
-### v3 (0.3.0), after "passable, but a slight grain"
+### Clean harmonics, no grain
 
-Fitted to the reference mallard video (one quack, 1.3-1.75 s). The pulses are now placed at exact sub-sample times
+Fitted to a mallard reference recording (one quack). The pulses are now placed at exact sub-sample times
 (no grid grain), with far less jitter and breath: that recording shows **clean harmonics every ~168 Hz** up to
 3 kHz, a strong line near 330 Hz (the 2nd harmonic, lifted by `low_hz`/`low_level`), the main energy at
 2-3 kHz and a gentle fall to 10 kHz. Fitted values: `f0` 165, `formant_hz` 2960, `rasp` 0.65, `nasal` 0.23,
@@ -66,7 +66,7 @@ Fitted to the reference mallard video (one quack, 1.3-1.75 s). The pulses are no
 Physics: each cylinder's exhaust blowdown is a pressure pulse at the firing frequency **f = RPM x cylinders /
 120** (four-stroke). The pipe and muffler are acoustic waveguides, and uneven firing intervals give the burble.
 
-v2 changes, after "fake/tinny when it revs high":
+Avoiding "fake/tinny when it revs high":
 - The pulses are no longer differentiated. Differentiating tilts the spectrum up by 6 dB/octave, and the tilt
   follows the rpm, so high revs went thin.
 - Blowdown noise is gated by the pulses: the rasp a real exhaust has.
@@ -95,21 +95,21 @@ Tips: always move `load` with `rpm`, because a revving engine under no load soun
 when the revs peak to get lift-off pops. Put `passby` after it for drive-bys; `ground` adds the comb of the road
 reflection, a static notch pattern that can sound phasey up close.
 
-### v3 (0.3.0), after "really good but a slight hiss"
+### No hiss
 
 The hiss was stationary noise: the blowdown-noise gate overlapped across 8 cylinders into a constant, the
 valve-train band was always on, and the ground reflection dug fixed comb notches. Now the noise comes in
 bursts tied to the firing, and the high end is a short broadband **crack at each exhaust-valve opening**
-(`exhaust_crack`), as in the reference V8 video. Fitted (idle + three blips, 13-19 s): `exhaust_length` 1.32,
+(`exhaust_crack`), as in a real V8 recording. Fitted (idle + three blips): `exhaust_length` 1.32,
 `muffler` 0.14, `body` 0.52, `exhaust_noise` 0.7, `intake` 0.08, `mechanical` 0.8, `pipe_ring` 0.14,
-`exhaust_crack` 0.5, `jitter` 0.06. `engine_blips.json` follows the shape of that video. The `ground` block
+`exhaust_crack` 0.5, `jitter` 0.06. `engine_blips.json` follows the shape of that recording. The `ground` block
 now has `ground_hz` (porous ground reflects less treble: asphalt ~8000, grass ~800) and `turbulence`.
 
-v4 (after "a buzzing on top"): each firing's crack now has its own random strength (some almost silent) and the
+Avoiding "a buzzing on top": each firing's crack now has its own random strength (some almost silent) and the
 valve ticks have random timing, so the top is no longer a pulse train at the firing rate. Recipes use
 `exhaust_crack` 0.55; above ~0.8 the top gets busy again.
 
-v5 (after "very muffled and still crackling on top"): new `edge` (0-1, default 0.8) makes each blowdown a
+Avoiding "very muffled and still crackling on top": new `edge` (0-1, default 0.8) makes each blowdown a
 sharp valve-opening front, which gives the open, clear note; new `rasp` (0-1.5, default 0.3) is the smooth
 turbulent top of a real exhaust. `exhaust_crack` is now 0 by default and in the recipes. Fitted to the V8
 clip: `edge` 1, `rasp` 0.6 (0.74 fitted; kept lower so it does not turn into hiss), `muffler` 0.42, `body`
@@ -123,7 +123,7 @@ When the air shuts off the piston slows and the pitch falls (the "grunt"). Our r
 fundamentals of **87-150 Hz**, energy concentrated in the 125-250 Hz octaves, and very buzzy harmonics. The
 often-quoted "about 250 Hz" (Type F) is too high for what people expect a foghorn to sound like.
 
-v2 changes, after "too high and alarm-like; real ones are bassy and choppier":
+Avoiding "too high and alarm-like; real ones are bassy and choppier":
 - Lower default tone (120 Hz, grunt 75 Hz).
 - A wide bell, so the horn's low cutoff c/(2 pi a) is about 90 Hz instead of 180 Hz, plus a low shelf.
 - A bark at the start: pressure overshoot plus a pitch scoop from 60 %.
@@ -146,9 +146,9 @@ v2 changes, after "too high and alarm-like; real ones are bassy and choppier":
 Tips: foghorns are heard far away. Follow with `distance` (hundreds of metres, `spreading: false` if you
 normalise) and `outdoor` with reflectors at a few hundred metres for cliff echoes. Low tones carry further.
 
-### v3 (0.3.0), after "sci-fi horn, very digital"
+### A real air horn, not a sci-fi horn
 
-Rebuilt as a real air horn: steady pitch (3 % scoop at most; the reference barge horn holds 108.7 Hz within 0.03
+Rebuilt as a real air horn: steady pitch (3 % scoop at most; the barge horn reference holds 108.7 Hz within 0.03
 semitones), slow random pressure and pitch **wobble** (`wobble`), turbulence noise gated by the air puffs,
 asymmetric puffs (38 % open, so all harmonics are present, unlike a square wave), **throat formants**
 (`throat_hz` and 2x; harmonics 2-3 are strongest in the barge ref), and a pressure release tail
@@ -157,7 +157,7 @@ asymmetric puffs (38 % open, so all harmonics are present, unlike a square wave)
 `blast_s` 3.1, `throat_hz` ~330, `wobble` 0.85, `release_s` 0.3; scene uses `brightness` 0.3 and a 0.9 m
 mouth so the fundamental is not thinned.
 
-v4 (after "a weird sustained bit at the end, like ocean waves"): that was the scene, not the horn: a steady
+Avoiding "a weird sustained bit at the end, like ocean waves": that was the scene, not the horn: a steady
 "sea" noise layer and far, diffused echoes. The scene now has one near reflector and a short tail. If you
 want sea ambience, add it as its own quiet layer and fade it with the horn.
 
@@ -189,13 +189,13 @@ down from 7 kHz over ~0.7 s, so it took about 0.2 s to reach its peak and had a 
 Tips: distance is most of the character. Close up you hear crack + boom + roar. Far away, `distance` takes out
 the highs and terrain echoes roll for seconds (`outdoor` with reflectors 300-2000 m).
 
-### v3 (0.3.0), after "an explosion in a plastic bucket"
+### No small-cavity boom
 
 The v2 boom was a tuned resonator ringing at ~120 Hz: a small-cavity sound. v3 has **no tonal part**: an
 N-wave + crack, a critically damped low thump (`boom_hz` is now only its corner), and a long turbulent
 **fireball roar** (`roar`, `fireball_s`, `surge`) whose top closes slowly while the low end lasts longest.
 The output is highpassed at 22 Hz: v2 put about half its energy below 20 Hz, which you cannot hear and which
-steals headroom. Fitted to the reference big explosion (21.5 s-end): `size` 0.95, `fireball_s` 9.8, `roar` 2.2,
+steals headroom. Fitted to a reference recording of a big explosion: `size` 0.95, `fireball_s` 9.8, `roar` 2.2,
 `crack` 0.31, `drive` 3.7, `boom_hz` 76. `explosion_small.json` is a field-recording-scale example
 (size 0.5, 2 s fireball).
 
@@ -222,11 +222,11 @@ v1 had a long scrape and a low "woof" flame.
 
 Tips: strike twice (two layers, the first with `ignite: false`).
 
-### v3 (0.3.0), after "good but some tinniness"
+### No tinniness
 
 The tinny parts were a ~530 Hz flame "woof" (now 90-250 Hz), a barely damped cardboard box (damping 40 ->
 180), resonant crackle pings (Q 1.5 -> 0.7) and a flat white flame hiss (now pink with a soft top and slow +
-fast flicker, a soft band around 1-4 kHz). There is a small low hand thump at ignition. Fitted to the reference video
+fast flicker, a soft band around 1-4 kHz). There is a small low hand thump at ignition. Fitted to a reference recording
 (strike + flame): `strike_s` 0.045, `flare_s` 0.36, `flame_size` 0.67, `flame_db` -37, `brightness` 0.94
 (`brightness` now mainly brightens the strike burst). The scene recipe uses `brightness` 0.6: the distance is
 the same within 0.004 and the strike is less sharp.
@@ -249,14 +249,14 @@ knock). Between strokes the contents slide.
 | `card_mm` | box wall thickness | 0.4-1 mm (matchbox ~0.5) |
 | `handling` | hand rumble below 150 Hz | 0-0.1; more sounds heavy |
 
-`recipes/matchbox.json` = shake (0.15-0.85 s) + four taps + strike at 2.2 s + flame, like the reference video.
+`recipes/matchbox.json` = shake (0.15-0.85 s) + four taps + strike at 2.2 s + flame, like a real recording.
 
-v4 (after "a crackle like bacon frying"): contacts are soft (0.1-0.35 ms sin^2 pulses, not needle clicks),
+Avoiding "a crackle like bacon frying": contacts are soft (0.1-0.35 ms sin^2 pulses, not needle clicks),
 collisions come in groups per stroke, the box knock is a 2-4 ms push instead of a 1-sample click, the box body
 adds little below 500 Hz, and `handling` (hand rumble) and `slide` were added. Keep `rate_hz` around 3-4: a
 fast shake with many `items` turns into a fizz. The match's ignition crackle is now a short spray of sparks.
 
-v5 (after "the wood sounds way heavy, like a dog pawing at a wooden door"): light sticks and thin card. Contacts
+Avoiding "the wood sounds way heavy, like a dog pawing at a wooden door": light sticks and thin card. Contacts
 are 0.05-0.15 ms, the stick resonance is at 4.8 kHz, knocks are 0.6-1.5 ms, the card body starts at 800 Hz and
 the hand rumble is nearly gone.
 
@@ -281,7 +281,7 @@ Then copy the fitted sound controls into your scene recipe, which has its own di
 - `tube`, `horn`, `helmholtz`, `formant`: air columns, cavities and vocal tracts.
 
 
-## Footstep (`footstep`, 0.8)
+## Footstep (`footstep`)
 
 What a real step is: **body weight, then a roll**, not a tap. The heel lands through a compliant sole, so the
 floor gets a 6-25 ms push (foam trainer longest, hard heel shortest), not a click. A push that long has almost
@@ -297,15 +297,15 @@ The CC0 wood-floor recordings we checked put 50-70 % of the energy below 150 Hz 
 -20 dB within 5-20 ms of the peak. The v0.7 footstep (two hard hits on an oak plate) had only ~12 % below
 150 Hz and a clear ring at ~830 Hz: that is why it read as tapping.
 
-Heel-to-toe gap (`roll_s`, 0.8.1): default 35 ms, x1.15 for a trainer, x0.8 for a hard heel, a little longer
-for heavier walkers; the `pace` macro spans ~56 ms (slow) to ~21 ms (hurried). v0.8.0 used 0.2 s, which
-sounded like two separate hits.
+Heel-to-toe gap (`roll_s`): default 35 ms, x1.15 for a trainer, x0.8 for a hard heel, a little longer
+for heavier walkers; the `pace` macro spans ~56 ms (slow) to ~21 ms (hurried). A 0.2 s gap sounds like two
+separate hits.
 
 Macros: `shoe` (trainer/boot/heel), `surface` (wood/stone/gravel), `size` (walker's weight), `intensity`
 (sneak .. stomp), `pace` (heel-to-toe gap and step interval), `creak`, `distance`. For a walk, set `steps` and
 `interval_s` on the layer.
 
-## Board knock vs dowel (`hit`, 0.8)
+## Board knock vs dowel (`hit`)
 
 A knock on a plank or door is a **panel**: many dense, detuned modes, heavily damped by its fixings, plus the
 contact noise of the knuckle or stick and a low whole-panel thump. A dowel or bowl is the opposite: a few
@@ -314,7 +314,7 @@ knock); `-m object=door` gives a bigger, hollower panel; `-m object=dowel` (or `
 bit for bit. The new `hit` controls (`n_modes`, `detune`, `contact_noise`, `noise_hz`, `thump`) default to the
 v0.7 behaviour.
 
-## Coin (`coin`, 0.8)
+## Coin (`coin`)
 
 `blocks/coin_pickup.json` stays the retro arcade blip. `coin.json` is a real coin. A coin is a thin free disc:
 its ring is the free-plate modes. For a 28.5 x 1.85 mm cupronickel coin the lowest (two nodal diameters) is
@@ -328,11 +328,11 @@ Macros: `floor` (tile/wood/table/stone), `metal`, `size`, `height`, `spin`, `dis
 `coin_jingle.json` is a handful of coins shaken in a hand (not fitted to a recording).
 
 
-## Game library (0.9): how each new sound works
+## Game library: how each sound works
 
 All sixteen have macros, seeded variations (`--variations N`) and a category; the models live in
-`soundlab/models/library.py`. Physics where the mechanism decides the sound, simple blocks otherwise. None
-has had a listening check yet; the CC0 recordings used as checks are listed in `docs/fitting.md`.
+`soundlab/models/library.py`. Physics where the mechanism decides the sound, simple blocks otherwise. The CC0
+recordings used as checks are listed in `docs/fitting.md`.
 
 **Wind (`wind`, `wind_gap`).** Wind has no sound of its own: you hear turbulence on obstacles. A slowly
 wandering speed v(t) (gusts) drives everything: the broadband body opens up with speed (level ~ v^3, a
@@ -398,71 +398,41 @@ friction noise with occasional snaps. Macros: `material` (paper/plastic/leaves/c
 (Minnaert 'bloop' f = 3.26 / r, chirping up as it rises), a fading cloud of small bubbles, droplets falling back.
 Macros: `size`, `intensity`, `distance`.
 
-### 0.10: fixes after the v9 review (these replace the matching notes above)
+### Design notes: gunshot, splash, door slam, creature growl, wind, rain
 
-Notes: "gunshot sounds like a stone hitting a mildly metallic wall ... water a bit gamey and lasery, crunchy
-... door slam weak and light, like two wood planks ... creature like something pushed along a floor ... wind
-very grainy, wind gap better ... rain a bit too much crackle on top." Each was fixed at its cause:
+These replace the matching notes above. Each describes what the sound must avoid and how the model does it.
 
-- **Gunshot.** Cause: only a 1 ms Friedlander pulse (a click with a low tail = a stone hit) plus a ringing
-  three-mode 'action' (the metal). Now: blast + dense broadband gas burst (tens of ms) + low-mid gas boom, all
-  overdriven together (oversampled soft clip = loud, compressed), N-wave crack for rifles, a dry noise clack,
-  and the environment in the model: slap echoes off walls/ground and a dark tail (`space`: street / room /
-  open). Calibres differ in blast length, body and boom (`calibre` macro: pistol, rifle, shotgun; new `body`
-  and `space` macros). The CC0 band distance improved a little (9.0 -> 8.0 and 5.3 -> 6.3 dB), not the goal.
-- **Splash.** Cause: the pinch-off bubble used the drop-bubble pitch rise (xi 0.6), so a 270 Hz tone swept up
-  ~5x over 0.4 s: a laser chirp; the bubble cloud and droplets were more pure chirps plus 4-sample clicks
-  (crunch). Now: the body is a turbulent broadband wash; the bloop is damped 4x by the churning surface, barely
-  rises and sits low; small bubbles overlap into a soft fizz under a 3.5 kHz low-pass; droplets are 2-5 ms
-  low-passed patters, only 1 in 5 with a tiny damped bubble. Top-band spikiness halved (measured).
-- **Door slam.** Cause: in 0.9 I matched a CC0 slam that was itself a light door and removed the low end. Listening
-  wins: now a heavy leaf on a soft seal (4-8 ms contact) drives damped leaf+frame+wall modes at ~70-200 Hz
-  (the weight), the frame shudders, the latch bolt clunks (damped metal ~0.7-2.6 kHz), the panel rings darkly
-  from its hard edge hitting the stop, the bright clack is a small separate control (`clack`), and the room is
-  a bit bigger. 60-150 Hz now carries >10x the energy of 1-4 kHz (a test checks it).
-- **Creature growl.** Cause: narrow 1.2 ms pulses at 45 Hz: a sparse click train, which is exactly what
-  stick-slip friction sounds like. Now a voiced source: Rosenberg glottal pulses with a real open phase,
-  pitch 85 Hz with chaotic wander, jitter, shimmer and period doubling (the 42 Hz subharmonic is the menace),
-  breath noise gated by the airflow, slow swells, through a long open tract (tube formants (2n-1)c/4L, 50 cm).
-  YIN now finds a pitch in 98 % of frames at zero roughness (the old growl: 1-21 %, like the rough refs). Band
-  balance is now 4.3 dB from the big-creature CC0 growl (was 13.4).
-- **Wind.** Cause: the tree layer was thousands of separate clicks per second (the grain; `wind_gap` has no
-  trees, which is why it sounded better). Now leaves are continuous filtered noise with a smooth 5-15 Hz
-  flutter and gust swells. Top-band spike measure 10.2 -> 4.1, the same as `wind_gap` (a test checks it).
-- **Rain.** Cause: each near drop was a one-sample impulse through a band-pass (a click). Now a drop is a 1-2.6 ms
-  smooth pulse low-passed at 5 kHz, near drops are quieter (0.28), and the diffuse wash is louder, with a
-  smooth fast patter and a darker top. Top-band spike measure 8.3 -> 4.9, at the floor of plain noise. The 0.9
-  fit (hiss 0.2) is overruled by ear; band distance to the heavy-rain refs stays ~3 dB.
-
-### 0.11: second round after the v10 review
-
-Notes: "gunshot still a potato-gun / air-gun expulsion ... water like bird wings flapping and a minor droplet ...
-door slam ok ... creature like a wooden chair pushed on a wood floor, more guttural bass and uvulation ... wind
-good but like a plastic bag waving ... rain shuddering like paper bags rubbing." Door slam and wind gap left alone.
-
-- **Gunshot.** Studied five CC0 recordings (2 gunshots, 3 shotguns): the first 5 ms carry the peak (centroid up
-  to 7 kHz in the close one); the level is still about -12 dB 0.3-0.6 s later and -15..-20 dB up to 1 s - the
-  reflections dominate the perceived size. Ours had a 1 ms Friedlander pulse (most energy at 100-300 Hz:
-  the air-cannon 'poof'), its peak 18 ms late, and a tail at -22/-36 dB. Now: an instant muzzle shock
+- **Gunshot** (not a stone hitting a wall, not an air-gun punch). Five CC0 recordings (2 gunshots, 3
+  shotguns): the first 5 ms carry the peak (centroid up to 7 kHz close up); the level is still about -12 dB
+  0.3-0.6 s later and -15..-20 dB up to 1 s - the reflections dominate the perceived size. A 1 ms Friedlander
+  pulse alone puts most energy at 100-300 Hz (an air-cannon 'poof'). The model: an instant muzzle shock
   (0.25-0.5 ms, low part trimmed) plus shock-front turbulence (bright first ms), a bright broadband combustion
-  roar (18-34 ms), only a small low push, two-stage hard saturation (the first tens of ms at the ceiling),
-  dry slide/bolt clacks, loud slapback (7 slaps, -1.5 dB first) and a 2.6-4 s darkening tail, with a final mic
-  limit so the shock stays the loudest moment. Measured: first-5 ms centroid 6.3 kHz; level -8 / -13 / -19 / -27 dB
-  at 0.1-0.3 / 0.3-0.6 / 0.6-1 / 1-1.5 s (shotgun refs: -6 / -12 / -15..-20 / -20..-31). Crest 12-13 dB
-  (refs 14-21): denser, more compressed, on purpose. The recipe's room post is gone (the model has its own
-  space: street / room / open).
-- **Splash.** The 0.10 wash had a 35 Hz random amplitude flutter: flapping wings. Now four physical stages:
-  sharp impact crack (+ thud for big objects), a smooth crown/sheet burst (one envelope, no AM), a damped
-  cavity bloop with its small natural rise, and a dense spray of 40-300 falling droplets over ~0.3-1 s, each a
-  soft tick with, 60 % of the time, a tiny 1-6 kHz bubble 'plip' that dies in a few ms. New `spray` macro.
-- **Creature growl.** Narrow formants (Q 5-10) rang after every pulse like a wooden board (with an 85 Hz pulse
-  train: a chair juddering on a floor). Now: LF-style glottal pulses with a soft exponential return phase,
-  strong period doubling (subharmonic 35 Hz), a cycle-by-cycle uvular/ventricular-fold trill at ~24 Hz (CC0
-  growls flutter at 18-22 Hz) that chokes voice and breath, wet throat turbulence, broad formants (Q 2.5-4) on
-  a 55 cm tract, and a stronger chest band for the guttural bass. New macros `uvula` and `wet`.
-- **Wind.** The leaf layer's 9 Hz flutter (depth 0.35) read as a plastic bag. Now a shallow, irregular wobble at a
-  lower level, and off by default (`trees` macro brings it in).
-- **Rain.** The 0.10 wash had a 30 Hz random amplitude 'patter' (the shudder) on top of a 0.2 Hz swell. Now the
-  wash is ~45,000 micro-drops per second, each a 0.1-0.25 ms soft tap, summed - stationary by construction;
-  only a very slow ±5 % swell remains. 4-40 Hz envelope fluctuation: 0.27 (v10) -> 0.10 (v11), same as the
-  steadier CC0 heavy-rain ref (0.09); top-band spikes at the plain-noise floor.
+  roar (18-34 ms), only a small low push, two-stage hard saturation (the first tens of ms at the ceiling), dry
+  slide/bolt clacks, loud slapback (7 slaps, -1.5 dB first) and a 2.6-4 s darkening tail, with a final mic
+  limit so the shock stays the loudest moment. Measured: first-5 ms centroid 6.3 kHz; level -8 / -13 / -19 /
+  -27 dB at 0.1-0.3 / 0.3-0.6 / 0.6-1 / 1-1.5 s (shotgun refs: -6 / -12 / -15..-20 / -20..-31). Crest 12-13 dB
+  (refs 14-21): denser, more compressed, on purpose. The model has its own space (`space`: street / room /
+  open); `calibre` (pistol, rifle, shotgun) and `body` macros.
+- **Splash** (not a laser chirp, not flapping wings). A pinch-off bubble with the drop-bubble pitch rise sweeps
+  up ~5x (a laser chirp), and random amplitude flutter on the wash sounds like flapping wings. The model has four
+  physical stages: a sharp impact crack (+ thud for big objects), a smooth crown/sheet burst (one envelope, no
+  AM), a damped cavity bloop with its small natural rise, and a dense spray of 40-300 falling droplets over
+  ~0.3-1 s, each a soft tick with, 60 % of the time, a tiny 1-6 kHz bubble 'plip' that dies in a few ms.
+  `spray` macro.
+- **Door slam** (not two wood planks). A heavy leaf on a soft seal (4-8 ms contact) drives damped
+  leaf+frame+wall modes at ~70-200 Hz (the weight), the frame shudders, the latch bolt clunks (damped metal
+  ~0.7-2.6 kHz), the panel rings darkly from its hard edge hitting the stop, the bright clack is a small
+  separate control (`clack`). 60-150 Hz carries >10x the energy of 1-4 kHz (a test checks it).
+- **Creature growl** (not a click train, not a chair juddering on a floor). Narrow pulses read as stick-slip
+  friction, and narrow formants (Q 5-10) ring after every pulse like a wooden board. The model: LF-style
+  glottal pulses with a soft exponential return phase, chaotic pitch, strong period doubling (subharmonic
+  ~35 Hz), a cycle-by-cycle uvular/ventricular-fold trill at ~24 Hz (CC0 growls flutter at 18-22 Hz) that
+  chokes voice and breath, wet throat turbulence, broad formants (Q 2.5-4) on a 55 cm tract, and a chest band
+  for the guttural bass. Macros `uvula` and `wet`.
+- **Wind** (not grainy, not a plastic bag). Thousands of separate leaf clicks per second read as grain; a deep,
+  regular 9 Hz flutter reads as a plastic bag. Leaves are continuous filtered noise with a shallow, irregular
+  wobble at a low level, off by default (`trees` macro brings it in).
+- **Rain** (no crackle, no shudder). A one-sample impulse per drop is a click; a 30 Hz random amplitude patter
+  is a shudder. Near drops are 1-2.6 ms smooth pulses low-passed at 5 kHz; the wash is ~45,000 micro-drops per
+  second, each a 0.1-0.25 ms soft tap, summed - stationary by construction, with only a very slow ±5 % swell.
+  4-40 Hz envelope fluctuation 0.10, the same as the steadier CC0 heavy-rain ref (0.09).

@@ -1,4 +1,4 @@
-"""v3: tests for the synthesis artefacts behind the reference 'grain / hiss / tinny / digital / plastic bucket' notes."""
+"""Tests for synthesis artefacts: grain, hiss, tinny tops, digital sound, "plastic bucket" ringing."""
 import numpy as np
 
 from conftest import SR, run
@@ -117,7 +117,7 @@ def ss_peaks(e):
     return len(p)
 
 
-# ---------------------------------------------------------------- v4 (the v3 notes)
+# ---------------------------------------------------------------- crackle, buzz, ringing
 from pathlib import Path
 
 RECIPES = Path(__file__).resolve().parent.parent / "recipes"
@@ -194,15 +194,15 @@ def _band_db(y, lo, hi):
 
 
 def test_shaker_is_light_not_heavy():
-    # v5: the v4 matchbox sounded like 'heavy wood, a dog pawing at a door': most energy sat below 100 Hz and
-    # the 3.2-6.4 kHz octave was ~23 dB down. Light sticks + thin card: top octave strong, little low end
+    # a matchbox must not sound like heavy wood (a dog pawing at a door): not most energy below 100 Hz with
+    # the 3.2-6.4 kHz octave ~23 dB down. Light sticks + thin card: top octave strong, little low end
     y = run("shaker", 2.0, rate_hz=3.0, shake_s=1.5, start=0.1)
     assert _band_db(y, 20, 200) < -10
     assert _band_db(y, 3200, 6400) > -10
 
 
 def test_engine_top_is_open_and_smooth():
-    # v5: 'very muffled and still crackling on top'. With the default sharp-edge settings the top octaves
+    # not muffled, not crackling on top. With the default sharp-edge settings the top octaves
     # must be present (v4: 3.2-6.4 kHz ~ -35 dB) and smooth (v4: median 50 ms frame kurtosis ~25 above 2 kHz)
     import scipy.signal as ss
     import scipy.stats as st

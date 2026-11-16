@@ -1,6 +1,6 @@
 {
  "soundlab": 1,
- "name": "Fit target: one quack (vs mallard ref 1.3-1.75 s) [fitted values]",
+ "name": "Fit target: one quack (fitted to a mallard reference recording) [fitted values]",
  "sample_rate": 48000,
  "duration": 0.44999999999999996,
  "seed": 1,

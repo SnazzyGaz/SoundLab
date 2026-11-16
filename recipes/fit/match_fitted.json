@@ -1,6 +1,6 @@
 {
  "soundlab": 1,
- "name": "Fit target: strike and flame (vs matchbox ref 2.15-4.5 s) [fitted values]",
+ "name": "Fit target: strike and flame (fitted to a match strike reference recording) [fitted values]",
  "sample_rate": 48000,
  "duration": 2.35,
  "seed": 1,
