@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SoundLab</title>
+<style>
+  :root { --bg:#f6f6f4; --panel:#fff; --ink:#1d1d1f; --mute:#6b6b70; --line:#e2e2df; --acc:#2a62d9; --acc2:#e8eefc; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.4 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; color:var(--ink); background:var(--bg); }
+  header { display:flex; align-items:center; gap:16px; padding:10px 18px; background:var(--panel); border-bottom:1px solid var(--line); }
+  header h1 { font-size:17px; margin:0; font-weight:600; }
+  header .sp { flex:1; }
+  header a { color:var(--acc); text-decoration:none; }
+  .wrap { display:flex; height:calc(100vh - 47px); }
+  aside { width:270px; min-width:220px; border-right:1px solid var(--line); background:var(--panel); display:flex; flex-direction:column; }
+  aside input { margin:10px; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font:inherit; }
+  #list { overflow:auto; flex:1; padding-bottom:10px; }
+  .cat { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); padding:10px 12px 3px; }
+  .item { padding:5px 14px; cursor:pointer; border-left:3px solid transparent; }
+  .item:hover { background:#f2f2f0; }
+  .item.on { background:var(--acc2); border-left-color:var(--acc); }
+  .item small { color:var(--mute); }
+  main { flex:1; overflow:auto; padding:18px 24px 40px; }
+  .empty { color:var(--mute); margin-top:60px; text-align:center; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:14px; }
+  .card h3 { margin:0 0 10px; font-size:13px; font-weight:600; color:var(--mute); text-transform:uppercase; letter-spacing:.05em; }
+  .top { display:flex; align-items:center; gap:14px; }
+  .top h2 { margin:0; font-size:20px; font-weight:600; }
+  button { font:inherit; padding:7px 14px; border-radius:6px; border:1px solid var(--line); background:#fff; cursor:pointer; }
+  button:hover { border-color:#c7c7c3; }
+  button.primary { background:var(--acc); color:#fff; border-color:var(--acc); }
+  button:disabled { opacity:.5; cursor:default; }
+  #play { width:96px; }
+  #status { color:var(--mute); font-size:13px; }
+  canvas { width:100%; display:block; border-radius:6px; background:#fafaf8; border:1px solid var(--line); }
+  #wave { height:110px; margin-bottom:8px; }
+  #spec { height:150px; background:#111; }
+  .row { display:grid; grid-template-columns:150px 1fr 70px; align-items:center; gap:10px; margin:6px 0; }
+  .row label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .row .v { text-align:right; color:var(--mute); font-variant-numeric:tabular-nums; }
+  .row select { font:inherit; padding:4px; }
+  input[type=range] { width:100%; accent-color:var(--acc); }
+  .hint { color:var(--mute); font-size:12px; }
+  .inline { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+  .inline input[type=number], .inline input[type=text] { width:90px; padding:5px 7px; border:1px solid var(--line); border-radius:6px; font:inherit; }
+  .inline input[type=text] { width:200px; }
+  details summary { cursor:pointer; font-weight:600; color:var(--mute); }
+  .blk { margin:12px 0 4px; font-weight:600; }
+  .blk span { color:var(--mute); font-weight:400; }
+  .row.changed label { color:var(--acc); font-weight:600; }
+  #msg { white-space:pre-wrap; font-size:13px; margin-top:8px; color:var(--mute); }
+  #msg.err { color:#b3261e; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SoundLab</h1><span id="ver" class="hint"></span>
+  <span class="sp"></span>
+  <a href="/blindtest">Blind test</a>
+</header>
+<div class="wrap">
+  <aside>
+    <input id="search" type="search" placeholder="Search recipes…" autocomplete="off">
+    <div id="list"></div>
+  </aside>
+  <main id="main"><div class="empty">Pick a sound on the left.</div></main>
+</div>
+
+<template id="tpl">
+  <div class="card">
+    <div class="top">
+      <button id="play" class="primary">▶ Play</button>
+      <div><h2 id="title"></h2><div class="hint" id="sub"></div></div>
+      <span class="sp" style="flex:1"></span>
+      <label class="inline hint"><input type="checkbox" id="auto" checked> play on slider release</label>
+    </div>
+    <div style="margin-top:12px"><canvas id="wave" width="1600" height="220"></canvas><canvas id="spec" width="960" height="300"></canvas></div>
+    <div id="status" style="margin-top:6px">&nbsp;</div>
+  </div>
+  <div class="card"><h3>Sliders</h3><div id="macros"></div>
+    <div class="inline" style="margin-top:12px">
+      <span>Variation</span><input type="number" id="variation" min="0" value="0">
+      <button id="prev">◀</button><button id="next">▶</button>
+      <span class="hint">0 = the recipe as written; 1, 2, 3… = random takes</span>
+    </div>
+    <div class="inline" style="margin-top:8px">
+      <span>Seed</span><input type="number" id="seed" placeholder="auto">
+      <button id="dice">🎲 New seed</button><button id="reset">Reset all</button>
+    </div>
+  </div>
+  <div class="card"><details id="adv"><summary>Advanced: every model control</summary>
+    <p class="hint">These set exact values and win over the sliders above for the same setting. Changed ones turn blue.</p>
+    <div id="advanced"></div></details></div>
+  <div class="card"><h3>Export</h3>
+    <div class="inline">
+      <button id="exp">Export WAV</button>
+      <label class="inline"><input type="checkbox" id="mp3"> also MP3 (needs ffmpeg)</label>
+      <span style="width:20px"></span>
+      <span>Variations</span><input type="number" id="n" min="1" max="100" value="10">
+      <button id="batch">Export batch</button>
+    </div>
+    <div class="inline" style="margin-top:10px">
+      <input type="text" id="newname" placeholder="new_recipe_name"><button id="save">Save as new recipe</button>
+    </div>
+    <div id="msg"></div>
+  </div>
+</template>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+let recipes = [], cur = null, state = {}, audio = new Audio(), lastKey = null, busy = 0, pending = false;
+
+async function api(path, body) {
+  const r = await fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : {});
+  const j = await r.json();
+  if (!r.ok || j.error) throw new Error(j.error || r.statusText);
+  return j;
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function fmt(v) { return typeof v === "number" ? (Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2)) : v; }
+
+async function init() {
+  const info = await api("/api/info");
+  $("#ver").textContent = "v" + info.version + " · saves to " + info.out_dir;
+  recipes = await api("/api/recipes");
+  drawList();
+  $("#search").addEventListener("input", drawList);
+  const want = decodeURIComponent(location.hash.slice(1));
+  if (want && recipes.some(r => r.id === want)) select(want);
+}
+
+function drawList() {
+  const q = $("#search").value.trim().toLowerCase();
+  let html = "", last = null;
+  for (const r of recipes) {
+    if (q && !(r.id + " " + r.name + " " + r.category).toLowerCase().includes(q)) continue;
+    if (r.category !== last) { html += `<div class="cat">${esc(r.category)}</div>`; last = r.category; }
+    html += `<div class="item ${cur && cur.id === r.id ? "on" : ""}" data-id="${esc(r.id)}">${esc(r.id.replace(/^blocks\//, "blocks / ").replace(/^my\//, "★ "))}` +
+            (r.macros ? ` <small>· ${r.macros} sliders</small>` : "") + `</div>`;
+  }
+  $("#list").innerHTML = html || '<div class="empty">No match.</div>';
+  for (const el of document.querySelectorAll(".item")) el.onclick = () => select(el.dataset.id);
+}
+
+async function select(id) {
+  cur = await api("/api/recipe?id=" + encodeURIComponent(id));
+  location.hash = encodeURIComponent(id);
+  state = {macros: {}, overrides: {}, variation: 0, seed: ""};
+  const main = $("#main"); main.innerHTML = ""; main.appendChild($("#tpl").content.cloneNode(true));
+  $("#title").textContent = cur.name;
+  $("#sub").textContent = cur.category + " · " + cur.id + " · " + cur.duration + " s";
+  buildMacros(); buildAdvanced(); wire(); drawList(); render(false);
+}
+
+function slider(container, o) {  // o: {label, doc, lo, hi, value, log, onchange, key}
+  const row = document.createElement("div"); row.className = "row"; row.title = o.doc || "";
+  const toPos = v => o.log ? Math.log(v / o.lo) / Math.log(o.hi / o.lo) : (v - o.lo) / (o.hi - o.lo);
+  const fromPos = p => o.log ? o.lo * Math.pow(o.hi / o.lo, p) : o.lo + p * (o.hi - o.lo);
+  row.innerHTML = `<label>${esc(o.label)}</label><input type="range" min="0" max="1000" step="1"><span class="v"></span>`;
+  const inp = $("input", row), out = $(".v", row);
+  inp.value = Math.round(1000 * Math.min(1, Math.max(0, toPos(o.value))));
+  out.textContent = fmt(o.value) + (o.unit ? " " + o.unit : "");
+  inp.oninput = () => { const v = fromPos(inp.value / 1000); out.textContent = fmt(v) + (o.unit ? " " + o.unit : ""); o.oninput && o.oninput(v, row); };
+  inp.onchange = () => { o.onchange(fromPos(inp.value / 1000), row); };
+  row.ondblclick = () => { inp.value = Math.round(1000 * toPos(o.value)); out.textContent = fmt(o.value); o.onreset && o.onreset(row); };
+  container.appendChild(row); return row;
+}
+function dropdown(container, label, doc, choices, value, onchange) {
+  const row = document.createElement("div"); row.className = "row"; row.title = doc || "";
+  row.innerHTML = `<label>${esc(label)}</label><select>${choices.map(c => `<option ${String(c) === String(value) ? "selected" : ""}>${esc(c)}</option>`).join("")}</select><span></span>`;
+  $("select", row).onchange = e => onchange(e.target.value, row);
+  container.appendChild(row); return row;
+}
+
+function buildMacros() {
+  const box = $("#macros");
+  if (!cur.macros.length) { box.innerHTML = '<p class="hint">This recipe has no sliders; use Advanced below.</p>'; return; }
+  for (const m of cur.macros) {
+    if (m.choices) dropdown(box, m.name, m.doc, m.choices, m.default, v => { state.macros[m.name] = v; changed(); });
+    else slider(box, {label: m.name, doc: m.doc + " (double-click to reset)", lo: 0, hi: 1, value: m.default,
+                      onchange: v => { state.macros[m.name] = +v.toFixed(3); changed(); },
+                      onreset: () => { delete state.macros[m.name]; changed(); }});
+  }
+}
+
+function buildAdvanced() {
+  const box = $("#advanced");
+  for (const b of cur.advanced) {
+    if (!b.controls.length) continue;
+    const h = document.createElement("div"); h.className = "blk";
+    h.innerHTML = `${esc(b.layer)} <span>· ${esc(b.model)}</span>`; box.appendChild(h);
+    for (const c of b.controls) {
+      const set = (v, row) => { state.overrides[c.key] = v; row.classList.add("changed"); changed(); };
+      const doc = (c.doc || "") + (c.unit ? ` [${c.unit}]` : "");
+      if (c.kind === "choice") dropdown(box, c.name, doc, c.choices, c.value, set);
+      else if (c.kind === "bool") dropdown(box, c.name, doc, ["true", "false"], String(c.value), (v, row) => set(v === "true", row));
+      else if (c.kind === "number") {
+        const isInt = Number.isInteger(c.value) && Number.isInteger(c.lo) && Number.isInteger(c.hi) && c.hi - c.lo <= 64;
+        slider(box, {label: c.name, doc: doc + " (double-click to undo)", lo: c.lo, hi: c.hi, value: c.value, log: c.log, unit: c.unit,
+                     onchange: (v, row) => set(isInt ? Math.round(v) : +v.toPrecision(4), row),
+                     onreset: row => { delete state.overrides[c.key]; row.classList.remove("changed"); changed(); }});
+      } else {
+        const row = document.createElement("div"); row.className = "row"; row.title = doc;
+        row.innerHTML = `<label>${esc(c.name)}</label><span class="hint">${esc(c.value)}</span><span></span>`; box.appendChild(row);
+      }
+    }
+  }
+}
+
+function wire() {
+  $("#play").onclick = () => { if (audio.src && lastKey && !pending) { audio.currentTime = 0; audio.play(); } else render(true); };
+  $("#variation").onchange = e => { state.variation = Math.max(0, +e.target.value || 0); changed(); };
+  $("#prev").onclick = () => { $("#variation").value = state.variation = Math.max(0, state.variation - 1); changed(); };
+  $("#next").onclick = () => { $("#variation").value = ++state.variation; changed(); };
+  $("#seed").onchange = e => { state.seed = e.target.value; changed(); };
+  $("#dice").onclick = () => { $("#seed").value = state.seed = String(Math.floor(Math.random() * 1e6)); changed(); };
+  $("#reset").onclick = () => select(cur.id);
+  $("#exp").onclick = () => run("/api/export", {...req(), mp3: $("#mp3").checked}, r => "Saved " + r.wav + (r.mp3 ? "\n      " + r.mp3 : "") + (r.mp3_error ? "\nMP3 skipped: " + r.mp3_error : ""));
+  $("#batch").onclick = () => run("/api/batch", {...req(), n: +$("#n").value || 10, mp3: $("#mp3").checked},
+                                  r => `Saved ${r.files.length} variations in ${r.folder}` + (r.files.some(f => f.mp3_error) ? "\nMP3 skipped (ffmpeg not found)" : ""));
+  $("#save").onclick = () => run("/api/save", {...req(), name: $("#newname").value}, r => { reloadList(r.id); return "Saved recipe " + r.path; });
+}
+
+function req() { return {id: cur.id, macros: state.macros, overrides: state.overrides, variation: state.variation, seed: state.seed}; }
+function changed() { pending = true; if ($("#auto").checked) render(true); else $("#status").textContent = "changed: press Play"; }
+
+async function run(path, body, done) {
+  const msg = $("#msg"); msg.className = ""; msg.textContent = "Working…";
+  for (const b of document.querySelectorAll("button")) b.disabled = true;
+  try { msg.textContent = done(await api(path, body)); }
+  catch (e) { msg.className = "err"; msg.textContent = e.message; }
+  finally { for (const b of document.querySelectorAll("button")) b.disabled = false; }
+}
+async function reloadList(id) { recipes = await api("/api/recipes"); drawList(); }
+
+let seq = 0;
+async function render(play) {
+  const my = ++seq; $("#status").textContent = "rendering…"; $("#play").disabled = true;
+  try {
+    const r = await api("/api/render", req());
+    if (my !== seq) return;           // a newer render is on its way
+    lastKey = r.key; pending = false;
+    audio.src = r.url;
+    $("#status").textContent = `${r.seconds.toFixed(2)} s · rendered in ${r.render_s} s · peak ${(20 * Math.log10(r.peak + 1e-9)).toFixed(1)} dBFS`;
+    drawWave(r.waveform); drawSpec(r.spectrogram);
+    if (play) audio.play().catch(() => {});
+  } catch (e) { if (my === seq) $("#status").textContent = "error: " + e.message; }
+  finally { if (my === seq) $("#play").disabled = false; }
+}
+
+function drawWave(bins) {
+  const c = $("#wave"), g = c.getContext("2d"), W = c.width, H = c.height;
+  g.clearRect(0, 0, W, H); g.strokeStyle = "#e2e2df"; g.beginPath(); g.moveTo(0, H / 2); g.lineTo(W, H / 2); g.stroke();
+  g.fillStyle = "#2a62d9"; const w = W / bins.length;
+  bins.forEach(([lo, hi], i) => { const y1 = H / 2 - hi * H / 2, y2 = H / 2 - lo * H / 2; g.fillRect(i * w, y1, Math.max(1, w), Math.max(1, y2 - y1)); });
+}
+function drawSpec(s) {
+  const c = $("#spec"), g = c.getContext("2d"), raw = atob(s.data), img = g.createImageData(s.frames, s.bands);
+  for (let f = 0; f < s.frames; f++) for (let b = 0; b < s.bands; b++) {
+    const v = raw.charCodeAt(f * s.bands + b) / 255, i = ((s.bands - 1 - b) * s.frames + f) * 4;
+    img.data[i] = Math.min(255, 255 * Math.min(1, v * 1.6)); img.data[i + 1] = 255 * Math.max(0, v * 1.6 - 0.6); img.data[i + 2] = 255 * Math.max(0, Math.min(1, v < 0.4 ? v * 1.8 : 1.6 - v * 1.5)); img.data[i + 3] = 255;
+  }
+  const tmp = document.createElement("canvas"); tmp.width = s.frames; tmp.height = s.bands; tmp.getContext("2d").putImageData(img, 0, 0);
+  g.imageSmoothingEnabled = true; g.clearRect(0, 0, c.width, c.height); g.drawImage(tmp, 0, 0, c.width, c.height);
+  g.fillStyle = "rgba(255,255,255,.6)"; g.font = "20px Segoe UI, sans-serif";
+  g.fillText(Math.round(s.fmax / 1000) + " kHz", 8, 24); g.fillText(s.fmin + " Hz", 8, c.height - 8);
+}
+
+init().catch(e => { $("#main").innerHTML = `<div class="empty">Could not start: ${esc(e.message)}</div>`; });
+</script>
+</body>
+</html>

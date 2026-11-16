@@ -54,3 +54,15 @@ took 0.02-0.5 s on the box for 1.5-9 s of audio (faster than real time, but offl
 ## 0.6.0: generic synth blocks
 
 `soundlab/models/synth.py` holds the generic toolkit (stages `synth` and `fx`). Written from published descriptions: PolyBLEP (Valimaki & Huovilainen 2007), TPT SVF (Zavalishin 2012), FM (Chowning 1973), Freeverb structure (Jezar, public domain, as described in J.O. Smith, *Physical Audio Signal Processing*). No code copied.
+
+## Slider app and blind test (0.12)
+
+- `soundlab/gui/server.py`: standard-library HTTP server (`ThreadingHTTPServer`, bound to 127.0.0.1, port 8766)
+  with a JSON API: `GET /api/recipes`, `GET /api/recipe?id=` (macros + every model control), `POST /api/render`
+  (returns a WAV URL, waveform and log-frequency spectrogram), `/api/export`, `/api/batch`, `/api/save`.
+  Requests carry `{id, macros, overrides, variation, seed}`; overrides are absolute values set after the macros
+  (`"L.name"`, `"L.B.name"` for chain block B, `"post.J.name"`).
+- `soundlab/gui/static/index.html`, `blindtest.html`: plain HTML + JavaScript, no build step, no CDN.
+- `soundlab/gui/blindtest.py`: `/api/bt/*` (pack info, clips, start/resume a listener, save an answer, results).
+- `soundlab/checkpoint.py`: listening packs and scoring (single-clip `build_pack` / `score_pack`, A/B `build` /
+  `score`); `tools/checkpoint.py` is a thin wrapper for the A/B command line.

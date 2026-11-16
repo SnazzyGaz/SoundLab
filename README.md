@@ -8,13 +8,13 @@ physically informed stochastic models whose controls still map to real quantitie
 By Garyck Arntzen ([@_mintydoge](https://x.com/_mintydoge)). MIT licence. Standalone project; AIDAW uses it as
 a library/plugin.
 
-Status: **0.11.0**: second listening round: firearm gunshot (shock, roar, saturation, slapback tail), physical splash (impact, crown, cavity bloop, droplet spray), guttural growl (LF pulses, uvular trill, wet throat), calmer wind leaves, stationary rain wash. 0.10.0: first rework of those sounds after a listening check (see docs/playing-guide.md). 0.9.0: a game-ready library of 36 recipes + 7 generic-block demos. New in 0.9: wind (gusts, trees, whistling gap), rain (light to heavy on ground/leaves/roof/window/puddle), glass break (fracture + shard debris), sword swing (with Doppler), sword clash and metal clang, door creak (hinge stick-slip) and slam, punch, bullet impacts (wood/metal/concrete), a simple gunshot, a creature growl (rough source + vocal tract), paper and cloth rustle, splash; plus the blind checkpoint kit (`tools/checkpoint.py`). In 0.8.1 heel and toe flam into one step (35 ms gap). New in 0.8: a body-weight `footstep` model (shoe: trainer/boot/heel; surface:
+Status: **0.12.0**: a slider app in the browser (`soundlab gui`) and a browser blind listening test (`/blindtest`, "real or synthesised?"). 0.11.0: second listening round: firearm gunshot (shock, roar, saturation, slapback tail), physical splash (impact, crown, cavity bloop, droplet spray), guttural growl (LF pulses, uvular trill, wet throat), calmer wind leaves, stationary rain wash. 0.10.0: first rework of those sounds after a listening check (see docs/playing-guide.md). 0.9.0: a game-ready library of 36 recipes + 7 generic-block demos. New in 0.9: wind (gusts, trees, whistling gap), rain (light to heavy on ground/leaves/roof/window/puddle), glass break (fracture + shard debris), sword swing (with Doppler), sword clash and metal clang, door creak (hinge stick-slip) and slam, punch, bullet impacts (wood/metal/concrete), a simple gunshot, a creature growl (rough source + vocal tract), paper and cloth rustle, splash; plus the blind checkpoint kit (`tools/checkpoint.py`). In 0.8.1 heel and toe flam into one step (35 ms gap). New in 0.8: a body-weight `footstep` model (shoe: trainer/boot/heel; surface:
 wood/stone/gravel), the default `hit` is now a damped board knock (the old quick resonant sound is
 `dowel.json` / `-m object=dowel`), and a physical `coin` (drop with bounces and Euler's-disk wobble, plus a
 jingle; the retro blip stays as `blocks/coin_pickup.json`). Every recipe has macro sliders (size, distance, intensity, material, ...), seeded
 variations, batch export with sensible names and a quick audition loop. Physical models for the five reference sounds tuned by ear and to reference clips, plus a
 generic synth toolkit (oscillators, FM, noise, grains, filters, envelopes, distortion, delay, chorus, reverb)
-for non-physical game sounds. Next: a listening check of the new sounds, then the blind checkpoint (step 5). See
+for non-physical game sounds. Next: the blind checkpoint (step 5) and the shelved sound notes in the roadmap. See
 [docs/roadmap.md](docs/roadmap.md).
 
 ## The five stages
@@ -32,14 +32,61 @@ the same blocks.
 
 ## Install
 
-```bash
-python -m venv .venv && . .venv/bin/activate
-pip install -e ".[plot,test]"      # numpy + scipy; matplotlib for analysis plots; ffmpeg for MP3
+### Windows
+
+You need Python 3.10 or newer (from [python.org](https://www.python.org/downloads/) — tick "Add python.exe to
+PATH" — or `winget install Python.Python.3.12`) and Git (`winget install Git.Git`). In PowerShell or Command
+Prompt:
+
+```bat
+git clone https://github.com/SnazzyGaz/SoundLab.git
+cd SoundLab
+py -3 -m venv .venv
+.venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -e .
+soundlab gui
 ```
+
+The app opens in your browser at http://127.0.0.1:8766/. Next time: `cd SoundLab`, `.venv\Scripts\activate`,
+`soundlab gui`.
+
+- If PowerShell refuses to run `activate` ("running scripts is disabled"), run
+  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or use Command Prompt instead.
+- MP3 export and reading MP3 reference files need ffmpeg (optional; WAV works without it):
+  `winget install Gyan.FFmpeg`, then open a new terminal.
+- For the tests: `pip install -e ".[test]"`, then `pytest -q`.
+- Keep the clone: install with `-e` (editable) so the app finds the shipped `recipes/` folder.
+
+### macOS / Linux
+
+```bash
+git clone https://github.com/SnazzyGaz/SoundLab.git && cd SoundLab
+python3 -m venv .venv && . .venv/bin/activate
+pip install -e ".[plot,test]"      # numpy + scipy; matplotlib for analysis plots; ffmpeg (optional) for MP3
+soundlab gui
+```
+
+## Slider app
+
+`soundlab gui` starts a small local web app (Python standard library only; it listens on 127.0.0.1, so nothing
+is reachable from other computers) and opens your browser. Options: `--port 8766` (AIDAW uses 8765), `--out
+<folder>` (default `~/SoundLab`, or the `SOUNDLAB_OUT` environment variable), `--no-browser`.
+
+- Recipes listed by category with a search box; your own saved recipes appear with a ★.
+- Each recipe's macro sliders and choice menus; an "Advanced" panel with every underlying model control.
+- Variation number (0 = as written, 1, 2, 3... = random takes) and seed.
+- Play renders fast and plays in the browser; moving a slider re-renders and plays when you let go.
+- Waveform and spectrogram of the current sound.
+- Export WAV (and MP3 with ffmpeg) to `<out>/exports/`, named like `weapon_gunshot_calibreshotgun_v01.wav`;
+  batch-export N variations; "Save as new recipe" writes `<out>/recipes/<name>.json` with the sliders kept.
+- `/blindtest`: the blind listening test (see [docs/checkpoint.md](docs/checkpoint.md)).
 
 ## Command line
 
 ```bash
+soundlab gui                            # slider app in the browser (http://127.0.0.1:8766/)
+soundlab blindtest build --library my_library/   # listening pack for /blindtest; `soundlab blindtest score`
 soundlab models                         # list all blocks and sound models by stage
 soundlab describe engine                # controls, units, ranges, sources
 soundlab materials                      # material table (density, E, loss factor, T60 at 1 kHz)
@@ -112,7 +159,8 @@ matched to the reference recordings, the starting points for `soundlab match`). 
   a fit report.
 - [docs/architecture.md](docs/architecture.md): code layout and how AIDAW plugs in.
 - [docs/licensing.md](docs/licensing.md): what we may copy, what is reference-only.
-- [docs/checkpoint.md](docs/checkpoint.md): the blind A/B checkpoint kit (build a listening set, score it).
+- [docs/checkpoint.md](docs/checkpoint.md): the blind test: browser "real or synthesised?" page with your own
+  recordings, plus the A/B kit (build a listening set, score it).
 - [docs/roadmap.md](docs/roadmap.md): build order and status.
 
 ## Tests
@@ -124,3 +172,8 @@ pytest -q
 The tests check the physics against the formulas (bar mode ratios, loss-factor decay, Minnaert bubble pitch,
 tube resonances, Aeolian tone, firing frequency, Doppler shift, ISO air absorption) and the five reference sounds
 against their recipe expectations.
+
+## Licence and credit
+
+MIT licence (see [LICENSE](LICENSE)). Made by Garyck Arntzen — [x.com/_mintydoge](https://x.com/_mintydoge).
+Reference recordings used for tuning and the blind test are not part of this repository.

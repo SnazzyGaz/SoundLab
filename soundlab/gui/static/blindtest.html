@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SoundLab blind listening test</title>
+<style>
+  body { margin:0; font:16px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; background:#f6f6f4; color:#1d1d1f; }
+  .box { max-width:620px; margin:50px auto; background:#fff; border:1px solid #e2e2df; border-radius:12px; padding:28px 32px; }
+  h1 { font-size:22px; margin:0 0 6px; } p { margin:8px 0; } .hint { color:#6b6b70; font-size:14px; }
+  button { font:inherit; padding:10px 20px; border-radius:8px; border:1px solid #d6d6d2; background:#fff; cursor:pointer; }
+  button.big { font-size:18px; padding:14px 28px; min-width:180px; }
+  button.primary { background:#2a62d9; color:#fff; border-color:#2a62d9; }
+  button:disabled { opacity:.45; cursor:default; }
+  input[type=text] { font:inherit; padding:9px 11px; border:1px solid #d6d6d2; border-radius:8px; width:240px; }
+  .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:16px 0; }
+  .bar { height:8px; background:#eee; border-radius:4px; overflow:hidden; } .bar div { height:100%; background:#2a62d9; width:0; }
+  .conf label { margin-right:12px; font-size:14px; }
+  pre { white-space:pre-wrap; font:13px/1.45 Consolas, monospace; background:#fafaf8; padding:12px; border-radius:8px; border:1px solid #eee; }
+  a { color:#2a62d9; }
+</style>
+</head>
+<body>
+<div class="box" id="app"><p class="hint">Loading…</p></div>
+<script>
+const $ = s => document.querySelector(s), app = $("#app");
+let who = "", order = [], done = new Set(), idx = 0, played = false, audio = new Audio();
+async function api(path, body) {
+  const r = await fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : {});
+  const j = await r.json(); if (!r.ok || j.error) throw new Error(j.error || r.statusText); return j;
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+async function start() {
+  if (location.hash === "#results") return results();
+  const p = await api("/api/bt/pack");
+  if (!p.ok) { app.innerHTML = `<h1>No listening pack yet</h1><p>${esc(p.message)}</p><p class="hint">Looked in ${esc(p.pack_dir)}</p>`; return; }
+  app.innerHTML = `<h1>Real or synthesised?</h1>
+    <p>You will hear ${p.clips} short sounds, one at a time. Some are real recordings, some were made by a computer.
+       For each one, say which you think it is. There is no time limit; go with your gut.</p>
+    <p class="hint">Use headphones in a quiet room if you can. You may replay a clip as often as you like.
+       Your answers save after every clip, so you can stop and come back with the same name.</p>
+    <div class="row"><input type="text" id="name" placeholder="Your name or initials" autofocus>
+      <button class="primary" id="go">Start</button></div>
+    <p class="hint"><a href="#results">Results (for the organiser)</a></p>`;
+  const go = async () => {
+    try { const r = await api("/api/bt/start", {listener: $("#name").value});
+      who = r.listener; order = r.order; done = new Set(r.answered);
+      idx = order.findIndex(c => !done.has(c)); if (idx < 0) return finished(); clip();
+    } catch (e) { alert(e.message); }
+  };
+  $("#go").onclick = go; $("#name").onkeydown = e => { if (e.key === "Enter") go(); };
+}
+
+function clip() {
+  played = false; const cid = order[idx];
+  app.innerHTML = `<div class="hint">Clip ${done.size + 1} of ${order.length} · ${esc(who)}</div>
+    <div class="bar"><div style="width:${100 * done.size / order.length}%"></div></div>
+    <div class="row" style="margin-top:26px"><button class="big" id="play">▶ Play</button></div>
+    <p>Is this a real recording or synthesised?</p>
+    <div class="row"><button class="big" id="real" disabled>Real</button><button class="big" id="synth" disabled>Synthesised</button></div>
+    <div class="conf hint">How sure? <label><input type="radio" name="c" value="1"> guessing</label>
+      <label><input type="radio" name="c" value="2" checked> fairly</label><label><input type="radio" name="c" value="3"> very</label></div>
+    <div class="row"><input type="text" id="note" style="width:100%" placeholder="Optional: what gave it away?"></div>`;
+  audio.src = `/api/bt/clip/${cid}.wav`;
+  $("#play").onclick = () => { audio.currentTime = 0; audio.play(); played = true; $("#real").disabled = $("#synth").disabled = false; $("#play").textContent = "↻ Replay"; };
+  $("#real").onclick = () => answer("real"); $("#synth").onclick = () => answer("synth");
+}
+
+async function answer(a) {
+  audio.pause();
+  const c = document.querySelector("input[name=c]:checked");
+  try { await api("/api/bt/answer", {listener: who, clip: order[idx], answer: a, confidence: c ? +c.value : 0, note: $("#note").value}); }
+  catch (e) { alert("Could not save: " + e.message); return; }
+  done.add(order[idx]); idx = order.findIndex(x => !done.has(x));
+  if (idx < 0) finished(); else clip();
+}
+function finished() {
+  app.innerHTML = `<h1>All done, thank you!</h1><p>Your ${order.length} answers are saved. You can close this page.</p>`;
+}
+async function results() {
+  try { const r = await api("/api/bt/results");
+    app.innerHTML = `<h1>Results</h1><p class="hint">Pass = listeners spot fewer than ${Math.round(100 * r.result.pass_mark)}% of the synthesised clips.</p><pre>${esc(r.report)}</pre><p><a href="/blindtest">Back to the test</a></p>`;
+  } catch (e) { app.innerHTML = `<h1>Results</h1><p>${esc(e.message)}</p>`; }
+}
+window.onhashchange = () => location.reload();
+start().catch(e => { app.innerHTML = `<p>Could not start: ${esc(e.message)}</p>`; });
+</script>
+</body>
+</html>

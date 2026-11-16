@@ -97,6 +97,26 @@ def main(argv=None) -> int:
     c.add_argument("--end", type=float)
     c.add_argument("--json", action="store_true")
 
+    g = sub.add_parser("gui", help="open the slider app in your browser (local only, 127.0.0.1)")
+    g.add_argument("--port", type=int, default=8766, help="port (default 8766; AIDAW uses 8765)")
+    g.add_argument("--out", help="folder for exports, saved recipes and the blind-test pack (default ~/SoundLab)")
+    g.add_argument("--pack", help="blind-test pack folder (default <out>/blindtest)")
+    g.add_argument("--recipes", action="append", help="extra recipe folder (repeatable)")
+    g.add_argument("--no-browser", action="store_true", help="do not open the browser")
+    bt = sub.add_parser("blindtest", help="blind listening test: build a pack from your library, or score it")
+    btsub = bt.add_subparsers(dest="btcmd", required=True)
+    btb = btsub.add_parser("build", help="build a listening pack from library/<sound>/*.wav + engine renders")
+    btb.add_argument("--library", required=True, help="folder with one sub-folder of real recordings per sound")
+    btb.add_argument("--out", help="pack folder (default ~/SoundLab/blindtest)")
+    btb.add_argument("--per-sound", type=int, default=2, help="real takes per sound (same number of engine clips)")
+    btb.add_argument("--max-s", type=float, default=4.0, help="cap clip length (s)")
+    btb.add_argument("--seed", type=int, default=0)
+    btb.add_argument("--sounds", nargs="*", help="only these sounds")
+    btb.add_argument("--exempt", nargs="*", default=[], help="sounds outside the pass mark (stylised)")
+    bts = btsub.add_parser("score", help="score the answers saved in a pack")
+    bts.add_argument("pack", nargs="?", help="pack folder (default ~/SoundLab/blindtest)")
+    bts.add_argument("--pass-mark", type=float, default=0.60)
+    bts.add_argument("--json", action="store_true")
     v = sub.add_parser("validate", help="check a recipe")
     v.add_argument("recipe")
 
@@ -245,6 +265,28 @@ def main(argv=None) -> int:
             errs = soundlab.validate(soundlab.load_recipe(args.recipe))
             print("ok" if not errs else "\n".join(errs))
             return 1 if errs else 0
+        elif args.cmd == "gui":
+            from .gui import serve
+            from .gui.server import REPO_RECIPES
+            dirs = [REPO_RECIPES] + [Path(d) for d in (args.recipes or [])]
+            serve(port=args.port, open_browser=not args.no_browser, recipe_dirs=dirs, out_dir=args.out,
+                  pack_dir=args.pack)
+        elif args.cmd == "blindtest":
+            from .checkpoint import build_pack, report_pack, score_pack
+            from .gui.server import default_out_dir
+            if args.btcmd == "build":
+                out = Path(args.out) if args.out else default_out_dir() / "blindtest"
+                info = build_pack(Path(args.library), out, per_sound=args.per_sound, max_s=args.max_s,
+                                  seed=args.seed, sounds=args.sounds, exempt=args.exempt)
+                print(f"{info['clips']} clips from {len(info['sounds'])} sounds -> {out}")
+                print("sounds: " + ", ".join(info["sounds"]))
+                if info["skipped_no_recipe"]:
+                    print("skipped (no recipe of that name): " + ", ".join(info["skipped_no_recipe"]))
+                print(f"run it: soundlab gui --pack \"{out}\"   then open http://127.0.0.1:8766/blindtest")
+            else:
+                pack = Path(args.pack) if args.pack else default_out_dir() / "blindtest"
+                res = score_pack(pack, args.pass_mark)
+                print(json.dumps(res, indent=1, default=str) if args.json else report_pack(res))
     except soundlab.RecipeError as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
