@@ -1,0 +1,6 @@
+{
+  "soundlab": 1, "name": "Dripping tap into a basin (bubble 'plinks')", "sample_rate": 48000, "duration": 5.0, "seed": 6,
+  "layers": [{"model": "water", "params": {"mode": "drip", "rate": 1.5, "radius_mm": 3.0}}],
+  "post": [{"model": "room", "params": {"volume": 15, "absorption": 0.08, "source_distance": 1.0}}],
+  "master": {"normalize_db": -3.0}
+}

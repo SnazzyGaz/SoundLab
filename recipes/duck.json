@@ -1,0 +1,13 @@
+{
+  "soundlab": 1,
+  "name": "Mallard hen decrescendo call, pond edge",
+  "sample_rate": 48000, "duration": 2.6, "seed": 3,
+  "layers": [
+    {"name": "hen", "model": "duck", "params": {"voice": "female", "notes": 6, "f0": 420, "formant_hz": 1900, "rasp": 0.55}}
+  ],
+  "post": [
+    {"model": "distance", "params": {"distance": 8}},
+    {"model": "outdoor", "params": {"reflectors": [[25, 0.3], [60, 0.2]], "tail_s": 0.4, "tail_level": 0.06, "tail_lowpass": 3000}}
+  ],
+  "master": {"normalize_db": -1.0, "fade_out": 0.1, "highpass_hz": 60}
+}

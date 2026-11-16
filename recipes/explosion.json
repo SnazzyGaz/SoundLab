@@ -1,0 +1,14 @@
+{
+  "soundlab": 1,
+  "name": "Large explosion in open country, about 150 m away",
+  "sample_rate": 48000, "duration": 9.0, "seed": 21,
+  "layers": [
+    {"name": "blast", "model": "explosion", "params": {"size": 0.75, "sub_blasts": 5, "fireball_s": 3.0, "debris": 0.6, "drive": 3.5}}
+  ],
+  "post": [
+    {"model": "distance", "params": {"distance": 150, "spreading": false}},
+    {"model": "ground", "params": {"source_height": 2, "listener_height": 1.7, "distance": 150, "reflection": 0.6}},
+    {"model": "outdoor", "params": {"reflectors": [[300, 0.5], [700, 0.4], [1100, 0.3]], "tail_s": 4.0, "tail_level": 0.35, "tail_lowpass": 600}}
+  ],
+  "master": {"normalize_db": -1.0, "fade_out": 0.5}
+}

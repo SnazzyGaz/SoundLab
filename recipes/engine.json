@@ -1,0 +1,18 @@
+{
+  "soundlab": 1,
+  "name": "Inline-4 car: idle, rev to 4500 rpm, lift off, back to idle",
+  "sample_rate": 48000, "duration": 8.0, "seed": 11,
+  "layers": [
+    {"name": "engine", "model": "engine", "params": {
+      "cylinders": 4, "firing": "even",
+      "rpm":  [[0, 850], [1.5, 850], [3.2, 4500], [3.6, 4500], [5.6, 900], [8, 850]],
+      "load": [[0, 0.15], [1.5, 0.15], [1.6, 0.9], [3.5, 0.9], [3.65, 0.0], [5.6, 0.0], [5.9, 0.15], [8, 0.15]],
+      "exhaust_length": 2.4, "muffler": 0.55, "jitter": 0.04, "intake": 0.35, "mechanical": 0.15, "whine": 0.08, "pops": 0.4
+    }}
+  ],
+  "post": [
+    {"model": "distance", "params": {"distance": 4}},
+    {"model": "ground", "params": {"source_height": 0.3, "listener_height": 1.6, "distance": 4, "reflection": 0.8}}
+  ],
+  "master": {"normalize_db": -1.0, "fade_out": 0.2}
+}

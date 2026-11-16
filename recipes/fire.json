@@ -1,0 +1,6 @@
+{
+  "soundlab": 1, "name": "Camp fire building up", "sample_rate": 48000, "duration": 8.0, "seed": 9,
+  "layers": [{"model": "fire", "params": {"intensity": [[0, 0.2], [4, 0.8], [8, 0.7]], "crackle_rate": 12}}],
+  "post": [{"model": "outdoor", "params": {"reflectors": [[15, 0.2]], "tail_s": 0.6, "tail_level": 0.05}}],
+  "master": {"normalize_db": -1.0, "fade_out": 0.3}
+}
