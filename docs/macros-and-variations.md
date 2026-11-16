@@ -1,4 +1,4 @@
-# Macros, variations, batch export and audition (0.7.0)
+# Macros, variations, batch export and audition (0.7.0; 0.8.0 notes)
 
 Roadmap steps 2 and 3. **Macros are the primary interface**: every recipe declares a few sliders (0-1) or
 named choices, and each one moves several underlying controls with a sensible curve. The physical controls
@@ -50,12 +50,22 @@ render time).
 player found (ffplay, afplay, paplay, aplay). `--watch` keeps the process alive and re-renders on every save,
 which avoids Python's ~0.7 s start-up; most recipes render in 0.01-0.2 s. `--seconds` cuts long recipes.
 
+## Default choices and fitting (0.8.0)
+
+A choice macro at its default is now skipped, like a numeric macro at its default (the test suite forces the
+default choice's list and checks it is the identity). Before 0.8 a default choice re-applied its `set`
+values on every render, so `soundlab match` could not move a control that the default choice names (found
+while fitting `hit.json`, whose `object: board` choice names the board's dimensions).
+
 ## Shipped macros
 
 | recipe | category | macros |
 |---|---|---|
 | `blaster.json` | scifi | `size`, `intensity`, `length` |
 | `car_passby.json` | vehicle | `speed`, `distance` |
+| `coin.json` | coin | `floor` (tile, wood, table, stone), `metal` (cupronickel, bronze, steel, brass, aluminium), `size`, `height`, `spin`, `distance` |
+| `coin_jingle.json` | coin | `metal` (cupronickel, bronze, steel, brass, aluminium), `coins`, `shake`, `length`, `distance` |
+| `dowel.json` | impact | `material` (wood, metal, glass, plastic, stone, cardboard), `size`, `intensity`, `hardness`, `distance` |
 | `drip.json` | water | `size`, `intensity`, `distance` |
 | `duck.json` | animal | `size`, `intensity`, `distance` |
 | `engine.json` | vehicle | `rpm`, `load`, `size`, `intensity`, `distance` |
@@ -65,9 +75,9 @@ which avoids Python's ~0.7 s start-up; most recipes render in 0.01-0.2 s. `--sec
 | `fire.json` | ambience | `size`, `intensity`, `distance` |
 | `foghorn.json` | ambience | `size`, `intensity`, `length`, `distance` |
 | `foghorn_pattern.json` | ambience | `size`, `intensity`, `length`, `distance` |
-| `footstep.json` | footstep | `surface` (wood, stone, metal), `size`, `intensity`, `hardness`, `distance` |
+| `footstep.json` | footstep | `shoe` (trainer, boot, heel), `surface` (wood, stone, gravel), `size`, `intensity`, `pace`, `creak`, `distance` |
 | `glass_hit_room.json` | impact | `size`, `intensity`, `distance` |
-| `hit.json` | impact | `material` (wood, metal, glass, plastic, stone, cardboard), `size`, `intensity`, `hardness`, `distance` |
+| `hit.json` | impact | `object` (board, door, dowel), `material` (wood, metal, glass, plastic, stone, cardboard), `size`, `intensity`, `hardness`, `distance` |
 | `match.json` | foley | `size`, `intensity`, `wetness`, `distance` |
 | `matchbox.json` | foley | `intensity`, `size`, `wetness`, `distance` |
 | `water.json` | water | `size`, `intensity`, `distance` |

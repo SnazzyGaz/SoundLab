@@ -1,77 +1,28 @@
 {
  "soundlab": 1,
- "name": "Footstep: shoe on a wooden floor (heel, toe, scuff); surface macro wood/stone/metal",
+ "name": "Footstep: a body-weight step (heel push, roll, toe; floor heavily damped). shoe macro trainer/boot/heel, surface macro wood/stone/gravel",
  "category": "footstep",
  "sample_rate": 48000,
- "duration": 0.6,
+ "duration": 0.7,
  "seed": 1,
  "layers": [
   {
-   "name": "heel",
-   "model": "hit",
+   "name": "step",
+   "model": "footstep",
    "params": {
-    "material": "oak",
-    "shape": "plate",
-    "length": 0.9,
-    "width": 0.2,
-    "thickness": 0.022,
-    "strike_pos": 0.31,
-    "extra_damping": 45.0,
-    "bounces": 1,
-    "velocity": 0.9,
-    "contact_ms": 2.5,
-    "at": 0.01
+    "shoe": "boot",
+    "surface": "wood",
+    "weight_kg": 75.0,
+    "intensity": 0.68,
+    "roll_s": 0.2,
+    "creak": 0.3,
+    "scuff": 0.16,
+    "floor_scale": 1.7,
+    "damping": 2.23,
+    "steps": 1,
+    "interval_s": 0.55,
+    "at": 0.02
    }
-  },
-  {
-   "name": "toe",
-   "start": 0.075,
-   "gain_db": -5,
-   "model": "hit",
-   "params": {
-    "material": "oak",
-    "shape": "plate",
-    "length": 0.9,
-    "width": 0.2,
-    "thickness": 0.022,
-    "strike_pos": 0.43,
-    "extra_damping": 45.0,
-    "bounces": 1,
-    "velocity": 0.6,
-    "contact_ms": 1.6,
-    "at": 0.0
-   }
-  },
-  {
-   "name": "scuff",
-   "start": 0.06,
-   "gain_db": -20,
-   "chain": [
-    {
-     "model": "noisegen",
-     "params": {
-      "color": "pink"
-     }
-    },
-    {
-     "model": "svf",
-     "params": {
-      "mode": "bp",
-      "cutoff": 2500,
-      "resonance": 0.8
-     }
-    },
-    {
-     "model": "env",
-     "params": {
-      "attack": 0.01,
-      "decay": 0.05,
-      "sustain": 0,
-      "release": 0.03,
-      "gate_s": 0.06
-     }
-    }
-   ]
   }
  ],
  "post": [
@@ -79,8 +30,8 @@
    "model": "room",
    "params": {
     "volume": 45,
-    "absorption": 0.3,
-    "source_distance": 1.8
+    "absorption": 0.35,
+    "source_distance": 1.5
    }
   }
  ],
@@ -89,89 +40,86 @@
   "fade_out": 0.03
  },
  "macros": {
+  "shoe": {
+   "default": "boot",
+   "doc": "trainer (soft foam: low thump, dull pat), boot (rubber: thud + slap), heel (hard heel tip: click-clack)",
+   "choices": {
+    "trainer": [
+     {
+      "to": "0.shoe",
+      "op": "set",
+      "value": "trainer"
+     }
+    ],
+    "boot": [
+     {
+      "to": "0.shoe",
+      "op": "set",
+      "value": "boot"
+     }
+    ],
+    "heel": [
+     {
+      "to": "0.shoe",
+      "op": "set",
+      "value": "heel"
+     }
+    ]
+   }
+  },
   "surface": {
    "default": "wood",
-   "doc": "floor material",
+   "doc": "wood boards (low boom, maybe a creak), stone/concrete (hard, gritty), gravel (crunch) (the stone choice carries its own fitted intensity/roll/damping offsets)",
    "choices": {
     "wood": [
      {
-      "to": "0.material",
+      "to": "0.surface",
       "op": "set",
-      "value": "oak"
-     },
-     {
-      "to": "1.material",
-      "op": "set",
-      "value": "oak"
+      "value": "wood"
      }
     ],
     "stone": [
      {
-      "to": "0.material",
+      "to": "0.surface",
       "op": "set",
-      "value": "concrete"
+      "value": "stone"
      },
      {
-      "to": "1.material",
-      "op": "set",
-      "value": "concrete"
-     },
-     {
-      "to": "0.thickness",
-      "op": "mul",
-      "value": 4
-     },
-     {
-      "to": "1.thickness",
-      "op": "mul",
-      "value": 4
-     },
-     {
-      "to": "scuff.gain_db",
+      "to": "0.intensity",
       "op": "add",
-      "value": 4
+      "value": 0.26
+     },
+     {
+      "to": "0.roll_s",
+      "op": "mul",
+      "value": 1.13
+     },
+     {
+      "to": "0.damping",
+      "op": "mul",
+      "value": 1.15
+     },
+     {
+      "to": "0.scuff",
+      "op": "add",
+      "value": -0.14
      }
     ],
-    "metal": [
+    "gravel": [
      {
-      "to": "0.material",
+      "to": "0.surface",
       "op": "set",
-      "value": "steel"
-     },
-     {
-      "to": "1.material",
-      "op": "set",
-      "value": "steel"
-     },
-     {
-      "to": "0.thickness",
-      "op": "mul",
-      "value": 0.2
-     },
-     {
-      "to": "1.thickness",
-      "op": "mul",
-      "value": 0.2
-     },
-     {
-      "to": "0.extra_damping",
-      "op": "mul",
-      "value": 0.3
-     },
-     {
-      "to": "1.extra_damping",
-      "op": "mul",
-      "value": 0.3
+      "value": "gravel"
      }
     ]
    }
   },
   "size": {
    "default": 0.5,
-   "doc": "light person .. heavy person (weight, softer longer contact, slower roll)",
+   "doc": "light .. heavy walker (weight: longer, lower, louder push)",
    "map": [
     {
-     "to": "0.velocity",
+     "to": "0.weight_kg",
      "op": "mul",
      "points": [
       [
@@ -184,61 +132,7 @@
       ],
       [
        1,
-       1.5
-      ]
-     ]
-    },
-    {
-     "to": "1.velocity",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.6
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.5
-      ]
-     ]
-    },
-    {
-     "to": "0.contact_ms",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.7
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.5
-      ]
-     ]
-    },
-    {
-     "to": "1.start",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.02
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.03
+       1.6
       ]
      ]
     }
@@ -249,48 +143,12 @@
    "doc": "sneaking .. stomping",
    "map": [
     {
-     "to": "0.velocity",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.3
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.5
-      ]
-     ]
-    },
-    {
-     "to": "1.velocity",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.3
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2
-      ]
-     ]
-    },
-    {
-     "to": "scuff.gain_db",
+     "to": "0.intensity",
      "op": "add",
      "points": [
       [
        0,
-       -6
+       -0.45
       ],
       [
        0.5,
@@ -298,23 +156,23 @@
       ],
       [
        1,
-       4
+       0.45
       ]
      ]
     }
    ]
   },
-  "hardness": {
+  "pace": {
    "default": 0.5,
-   "doc": "soft trainers .. hard heels",
+   "doc": "slow .. hurried (heel-to-toe roll and step interval)",
    "map": [
     {
-     "to": "0.contact_ms",
+     "to": "0.roll_s",
      "op": "mul",
      "points": [
       [
        0,
-       2.5
+       1.6
       ],
       [
        0.5,
@@ -322,17 +180,17 @@
       ],
       [
        1,
-       0.3
+       0.6
       ]
      ]
     },
     {
-     "to": "1.contact_ms",
+     "to": "0.interval_s",
      "op": "mul",
      "points": [
       [
        0,
-       2.5
+       1.5
       ],
       [
        0.5,
@@ -340,7 +198,31 @@
       ],
       [
        1,
-       0.3
+       0.65
+      ]
+     ]
+    }
+   ]
+  },
+  "creak": {
+   "default": 0.5,
+   "doc": "wood: solid floor .. creaky old boards",
+   "map": [
+    {
+     "to": "0.creak",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
       ]
      ]
     }
@@ -394,26 +276,23 @@
   }
  },
  "vary": {
-  "0.velocity": {
-   "rel": 0.2
+  "0.weight_kg": {
+   "rel": 0.08
   },
-  "1.velocity": {
-   "rel": 0.25
-  },
-  "1.start": {
-   "abs": 0.015
-  },
-  "0.strike_pos": {
+  "0.intensity": {
    "abs": 0.08
   },
-  "1.strike_pos": {
-   "abs": 0.08
+  "0.roll_s": {
+   "rel": 0.12
   },
-  "scuff.gain_db": {
-   "db": 4
+  "0.floor_scale": {
+   "rel": 0.06
   },
-  "0.contact_ms": {
-   "rel": 0.15
+  "0.scuff": {
+   "abs": 0.1
+  },
+  "0.creak": {
+   "abs": 0.1
   }
  }
 }

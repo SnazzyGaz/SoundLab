@@ -1,0 +1,294 @@
+{
+ "soundlab": 1,
+ "name": "Coin drop: a real metal coin falls, bounces, wobbles (Euler's disk) and settles (physical; the retro blip is blocks/coin_pickup)",
+ "category": "coin",
+ "sample_rate": 48000,
+ "duration": 2.2,
+ "seed": 3,
+ "layers": [
+  {
+   "name": "coin",
+   "model": "coin",
+   "params": {
+    "mode": "drop",
+    "diameter_mm": 28.5,
+    "thickness_mm": 1.85,
+    "metal": "cupronickel",
+    "split": 0.012,
+    "floor": "tile",
+    "drop_height_m": 0.8,
+    "restitution": 0.45,
+    "edge_chance": 0.6,
+    "spin_s": 0.9,
+    "wobble_exp": 0.5,
+    "wobble_level": 0.4,
+    "micro_contacts": 6.0,
+    "ring_t60": 0.3,
+    "floor_level": 2.0,
+    "at": 0.03
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 30,
+    "absorption": 0.3,
+    "source_distance": 1.2
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "floor": {
+   "default": "tile",
+   "doc": "what it lands on",
+   "choices": {
+    "tile": [
+     {
+      "to": "0.floor",
+      "op": "set",
+      "value": "tile"
+     }
+    ],
+    "wood": [
+     {
+      "to": "0.floor",
+      "op": "set",
+      "value": "wood"
+     }
+    ],
+    "table": [
+     {
+      "to": "0.floor",
+      "op": "set",
+      "value": "table"
+     }
+    ],
+    "stone": [
+     {
+      "to": "0.floor",
+      "op": "set",
+      "value": "stone"
+     }
+    ]
+   }
+  },
+  "metal": {
+   "default": "cupronickel",
+   "doc": "coin metal (silver-coloured cupronickel, bronze, plated steel, brass, aluminium)",
+   "choices": {
+    "cupronickel": [
+     {
+      "to": "0.metal",
+      "op": "set",
+      "value": "cupronickel"
+     }
+    ],
+    "bronze": [
+     {
+      "to": "0.metal",
+      "op": "set",
+      "value": "bronze"
+     }
+    ],
+    "steel": [
+     {
+      "to": "0.metal",
+      "op": "set",
+      "value": "steel"
+     }
+    ],
+    "brass": [
+     {
+      "to": "0.metal",
+      "op": "set",
+      "value": "brass"
+     }
+    ],
+    "aluminium": [
+     {
+      "to": "0.metal",
+      "op": "set",
+      "value": "aluminium"
+     }
+    ]
+   }
+  },
+  "size": {
+   "default": 0.5,
+   "doc": "small (5p/dime) .. large (\u00a32/half-dollar) coin: lower ring when bigger",
+   "map": [
+    {
+     "to": "0.diameter_mm",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.63
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.15
+      ]
+     ]
+    },
+    {
+     "to": "0.thickness_mm",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.9
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.4
+      ]
+     ]
+    }
+   ]
+  },
+  "height": {
+   "default": 0.5,
+   "doc": "dropped from a few cm .. from head height (more and longer bounces)",
+   "map": [
+    {
+     "to": "0.drop_height_m",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.08
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.2
+      ]
+     ]
+    }
+   ]
+  },
+  "spin": {
+   "default": 0.5,
+   "doc": "lands dead .. long rolling wobble",
+   "map": [
+    {
+     "to": "0.spin_s",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.9
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    },
+    {
+     "to": "duration",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.6
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.drop_height_m": {
+   "rel": 0.2
+  },
+  "0.restitution": {
+   "abs": 0.06
+  },
+  "0.spin_s": {
+   "rel": 0.25
+  },
+  "0.edge_chance": {
+   "abs": 0.15
+  },
+  "0.diameter_mm": {
+   "rel": 0.01
+  }
+ }
+}

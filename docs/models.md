@@ -522,7 +522,7 @@ Sources: van den Doel 2005; Phillips, Agarwal & Jordan 2018, Sci Rep; Wikipedia:
 
 ### `hit`
 
-Object struck by a hammer: impact -> modal resonator -> radiation.
+Object struck by a hammer, stick or knuckle: impact -> modal resonator -> radiation. v0.8 adds what a real knock on a board or door has besides the ring: many dense, detuned modes (a plank or panel is not a tuned bar), the contact noise of the striker (knuckle skin/bone, stick tip) and a low 'thump' (the panel moving as a whole). With n_modes 24, detune 0.01, contact_noise 0 and thump 0 it is exactly the v0.7 model (the quick resonant 'dowel' sound).
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
@@ -536,9 +536,64 @@ Object struck by a hammer: impact -> modal resonator -> radiation.
 | `bounces` | `1` | count | 1 .. 40 |  |
 | `strike_pos` | `0.22` |  | 0 .. 1 |  |
 | `extra_damping` | `2.0` | 1/s | 0 .. 2000 |  |
+| `n_modes` | `24` | count | 1 .. 200 | number of modes (a panel: many; a bar: few) |
+| `detune` | `0.01` |  | 0 .. 0.2 | random mode detuning (grain, joints, glue: less pure ring) |
+| `contact_noise` | `0.0` |  | 0 .. 3 | level of the striker's contact noise (knuckle/stick slap) |
+| `noise_hz` | `1500.0` | Hz | 200 .. 12000 | centre of the contact noise |
+| `thump` | `0.0` |  | 0 .. 3 | level of the low whole-panel thump |
 | `at` | `0.02` | s | 0 .. None |  |
 
-Sources: van den Doel et al. 2001; Klatzky et al. 2000
+Sources: van den Doel et al. 2001; Klatzky et al. 2000; Cook 2002, Real Sound Synthesis (contact noise)
+
+### `footstep`
+
+A walking footstep: body weight, not a tap. Heel strike = a long, soft force pulse (the sole is a spring, so the floor gets a 6-25 ms push, not a click) driving the floor's heavily damped low modes and a broadband thump; the sole slaps (contact noise); then the foot rolls to the toe (a smaller, later push) with a little scuff; a hard heel adds a tip click. Surfaces: wood (low boom + optional board creak from stick-slip in the nails/joints), stone (hard click + grit grains), gravel (dense crunch grains from stones knocking under the load). Several steps can be rendered at a walking interval.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `shoe` | `trainer` |  | trainer, boot, heel | trainer (soft foam), boot (rubber), heel (hard heel tip) |
+| `surface` | `wood` |  | wood, stone, gravel | wood boards, stone/concrete, gravel |
+| `weight_kg` | `75.0` | kg | 30 .. 150 | walker's weight: more weight = longer, lower, louder push |
+| `intensity` | `0.5` |  | 0 .. 1 | sneaking .. stomping (heel speed ~0.2-0.7 m/s; harder = shorter, brighter contact, more slap and scuff) Source: heel vertical speed ~0.4 m/s at strike (est. from gait literature). |
+| `roll_s` | `0.11` | s | 0.03 .. 0.4 | heel-to-toe time (slow walk longer) |
+| `creak` | `0.3` |  | 0 .. 1 | wood only: chance and level of a board creak during loading |
+| `scuff` | `0.4` |  | 0 .. 1 | friction noise as the foot rolls (stone/wood) |
+| `floor_scale` | `1.0` |  | 0.4 .. 2.5 | scales the floor's mode frequencies (stiffer/smaller floor > 1) |
+| `damping` | `1.0` |  | 0.3 .. 4.0 | floor damping multiplier (carpet-like > 1, hollow floor < 1) |
+| `steps` | `1` | count | 1 .. 64 | number of steps |
+| `interval_s` | `0.55` | s | 0.25 .. 2.0 | time between steps (normal walk ~0.5-0.6 s) |
+| `at` | `0.02` | s | 0 .. None | first heel strike time |
+
+Sources: Whittle 1999, Gait Analysis (heel-strike transient); Lieberman et al. 2010, Nature 463 (impact transient); Cook 2002, Real Sound Synthesis (footsteps / PhISM crunch); Farnell 2010, Designing Sound (footsteps); Turchet et al. 2010, physically based footstep sounds (solid vs aggregate surfaces); CC0 Freesound footstep recordings (refs/cc0, analysis only)
+
+### `coin`
+
+A real metal coin, not the arcade blip. The coin is a thin free disc: its ring is the free-plate modes (lowest = 2 nodal diameters, ~9-12 kHz for a 24-28 mm coin; ratios 1, 1.73, 2.33, ... (Leissa)), each non-axisymmetric mode a slightly split pair (coins are not perfect discs: the 'shimmer' beat). drop: falls from a height (v = sqrt(2gh)), bounces with random restitution, landing on edge (bright ring) or flat (slap + chatter), then may roll/wobble like Euler's disk: contacts speed up toward a finite end time (rate ~ (t0 - t)^-p) and it settles flat with a clack that chokes the ring. jingle: a few coins knocking together in a hand or pocket.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `mode` | `drop` |  | drop, jingle |  |
+| `diameter_mm` | `26.0` | mm | 12 .. 45 | coin diameter (UK 10p 24.5, 50p 27.3, US quarter 24.3) |
+| `thickness_mm` | `1.85` | mm | 0.8 .. 4 | coin thickness |
+| `metal` | `cupronickel` |  | cupronickel, bronze, steel, brass, aluminium |  |
+| `ring_hz` | `0.0` | Hz | 0 .. 20000 | override the lowest ring mode (0 = from size/metal); the pitch-first value measured on a reference |
+| `split` | `0.012` |  | 0 .. 0.05 | relative split of each degenerate mode pair (ref: 9022/9216 Hz = 2%) |
+| `floor` | `tile` |  | tile, wood, table, stone |  |
+| `drop_height_m` | `0.8` | m | 0.05 .. 3 | drop height (impact speed sqrt(2 g h): 0.8 m -> 4 m/s) |
+| `restitution` | `0.45` |  | 0.1 .. 0.8 | mean bounce speed ratio (coin on hard floor ~0.35-0.6, est.) |
+| `edge_chance` | `0.6` |  | 0 .. 1 | chance a bounce lands on the rim (bright ring) rather than flat |
+| `spin_s` | `0.9` | s | 0 .. 4 | drop: roll/wobble time before it settles (0 = settles after the bounces) |
+| `wobble_exp` | `0.5` |  | 0.1 .. 0.8 | wobble speed-up exponent. Moffatt 2000 gives ~1/6 for an ideal disk's long final phase; a coin's ~1 s wobble needs ~0.5 to go from ~10 to ~100 contacts/s as heard (our choice) |
+| `wobble_level` | `0.4` |  | 0 .. 1 | strength of each rolling micro-contact relative to the first impact |
+| `micro_contacts` | `6.0` | count | 1 .. 30 | micro-contacts per precession turn (rolling roughness, est.) |
+| `ring_t60` | `0.3` | s | 0.02 .. 1.0 | ring time while the coin rolls on its rim (touching the floor) |
+| `floor_level` | `1.0` |  | 0 .. 3 | level of the floor's knock vs the coin's ring |
+| `count` | `5` | count | 2 .. 30 | jingle: number of coins |
+| `shake_s` | `1.0` | s | 0.1 .. 10 | jingle: how long the coins are shaken |
+| `rate_hz` | `4.0` | Hz | 0.5 .. 12 | jingle: shakes per second |
+| `at` | `0.03` | s | 0 .. None | first impact time |
+
+Sources: Leissa 1969, Vibration of Plates, NASA SP-160 (free circular plate); Moffatt 2000, Nature 404 (Euler's disk); van den Doel, Kry & Pai 2001 (modal impacts); Cook 2002, Real Sound Synthesis (PhISM coins); CC0 Freesound coin recordings (refs/cc0, analysis only)
 
 ## Stage: synth
 

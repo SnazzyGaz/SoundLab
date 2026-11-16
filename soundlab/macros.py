@@ -214,8 +214,10 @@ def apply_macros(recipe: dict, values: dict | None = None) -> dict:
         raise RecipeError(f"unknown macro(s) {sorted(unknown)}; this recipe has {sorted(specs)}")
     for name, spec in specs.items():
         val = values.get(name, spec.get("default", 0.5))
-        if val == spec.get("default", 0.5) and "choices" not in spec:
-            continue  # anchored mappings are identity at the default
+        if val == spec.get("default", 0.5):
+            # anchored mappings are identity at the default, and the default choice must leave the recipe as
+            # written (tested), so skip it: then `soundlab match` can move the values a default choice names
+            continue
         _apply_one(r, name, spec, val)
     return r
 

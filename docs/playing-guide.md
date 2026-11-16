@@ -279,3 +279,46 @@ Then copy the fitted sound controls into your scene recipe, which has its own di
 - `string` with `dispersion`: stiff wires and springs; the struck guy-wire "pew" (Burtt's blaster prop; the
   dispersion explanation is our physics reading).
 - `tube`, `horn`, `helmholtz`, `formant`: air columns, cavities and vocal tracts.
+
+
+## Footstep (`footstep`, 0.8)
+
+What a real step is: **body weight, then a roll**, not a tap. The heel lands through a compliant sole, so the
+floor gets a 6-25 ms push (foam trainer longest, hard heel shortest), not a click. A push that long has almost
+no energy above about 2/T Hz, which is why a real step is mostly a low, soft thump. The floor (a joisted
+timber floor rings at roughly 70-250 Hz) is heavily damped. Then the foot rolls to the toe (a smaller push
+0.1-0.25 s later) with a little scuff. What changes with the shoe: the push length, how much the sole slaps
+(contact noise), and whether a hard heel tip clicks. What changes with the surface: wood booms a little and may
+creak (stick-slip in nails and joints under the moving load: a short pulse train through a few board
+resonances); stone gives almost no floor ring but a hard click and grit; gravel gives dense crunch grains
+(stones knocking under the load, energy mostly 1-2.5 kHz) and little low end.
+
+The CC0 wood-floor recordings we checked put 50-70 % of the energy below 150 Hz (-1 to -3 dB re total) and fall
+-20 dB within 5-20 ms of the peak. The v0.7 footstep (two hard hits on an oak plate) had only ~12 % below
+150 Hz and a clear ring at ~830 Hz: that is why it read as tapping.
+
+Macros: `shoe` (trainer/boot/heel), `surface` (wood/stone/gravel), `size` (walker's weight), `intensity`
+(sneak .. stomp), `pace` (roll time and step interval), `creak`, `distance`. For a walk, set `steps` and
+`interval_s` on the layer.
+
+## Board knock vs dowel (`hit`, 0.8)
+
+A knock on a plank or door is a **panel**: many dense, detuned modes, heavily damped by its fixings, plus the
+contact noise of the knuckle or stick and a low whole-panel thump. A dowel or bowl is the opposite: a few
+clean modes ringing for a quarter of a second. `hit.json` now defaults to the board (fitted to a CC0 door
+knock); `-m object=door` gives a bigger, hollower panel; `-m object=dowel` (or `dowel.json`) is the v0.7 sound,
+bit for bit. The new `hit` controls (`n_modes`, `detune`, `contact_noise`, `noise_hz`, `thump`) default to the
+v0.7 behaviour.
+
+## Coin (`coin`, 0.8)
+
+`blocks/coin_pickup.json` stays the retro arcade blip. `coin.json` is a real coin. A coin is a thin free disc:
+its ring is the free-plate modes. For a 28.5 x 1.85 mm cupronickel coin the lowest (two nodal diameters) is
+~9.1 kHz (the CC0 single-coin recording rings at 9054 Hz, measured, which is how the default size was chosen:
+pitch first), the next at 1.73x. The non-axisymmetric modes come as slightly split pairs (the recording shows
+9022/9216 Hz), which gives the shimmering beat. A drop is a sequence: fall (v = sqrt(2 g h)), bounces with
+random restitution, landing on the rim (bright ring) or flat (slap + chatter), then often a rolling wobble like
+Euler's disk whose rate rises toward a finite end time, ending in a small clack that chokes the ring. In the
+recordings the wobble is as loud as the first impact or louder and builds toward the end; v8 does that.
+Macros: `floor` (tile/wood/table/stone), `metal`, `size`, `height`, `spin`, `distance`.
+`coin_jingle.json` is a handful of coins shaken in a hand (not fitted to a recording).

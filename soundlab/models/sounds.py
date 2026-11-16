@@ -677,7 +677,12 @@ def water(ctx: Ctx, x, mode, rate, radius_mm, xi):
 
 
 # =================================================================== hit
-@model("hit", "sound", "Object struck by a hammer: impact -> modal resonator -> radiation.",
+@model("hit", "sound",
+       "Object struck by a hammer, stick or knuckle: impact -> modal resonator -> radiation. v0.8 adds what a "
+       "real knock on a board or door has besides the ring: many dense, detuned modes (a plank or panel is not "
+       "a tuned bar), the contact noise of the striker (knuckle skin/bone, stick tip) and a low 'thump' (the "
+       "panel moving as a whole). With n_modes 24, detune 0.01, contact_noise 0 and thump 0 it is exactly the "
+       "v0.7 model (the quick resonant 'dowel' sound).",
        [
            Param("material", "steel", "", choices=tuple(MATERIALS)),
            Param("shape", "bar", "", choices=("bar", "plate", "membrane", "string", "tube_open", "tube_closed")),
@@ -685,10 +690,29 @@ def water(ctx: Ctx, x, mode, rate, radius_mm, xi):
            Param("thickness", 0.006, "m", 0.0005, 0.3), Param("velocity", 1.5, "m/s", 0.05, 20),
            Param("contact_ms", 0.5, "ms", 0.05, 20), Param("bounces", 1, "count", 1, 40),
            Param("strike_pos", 0.22, "", 0, 1), Param("extra_damping", 2.0, "1/s", 0, 2000),
+           Param("n_modes", 24, "count", 1, 200, "number of modes (a panel: many; a bar: few)"),
+           Param("detune", 0.01, "", 0, 0.2, "random mode detuning (grain, joints, glue: less pure ring)"),
+           Param("contact_noise", 0.0, "", 0, 3, "level of the striker's contact noise (knuckle/stick slap)"),
+           Param("noise_hz", 1500.0, "Hz", 200, 12000, "centre of the contact noise"),
+           Param("thump", 0.0, "", 0, 3, "level of the low whole-panel thump"),
            Param("at", 0.02, "s", 0, None),
-       ], ["van den Doel et al. 2001", "Klatzky et al. 2000"])
-def hit(ctx: Ctx, x, material, shape, length, width, thickness, velocity, contact_ms, bounces, strike_pos, extra_damping, at):
+       ], ["van den Doel et al. 2001", "Klatzky et al. 2000", "Cook 2002, Real Sound Synthesis (contact noise)"])
+def hit(ctx: Ctx, x, material, shape, length, width, thickness, velocity, contact_ms, bounces, strike_pos, extra_damping,
+        n_modes, detune, contact_noise, noise_hz, thump, at):
     f = call("impact", ctx, at=at, velocity=velocity, contact_ms=contact_ms, bounces=bounces)
     y = call("modal", ctx, f, material=material, shape=shape, length=length, width=width, thickness=thickness,
-             strike_pos=strike_pos, extra_damping=extra_damping)
-    return call("radiation", ctx, y, radius=max(length, width) / 2, order=1)
+             strike_pos=strike_pos, extra_damping=extra_damping, n_modes=n_modes, detune=detune)
+    y = call("radiation", ctx, y, radius=max(length, width) / 2, order=1)
+    if contact_noise <= 0 and thump <= 0:
+        return y
+    pk = np.max(np.abs(y)) + 1e-12
+    sr = ctx.sr
+    if contact_noise > 0:
+        # contact noise follows the force (plus a few ms of surface/skin rattle)
+        signal_env = np.convolve(np.abs(f), np.exp(-np.arange(int(0.004 * sr)) / (0.0015 * sr)))[: len(f)]
+        nz = dsp.bandpass(ctx.child().rng.standard_normal(len(f)), noise_hz, sr, 0.6) * signal_env
+        y = y + contact_noise * 0.6 * pk * norm(nz)
+    if thump > 0:
+        th = dsp.lowpass(dsp.lowpass(np.diff(f, prepend=0.0), 160.0, sr), 160.0, sr)
+        y = y + thump * 0.6 * pk * norm(th)
+    return y

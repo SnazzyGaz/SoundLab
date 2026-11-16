@@ -8,10 +8,13 @@ physically informed stochastic models whose controls still map to real quantitie
 By Garyck Arntzen ([@_mintydoge](https://x.com/_mintydoge)). MIT licence. Standalone project; AIDAW uses it as
 a library/plugin.
 
-Status: **0.7.0**. Every recipe has macro sliders (size, distance, intensity, material, ...), seeded
+Status: **0.8.0**. New in 0.8: a body-weight `footstep` model (shoe: trainer/boot/heel; surface:
+wood/stone/gravel), the default `hit` is now a damped board knock (the old quick resonant sound is
+`dowel.json` / `-m object=dowel`), and a physical `coin` (drop with bounces and Euler's-disk wobble, plus a
+jingle; the retro blip stays as `blocks/coin_pickup.json`). Every recipe has macro sliders (size, distance, intensity, material, ...), seeded
 variations, batch export with sensible names and a quick audition loop. Physical models for the five reference sounds tuned by ear and to reference clips, plus a
 generic synth toolkit (oscillators, FM, noise, grains, filters, envelopes, distortion, delay, chorus, reverb)
-for non-physical game sounds. Next: macro sliders, seeded variations and batch export. See
+for non-physical game sounds. Next: more recipes (roadmap step 4) and the blind checkpoint. See
 [docs/roadmap.md](docs/roadmap.md).
 
 ## The five stages
@@ -24,7 +27,7 @@ excitation -> resonator -> radiation -> propagation -> room
 ```
 
 Every block has physical controls in real units with realistic ranges and sources (`soundlab describe <model>`).
-Complete sound models (`duck`, `engine`, `foghorn`, `explosion`, `match`, `fire`, `water`, `hit`) are built from
+Complete sound models (`duck`, `engine`, `foghorn`, `explosion`, `match`, `fire`, `water`, `hit`, `footstep`, `coin`) are built from
 the same blocks.
 
 ## Install

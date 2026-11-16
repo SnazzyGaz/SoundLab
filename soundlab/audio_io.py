@@ -31,7 +31,7 @@ def read_audio(path: str | Path, mono: bool = True) -> tuple[np.ndarray, int]:
                              capture_output=True, check=True)
         sr = int(subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a:0", "-show_entries",
                                  "stream=sample_rate", "-of", "csv=p=0", str(path)],
-                                capture_output=True, text=True, check=True).stdout.strip())
+                                capture_output=True, text=True, check=True).stdout.split()[0].strip(", "))
         return np.frombuffer(out.stdout, np.float32).astype(float), sr
     sr, x = wavfile.read(path)
     if x.dtype.kind == "i":

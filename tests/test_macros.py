@@ -32,6 +32,21 @@ def test_every_recipe_has_macros_and_is_unchanged_at_defaults(path):
     at_default = apply_macros(rec, macro_defaults(rec))
     at_default.pop("vary", None)
     assert at_default == _strip(rec), "macros at their defaults must leave the recipe exactly as written"
+    # apply_macros skips defaults (so fits can move what a default choice names); check the default
+    # choice's own list really is the identity, by forcing it
+    from soundlab.macros import _apply_one
+    for name, spec in rec["macros"].items():
+        if "choices" in spec:
+            forced = _strip(rec)
+            _apply_one(forced, name, spec, spec["default"])
+            assert forced == _strip(rec), f"default choice of macro {name!r} must leave the recipe as written"
+
+
+def test_fit_can_move_values_named_by_a_default_choice():
+    rec = soundlab.load_recipe(str(ROOT / "recipes" / "hit.json"))
+    rec["layers"][0]["params"]["thickness"] = 0.031
+    assert apply_macros(rec, {})["layers"][0]["params"]["thickness"] == 0.031
+    assert apply_macros(rec, {"object": "dowel"})["layers"][0]["params"]["thickness"] == 0.02
 
 
 @pytest.mark.parametrize("path", RECIPES, ids=lambda p: p.name)
@@ -44,7 +59,7 @@ def test_macro_extremes_render(path):
 
 
 def test_macro_mapping_mul_add_clamp_choice():
-    rec = soundlab.load_recipe(str(ROOT / "recipes" / "hit.json"))
+    rec = soundlab.load_recipe(str(ROOT / "recipes" / "dowel.json"))  # the v0.7 hit
     big = apply_macros(rec, {"size": 1.0})
     assert big["layers"][0]["params"]["length"] == pytest.approx(0.45 * 2.5)
     near = apply_macros(rec, {"distance": 0.0})

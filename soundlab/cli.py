@@ -109,7 +109,11 @@ def main(argv=None) -> int:
                 li, pname = key.split(".", 1)
                 layer = rec["layers"][int(li)]
                 tgt = layer if "model" in layer else layer["chain"][0]
-                tgt.setdefault("params", {})[pname] = json.loads(val) if val[:1] in "[{-0123456789tfn\"" else val
+                try:  # numbers, lists, true/false/null; anything else is a plain string (e.g. "trainer")
+                    parsed = json.loads(val)
+                except json.JSONDecodeError:
+                    parsed = val
+                tgt.setdefault("params", {})[pname] = parsed
             from .macros import parse_macro_args
             mv = parse_macro_args(args.macro)
             out = args.out or str(Path(args.recipe).with_suffix(".wav"))

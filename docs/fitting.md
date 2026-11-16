@@ -117,3 +117,35 @@ blast; match: strike + flame; shaker: the box shake). Fit reports are in the res
 v4 refits (new shaker and match models): shaker 0.761 -> 0.656 (dry, one fit pass), match 0.437 -> 0.423. The
 `matchbox` scene deliberately uses fewer items (60) and less slide than the fit asked for: the distance
 prefers a dense high-frequency fizz, which is the "frying" sound.
+
+## Fits to CC0 recordings (0.8.0)
+
+References: Freesound previews licensed CC0, kept OUTSIDE the repo (research folder `refs/cc0/`, with a
+SOURCES file listing URL, author and licence). Reference only; no audio or stems ship. Distance totals (lower is
+better) from `fit.compare_signals` at 24 kHz; "hold-out" = a second recording or a different step not used for
+fitting.
+
+| recipe | fit clip | v0.7 | v0.8 | hold-outs: v0.7 -> v0.8 |
+|---|---|---|---|---|
+| `footstep` (boot, wood) | wood-floor walk, one step | 0.499 | 0.383 | other wood recording 1.220 -> 0.902; another step 0.573 -> 0.472 |
+| `hit` (board) | door knock | 1.046 | 0.692 | second door knock 1.122 -> 0.906; single wood knock 1.205 -> 0.584 |
+| `coin` (drop, tile) | single coin drop | 1.119 (retro `coin_pickup`) | 0.695 | coin on ground 0.994 -> 0.504; coin on table 1.005 -> 0.798 |
+
+How each was done, honestly:
+- **Pitch first.** Only the coin has a pitch, and its ring (~9 kHz) is far above the YIN range that
+  `lock_pitch` uses (40-1500 Hz), so it was measured by hand: strongest 5-19 kHz peak after the first impact,
+  9054 Hz (pair 9022/9216 Hz). The default coin size (28.5 x 1.85 mm cupronickel, 9.1 kHz by free-plate
+  theory) was set from that before anything else was tuned. The footstep and knock have no pitch control;
+  their floor/panel modes were left to the fit.
+- **footstep:** CMA-ES (90 renders) on intensity, roll time, floor scale, damping, scuff and weight. The fit
+  pushed the walker's weight to the lower bound (45 kg); we kept 75 kg (an adult body weight; the `size`
+  macro goes lighter) and took the rest. That costs some of the gain (fit clip 0.339 -> 0.383) but both
+  hold-outs still improve. Stone was fitted the same way (leather shoes on concrete): small gain, kept as
+  offsets in the `surface: stone` choice; the second concrete recording got very slightly worse (0.930 ->
+  0.938). A gravel fit made both gravel hold-outs worse, so it was not kept.
+- **hit (board):** CMA-ES (90 renders) on thickness, damping, contact time, contact noise, thump, length and
+  noise centre. One hold-out improved a lot, the other door knock got worse than our first hand-set board
+  (0.847 -> 0.906) though still far better than v0.7. Recorded knocks are knuckle knocks, darker than a stick.
+- **coin:** a 7-control CMA-ES fit pushed two controls to their bounds and made the coin-on-ground hold-out
+  worse (0.521 -> 0.641), so it was rejected. Kept instead: one control (floor level 1 -> 2) plus the wobble
+  rework (rolling micro-contacts), which improves the fit clip and both hold-outs.

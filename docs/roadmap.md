@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of 0.7.0 (16 Nov 2026): steps 1-3 done. Re-ordered after a review of the plan with an outside critique: the
+Status as of 0.8.0 (16 Nov 2026): steps 1-3 done; step 4 started with v0.8's listening fixes (body-weight footsteps with shoe/surface, board knock + dowel preset, physical coin drop and jingle, fitted pitch-first with hold-outs on CC0 recordings kept outside the repo). Re-ordered after a review of the plan with an outside critique: the
 physics models stay as they are, and the next work is what makes SoundLab useful for game sound: generic
 blocks, macro sliders, variations and batch export, a recipe library, and a measured checkpoint.
 
