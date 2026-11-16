@@ -14,7 +14,7 @@
     "size": 1.1,
     "roughness": 0.6,
     "flutter_hz": 24.0,
-    "trill": 0.6,
+    "trill": 0.8,
     "wet": 0.5,
     "snarl": 0.3,
     "length_s": 2.6,
@@ -28,8 +28,8 @@
    "model": "room",
    "params": {
     "volume": 60,
-    "absorption": 0.3,
-    "source_distance": 2.0
+    "absorption": 0.6,
+    "source_distance": 1.0
    }
   }
  ],

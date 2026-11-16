@@ -3,14 +3,14 @@
  "name": "Door creak: stick-slip at the hinge as a door opens",
  "category": "door",
  "sample_rate": 48000,
- "duration": 2.4,
+ "duration": 3.2,
  "seed": 18,
  "layers": [
   {
    "name": "main",
    "model": "door_creak",
    "params": {
-    "open_s": 1.8,
+    "open_s": 2.6,
     "pitch_hz": 260.0,
     "pressure": 0.6,
     "wander": 0.35,

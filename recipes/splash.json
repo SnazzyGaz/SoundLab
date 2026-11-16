@@ -11,9 +11,9 @@
    "model": "splash",
    "params": {
     "size": 0.08,
-    "speed": 3.0,
+    "speed": 4.0,
     "bloop": 0.5,
-    "droplets": 0.8,
+    "droplets": 1.0,
     "at": 0.03
    }
   }

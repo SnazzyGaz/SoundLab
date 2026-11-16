@@ -625,8 +625,9 @@ Rain: individual near drops (impact click through the surface's response, and on
 | `hiss` | `0.6` |  | 0 .. 1 | level of the distant hiss |
 | `drop_mm` | `1.8` | mm | 0.5 .. 5 | median drop diameter (grows with rain rate) |
 | `brightness` | `0.5` |  | 0 .. 1 | top end of the hiss (0 = far/indoors, 1 = close, outdoors) |
+| `texture` | `0.0` |  | 0 .. 1 | v0.15 texture statistics: slow independent band swells, air up to 16 kHz and a few close, loud drops (0 = the v0.14 steady wash) |
 
-Sources: Marshall & Palmer 1948 (drop size distribution); Prosperetti & Oguz 1993 (rain bubbles); Wikipedia: Minnaert resonance; van den Doel 2005 (liquid sounds)
+Sources: McDermott & Simoncelli 2011 (sound texture statistics); Marshall & Palmer 1948 (drop size distribution); Prosperetti & Oguz 1993 (rain bubbles); Wikipedia: Minnaert resonance; van den Doel 2005 (liquid sounds)
 
 ### `glass_break`
 

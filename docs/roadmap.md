@@ -36,7 +36,10 @@ recipe sound and at least two listeners who did not tune the recipes.
   (crack, body, length of the tail), not only small numbers.
 - **Creature growl**: growls range from purr-like rumbles to bright, open snarls; the recipe sits at the deep
   end. A snarl preset (raised formants, more breath, less chest) would cover the bright end.
-- **Rain**: a bit static. Add slow variation (gusts of heavier drops, occasional near drops).
+- **Splash**: v0.15 sub-splashes and fizz brought the texture statistics closer, but the onset-aligned
+  envelope distance to hold-out splashes rose (0.68 -> 0.73); the plateau of continuous splashing is not modelled.
+- **Glass break**: still furthest from its hold-out recordings (fit 0.87); those are brighter at 4-8 kHz with
+  less 0.5-1 kHz than the engine.
 
 ## Known gaps
 
@@ -46,7 +49,8 @@ recipe sound and at least two listeners who did not tune the recipes.
 - Matchbox shake ~4 dB bright at 6.4-12.8 kHz.
 - The sword clash and bullet impacts follow the CC0 refs' bright balance; check them for tinny tops.
 - The pipe clang rings long (a free pipe does) and is very tonal.
-- Door creaks vary hugely in real life (CC0 refs from ~26 Hz ticking to a ~1.1 kHz squeal); ours sits at 260 Hz.
+- Door creaks vary hugely in real life (CC0 refs from ~26 Hz ticking to a ~1.1 kHz squeal); ours sits at 260 Hz
+  with slip-rate jumps of 0.6-1.6x.
 - Wind recorded on a bare microphone is mostly sub-60 Hz buffeting; ours only gets that from the `rumble`
   control, which stays low by default.
 - The `room` block's early reflections colour close, broadband sounds slightly (comb lines); close foley

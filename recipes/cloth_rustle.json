@@ -3,7 +3,7 @@
  "name": "Cloth rustle: clothing/fabric movement",
  "category": "foley",
  "sample_rate": 48000,
- "duration": 2.8,
+ "duration": 4.0,
  "seed": 25,
  "layers": [
   {
@@ -11,8 +11,8 @@
    "model": "rustle",
    "params": {
     "material": "cloth",
-    "moves": 4,
-    "length_s": 2.4,
+    "moves": 5,
+    "length_s": 3.7,
     "intensity": 0.5,
     "at": 0.03
    }
@@ -20,12 +20,10 @@
  ],
  "post": [
   {
-   "model": "room",
+   "model": "distance",
    "params": {
-    "volume": 80,
-    "absorption": 0.7,
-    "source_distance": 0.3,
-    "wet": 0.3
+    "distance": 0.5,
+    "spreading": false
    }
   }
  ],
@@ -123,7 +121,7 @@
    "doc": "near .. far (level, more room sound)",
    "map": [
     {
-     "to": "post.0.source_distance",
+     "to": "post.0.distance",
      "op": "mul",
      "points": [
       [

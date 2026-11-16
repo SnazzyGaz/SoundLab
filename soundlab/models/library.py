@@ -58,6 +58,35 @@ def damped_grain(sr, freqs, t60s, amps, L=None):
     return _mode_ir(sr, freqs, t60s, amps, max_len=L)
 
 
+def band_modulate(x, sr, rng, depth=0.3, rates=(0.5, 4.0), corr=0.3, f_lo=100.0, f_hi=16000.0, n_bands=14,
+                  tilt=None):
+    """Texture statistics (v0.15, after McDermott & Simoncelli 2011): split a noise texture into ~1/2-octave
+    bands and give every band its own slow random level fluctuation (log-normal, features 1/rates s long),
+    partly shared (`corr`, 0 = independent, 1 = one common envelope). Natural textures (rain, fabric, wind)
+    fluctuate band by band; one envelope on all bands makes their sub-band envelopes far more correlated
+    than recordings (measured: adjacent-band envelope correlation 0.84 vs 0.69-0.76 for cloth). `tilt`
+    optionally maps a per-sample control (-1..1) to a brightness change (dB per octave above 1 kHz). The
+    band split is a constant-Q bank whose sum is close to flat (ripple < 1 dB)."""
+    n = len(x)
+    cf = np.geomspace(f_lo, min(f_hi, 0.45 * sr), n_bands)
+    q = 1.0 / (2 ** (0.5 * np.log2(cf[1] / cf[0])) - 2 ** (-0.5 * np.log2(cf[1] / cf[0])))
+    lo_r, hi_r = rates
+    common = smooth_random(rng, n, sr, lo_r) + 0.6 * smooth_random(rng, n, sr, hi_r)
+    common /= common.std() + 1e-12
+    y = np.zeros(n)
+    flat = np.zeros(n)
+    for c in cf:
+        b = dsp.bandpass(x, c, sr, q)
+        own = smooth_random(rng, n, sr, lo_r * rng.uniform(0.8, 1.25)) + 0.6 * smooth_random(rng, n, sr, hi_r * rng.uniform(0.8, 1.25))
+        own /= own.std() + 1e-12
+        m = np.exp(depth * (math.sqrt(corr) * common + math.sqrt(1 - corr) * own) - 0.5 * depth ** 2)
+        if tilt is not None:
+            m = m * 10 ** (tilt * max(0.0, math.log2(c / 1000.0)) / 20)
+        y += b * m
+        flat += b
+    return y * (np.std(x) / (np.std(flat) + 1e-12))
+
+
 # =================================================================== wind
 @model("wind", "sound",
        "Wind: turbulence noise whose level and brightness follow a gusting wind speed (aeroacoustic dipole power "
@@ -152,20 +181,27 @@ RAIN_SURFACES = {
            Param("hiss", 0.6, "", 0, 1, "level of the distant hiss"),
            Param("drop_mm", 1.8, "mm", 0.5, 5, "median drop diameter (grows with rain rate)"),
            Param("brightness", 0.5, "", 0, 1, "top end of the hiss (0 = far/indoors, 1 = close, outdoors)"),
-       ], ["Marshall & Palmer 1948 (drop size distribution)", "Prosperetti & Oguz 1993 (rain bubbles)",
+           Param("texture", 0.0, "", 0, 1, "v0.15 texture statistics: slow independent band swells, air up to "
+                 "16 kHz and a few close, loud drops (0 = the v0.14 steady wash)"),
+       ], ["McDermott & Simoncelli 2011 (sound texture statistics)", "Marshall & Palmer 1948 (drop size distribution)", "Prosperetti & Oguz 1993 (rain bubbles)",
            "Wikipedia: Minnaert resonance", "van den Doel 2005 (liquid sounds)"])
-def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness):
+def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness, texture=0.0):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     su = RAIN_SURFACES[surface]
     R = rate_mm_h
     # only a gentle, slow variation (faster AM sounds like paper bags shuddering); the wash itself is stationary
-    swell = np.exp(0.05 * smooth_random(rng, n, sr, 0.1))
+    # v0.15 (texture > 0): recordings swell and ease by several dB over seconds (gusts carry the rain, the
+    # nearest gutter or leaf takes over), band by band; the steady v0.14 wash measured 5x too little slow
+    # envelope modulation against hold-out rain recordings.
+    swell = np.exp((0.05 + 0.2 * texture) * smooth_random(rng, n, sr, 0.1 + 0.3 * texture))
     out = np.zeros(n)
     if near > 0:
         rate = 25.0 * R ** 0.8 * swell                    # near drops heard individually (est.)
         idx = dsp.poisson_times(rng, rate, sr)
         D = np.clip(rng.exponential(drop_mm, len(idx)), 0.3, 6.0)
         amp = (D / drop_mm) ** 1.5
+        if texture > 0:                                   # the odd drop lands right by the microphone
+            amp = amp * np.where(rng.random(len(idx)) < 0.04 * texture, rng.uniform(2.0, 5.0, len(idx)), 1.0)
         imp = np.zeros(n)
         np.add.at(imp, idx, amp * rng.uniform(0.5, 1.0, len(idx)))
         # a drop is not a one-sample click (clicks crackle on top). Its impact lasts ~0.5-2 ms
@@ -190,12 +226,23 @@ def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness):
                     r = rng.uniform(0.25, 0.6) * d * 1e-3       # entrained bubble radius (est.)
                     dsp.place(b, bubble_grain(sr, r, 0.15), i + int(rng.uniform(0.005, 0.02) * sr), (d / drop_mm) ** 0.5)
             drops = drops + 0.8 * _norm(b)
+        if texture > 0:
+            # each near drop also throws a tiny spray of droplets: a 1-4 ms crackle of air above 4 kHz. Recorded
+            # rain is spiky up there (band-envelope kurtosis ~5); the v0.14 near drops stopped at 5 kHz.
+            spat = np.zeros(n)
+            sel = rng.random(len(idx)) < 0.6
+            for i, a in zip(idx[sel], amp[sel]):
+                L = int(rng.uniform(0.001, 0.004) * sr)
+                dsp.place(spat, rng.standard_normal(L) * np.exp(-np.arange(L) / (0.3 * L)), i, a)
+            spat = dsp.highpass(spat, 4000.0, sr)
+            drops = drops + 0.7 * texture * _norm(spat) * (np.std(_norm(drops)) / (np.std(_norm(spat)) + 1e-12))
         out += near * _norm(drops)
     if hiss > 0:
         # the diffuse wash (0.11): tens of thousands of distant micro-drops per second, each a soft 0.1-0.25 ms tap with a
         # random size, summed. Many independent taps average into a smooth, statistically stationary hiss with a
         # fine rain texture; no amplitude modulation is applied (the 0.10 30 Hz 'patter' AM was the shudder).
         top = 2200.0 + 4500.0 * brightness
+        top += texture * (14000.0 - top) * (0.4 + 0.6 * brightness)    # v0.15: air up to 14-16 kHz
         mrate = (25000.0 + 4000.0 * R) * swell                  # far drops per second (est.; enough to overlap)
         idx = dsp.poisson_times(rng, mrate, sr)
         imp = np.zeros(n)
@@ -205,12 +252,14 @@ def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness):
             part = imp * (rng.integers(0, 3, n) == k)
             w = max(3, int(w_ms * 1e-3 * sr))
             micro += np.convolve(part, _hann(w), "same")
-        h = dsp.lowpass(dsp.highpass(micro, 400.0, sr), top, sr)
+        h = dsp.lowpass(dsp.highpass(micro, 400.0, sr), min(top, 0.45 * sr), sr)
+        if texture > 0:
+            h = band_modulate(h, sr, rng, depth=0.5 * texture, rates=(0.3, 1.5), corr=0.4, f_lo=400.0)
         out += hiss * (0.45 + 0.6 * min(R / 20.0, 1.0)) * _norm(h)
         # the low wash of distant splashes and run-off: stationary
         wash = dsp.lowpass(dsp.highpass(dsp.pink(rng, n), 70.0, sr), 450.0, sr)
         out += hiss * (0.12 + 0.45 * min(R / 16.0, 1.0)) * _norm(wash)
-    return dsp.highpass(dsp.lowpass(out, 12000.0, sr), 60.0, sr)
+    return dsp.highpass(dsp.lowpass(out, min(12000.0 + 5000.0 * texture, 0.45 * sr), sr), 60.0, sr)
 
 
 # =================================================================== glass break
@@ -239,12 +288,12 @@ def glass_break(ctx: Ctx, x, size, thickness_mm, shards, energy, height, floor, 
     # loudest moment, with energy up to 16-20 kHz.
     L = int(0.03 * sr)
     tt = np.arange(L) / sr
-    crack = dsp.highpass(rng.standard_normal(L), 1500.0, sr) * np.exp(-tt / (0.004 + 0.006 * energy))
+    crack = dsp.highpass(dsp.highpass(rng.standard_normal(L), 1800.0, sr), 1800.0, sr) * np.exp(-tt / (0.004 + 0.006 * energy))
     f, a = mode_set("plate", materials.get("glass"), size, size * 0.75, h, 0, 30, None, 0.3, rng)
     pane = _mode_ir(sr, f, np.full(len(f), 0.03), a, max_len=int(0.1 * sr))
-    frac = 0.2 * _norm(pane)
+    frac = 0.08 * _norm(pane)
     frac[:L] += 0.9 * _norm(crack)
-    Lc = int((0.03 + 0.09 * energy) * sr)
+    Lc = int((0.02 + 0.05 * energy) * sr)
     tc = np.arange(Lc) / sr
     rate = (2500.0 + 4000.0 * energy) * np.exp(-tc / (0.012 + 0.03 * energy))
     idx = dsp.poisson_times(rng, rate, sr)
@@ -295,14 +344,35 @@ def glass_break(ctx: Ctx, x, size, thickness_mm, shards, energy, height, floor, 
     # gradually (no gap before them)
     tail = np.zeros(n)
     t_end = at + math.sqrt(2 * height / G)
-    for _ in range(int(shards * 0.4)):
+    for _ in range(int(shards * 0.2)):
         t = at + 0.05 + rng.exponential(0.6 * (t_end - at) + 0.1)
-        fr = rng.uniform(3000, 11000) * np.array([1.0, 1.62])
+        fr = rng.uniform(2000, 8000) * np.array([1.0, 1.62])
         dsp.place(tail, _mode_ir(sr, fr, [0.04, 0.03], [1, .5]), int(t * sr),
-                  rng.uniform(0.05, 0.3) * math.exp(-max(0.0, t - t_end) / 0.4))
-    # big pieces land flat and are choked by the floor: their low modes hardly ring (high-pass, est.)
+                  rng.uniform(0.05, 0.3) * math.exp(-max(0.0, t - t_end) / 0.25))
+    # v0.15 clatter: what a recording of a break is mostly made of is a handful of distinct crashes - big
+    # pieces hitting the sill and the floor and each other, each one a broadband smash (a few ms of noise with
+    # a glassy ring and a dull low knock), spread irregularly over the first second and getting weaker.
+    # Hold-out breaks: a sawtooth of separate hits (mid-band envelope kurtosis ~5), brightest at 4-8 kHz; the v0.14 engine was one crack followed by a smooth, dense, high tinkle wash.
+    clat = np.zeros(n)
+    tk = at + rng.uniform(0.03, 0.12)
+    amp = 1.0
+    for _ in range(int(rng.integers(4, 9))):
+        L = int(rng.uniform(0.002, 0.007) * sr)
+        burst = rng.standard_normal(L) * np.exp(-np.arange(L) / (0.25 * L))
+        thud = dsp.lowpass(burst, 200.0, sr)
+        burst = dsp.highpass(dsp.highpass(dsp.lowpass(burst, floor_lp, sr), 1800.0, sr), 1800.0, sr)
+        fr = rng.uniform(2500, 6000) * np.array([1.0, rng.uniform(2.6, 2.9), rng.uniform(5.0, 5.6)])
+        ring = _mode_ir(sr, fr, [0.03, 0.02, 0.012], [1, .6, .35], max_len=int(0.08 * sr))
+        hit = np.zeros(L + len(ring))
+        hit[:L] += _norm(burst)
+        hit[:len(ring)] += 0.5 * _norm(ring)
+        hit[:L] += 0.2 * _norm(thud)
+        dsp.place(clat, hit, int(tk * sr), amp * rng.uniform(0.5, 1.0))
+        tk += rng.exponential(0.09) + 0.03
+        amp *= rng.uniform(0.5, 0.9)
+    # big pieces land flat and are choked by the floor: their low modes ring little (gentle high-pass)
     debris = dsp.highpass(dsp.lowpass(_norm(shard_out) + 0.3 * _norm(tail), floor_lp, sr), 1000.0, sr)
-    out += 0.2 * _norm(debris) * (0.7 + 0.3 * energy)
+    out += 0.2 * _norm(debris) * (0.7 + 0.3 * energy) + 0.6 * _norm(clat) * (0.5 + 0.5 * energy)
     return dsp.highpass(dsp.lowpass(out, 18000.0, sr), 150.0, sr)
 
 
@@ -444,27 +514,63 @@ def door_creak(ctx: Ctx, x, open_s, pitch_hz, pressure, wander, hinge, door_size
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     t = np.arange(n) / sr
     u = np.clip((t - at) / open_s, 0, 1)
-    speed = np.sin(np.pi * u) ** 0.8 * (1 + 0.25 * wander * smooth_random(rng, n, sr, 2.5))
+    # v0.15: the hand does not move the door in one smooth arc: two or three pushes of different strength,
+    # and the hinge grabs and lets go, so the level is jagged (recordings) rather than a symmetric swell
+    speed = np.zeros(n)
+    for _ in range(int(rng.integers(2, 4))):
+        c, w = rng.uniform(0.15, 0.85), rng.uniform(0.18, 0.4)
+        speed += rng.uniform(0.5, 1.0) * np.exp(-0.5 * ((u - c) / w) ** 2)
+    speed *= np.sin(np.pi * u) ** 0.5
+    speed = speed / (speed.max() + 1e-12) * np.exp(0.35 * wander * smooth_random(rng, n, sr, 4.0))
     speed = np.clip(speed, 0, None) * (u < 1) * (t >= at)
-    rate = pitch_hz * (0.35 + 0.65 * speed) * (0.8 + 0.4 * pressure) * (1 + 0.08 * wander * smooth_random(rng, n, sr, 6))
-    pulses = np.zeros(n)
-    tt = at
-    while tt < min(at + open_s, n / sr):
-        i = int(tt * sr)
+    # the hinge chatters: grip strength flutters several times a second (4-16 Hz level modulation in recordings)
+    chatter = np.clip(1 + 0.45 * wander * 2 * smooth_random(rng, n, sr, 9.0), 0.15, None)
+    # stick-slip as a continuous relaxation oscillation: within each cycle the friction force builds up
+    # (stick) and drops in a fraction of the cycle (slip) - a sawtooth-like wave, so the creak is a continuous
+    # squeal with strong harmonics. The v0.14 version put a 4-sample click per slip: too spiky and too
+    # regular (band-envelope kurtosis 1.7 vs -0.3 in recordings). The slip rate jumps between regimes
+    # (the hinge locks into a different mode), glides, and jitters cycle to cycle (shimmer and jitter).
+    regime = np.ones(n)
+    tj = at
+    cur = 1.0
+    while tj < at + open_s:
+        dur = rng.exponential(0.35)
+        nxt = cur if rng.random() < 0.4 else float(rng.choice([0.6, 0.8, 1.0, 1.0, 1.3, 1.6]))
+        a0, a1 = int(tj * sr), min(n, int((tj + dur) * sr))
+        if a1 > a0:
+            g = min(a1 - a0, int(0.04 * sr))
+            seg = np.full(a1 - a0, nxt)
+            seg[:g] = np.linspace(cur, nxt, g)               # a quick glide into the new regime
+            regime[a0:a1] = seg
+        cur, tj = nxt, tj + dur
+    rate = pitch_hz * (0.45 + 0.55 * speed) * (0.8 + 0.4 * pressure) * regime \
+        * (1 + 0.06 * wander * smooth_random(rng, n, sr, 8))
+    exc = np.zeros(n)
+    i = int(at * sr)
+    end = min(n, int((at + open_s) * sr))
+    while i < end:
         sp = speed[i]
-        if sp > 0.06:
-            dsp.place(pulses, _hann(4), i, (sp ** 0.6) * (0.6 + 0.8 * pressure) * rng.uniform(0.7, 1.3))
-            tt += (1.0 / rate[i]) * (1 + 0.12 * wander * rng.standard_normal())
-        else:
-            tt += rng.uniform(0.005, 0.03)       # nearly stopped: sparse ticks
-            if rng.random() < 0.4:
-                dsp.place(pulses, _hann(4), int(tt * sr), 0.3 * rng.uniform(0.5, 1.0))
+        if sp < 0.08:                                         # nearly stopped: sparse dry ticks
+            i += int(rng.uniform(0.006, 0.03) * sr)
+            if rng.random() < 0.4 and i < n:
+                dsp.place(exc, _hann(6), i, 0.25 * rng.uniform(0.5, 1.0))
+            continue
+        L = max(4, int(sr / rate[i] * (1 + 0.1 * wander * rng.standard_normal())))
+        slip = max(2, int(L * rng.uniform(0.1, 0.25)))
+        cyc = np.concatenate([np.linspace(-0.5, 0.5, L - slip), np.linspace(0.5, -0.5, slip)])
+        dsp.place(exc, cyc * (sp ** 0.7) * chatter[i] * (0.6 + 0.8 * pressure) * rng.uniform(0.75, 1.25), i)
+        i += L
+    # rubbing noise at the pin, following the speed (recordings have a friction floor under the squeal)
+    fric = dsp.bandpass(dsp.white(rng, n), 2500.0, sr, 0.5) * speed ** 1.2
     hf = np.array([1150.0, 2350.0, 3900.0]) * rng.uniform(0.9, 1.1, 3)
-    hinge_y = _conv(pulses, _mode_ir(sr, hf, [0.02, 0.015, 0.01], [1, .6, .3]))
+    hinge_y = _conv(exc, _mode_ir(sr, hf, [0.012, 0.009, 0.006], [1, .6, .3])) + 0.4 * dsp.highpass(exc, 600.0, sr)
     f, a = mode_set("plate", materials.get("oak"), 2.0 * door_size, 0.8 * door_size, 0.04, 0, 60, None, 0.1, rng)
-    door_y = _conv(pulses, _mode_ir(sr, f * rng.uniform(0.97, 1.03, len(f)), 6.91 / (np.pi * f * 0.01 + 40.0), a))
-    out = hinge * _norm(hinge_y) + (1 - 0.6 * hinge) * _norm(door_y)
-    return dsp.highpass(dsp.lowpass(out, 9000.0, sr), 70.0, sr)
+    door_y = _conv(exc, _mode_ir(sr, f * rng.uniform(0.97, 1.03, len(f)), 6.91 / (np.pi * f * 0.01 + 40.0), a))
+    # the squeal sits in the mid and upper-mid (hold-out creaks: most energy 400 Hz-7 kHz); the leaf adds
+    # body below but the sawtooth's fundamental is not allowed to boom
+    out = hinge * _norm(hinge_y) + (1 - 0.6 * hinge) * 0.6 * _norm(dsp.highpass(door_y, 250.0, sr))
+    out = out + 0.15 * np.std(out) / (np.std(fric) + 1e-12) * fric
+    return dsp.highpass(dsp.lowpass(out, 9000.0, sr), 90.0, sr)
 
 
 @model("door_slam", "sound",
@@ -826,15 +932,17 @@ def growl(ctx: Ctx, x, f0, size, roughness, flutter_hz, trill, wet, snarl, lengt
     env = np.where(on, attack * sag * release, 0.0)
     env *= (1 + rise * 0.25 * np.sin(np.pi * u)) * np.exp(0.2 * smooth_random(rng, n, sr, 1.5))   # swells
     chaos = 0.03 + 0.08 * roughness
+    # v0.15: the pitch is never held: the growl slides up into the effort and sags with the breath, with slow
+    # bends of a few semitones (fixed harmonics read as synthetic against hold-out growls)
     fcurve = f0 * (1 + rise * 0.2 * np.sin(np.pi * u)) * np.exp(chaos * smooth_random(rng, n, sr, 5)
-                                                                + 0.02 * smooth_random(rng, n, sr, 1))
+                                                                + 0.08 * smooth_random(rng, n, sr, 0.8))
     gate = trill_gate(rng, n, sr, flutter_hz, trill) if trill > 0 else np.ones(n)
     # v0.14 source: a longer open phase and a slow return phase. The closure is soft tissue meeting soft
     # tissue, so each cycle carries little energy above ~1 kHz; sharp closures plus the tract made a
     # stick-slip judder: a pushed object, not a throat
     # Cycle-to-cycle jitter kept moderate (~1-4%): the CC0 growls show clear harmonics up to 2-5 kHz, their
     # roughness comes from subharmonics and the trill; 6-9% jitter smeared the harmonics into scraping noise.
-    src, flow = glottal_source(rng, n, sr, fcurve, env * gate, jitter=0.01 + 0.035 * roughness,
+    src, flow = glottal_source(rng, n, sr, fcurve, env * gate ** 2, jitter=0.01 + 0.035 * roughness,
                                shimmer=0.05 + 0.15 * roughness, subharm=0.3 + 0.6 * roughness, oq=0.75, ta=0.12)
     # wet throat: turbulent noise riding on the airflow and choked by the trill (it gurgles with it)
     turb = dsp.bandpass(rng.standard_normal(n), 700.0, sr, 0.5) * (0.25 + dsp.lowpass(flow, 300.0, sr)) * env * gate
@@ -857,7 +965,21 @@ def growl(ctx: Ctx, x, f0, size, roughness, flutter_hz, trill, wet, snarl, lengt
         y = y + g * dsp.svf(exc, np.clip(fk * move, 40, 0.45 * sr), 1.8 + 0.3 * k, sr, "bp")
     chest = dsp.lowpass(dsp.lowpass(srcn, 220.0, sr), 220.0, sr)       # guttural bass: fundamental + subharmonic
     y = _norm(y) + 0.8 * _norm(chest)
-    return dsp.highpass(dsp.lowpass(dsp.lowpass(y, 3500.0, sr, 0.6), 8000.0, sr), 30.0, sr)
+    # v0.15: darker voiced mids (hold-out growls: 2-7 kHz some 10 dB below the v0.14 engine)
+    y = dsp.lowpass(dsp.lowpass(y, 2000.0, sr, 0.6), 5000.0, sr)
+    # The uvula is audible as a rattle: each time the flap lets go, the trapped air bursts through as a short
+    # noisy flutter (500 Hz-5 kHz). And the breath itself hisses through the throat, chopped by every
+    # glottal pulse and by the trill: real growls carry fast-modulated (16-128 Hz) noise above 7 kHz that the
+    # v0.14 engine lacked entirely (its top band only drifted slowly).
+    rel = np.maximum(np.diff(gate, prepend=gate[0]), 0.0)
+    rel = np.convolve(rel, _hann(int(0.012 * sr)), "same")
+    rel = rel / (rel.max() + 1e-12)
+    rattle = dsp.lowpass(dsp.bandpass(dsp.white(rng, n), 900.0, sr, 0.7), 3000.0, sr) * rel * env
+    pulse = dsp.lowpass(np.abs(np.gradient(flow)), 400.0, sr)
+    pulse = np.clip(pulse / (np.percentile(pulse, 95) + 1e-12), 0, 1.5) ** 2
+    breath = dsp.highpass(dsp.white(rng, n), 3000.0, sr) * env * gate ** 2 * (0.05 + pulse)
+    y = _norm(y) + 0.35 * trill * _norm(rattle) + (0.015 + 0.03 * wet) * _norm(breath)
+    return dsp.highpass(dsp.lowpass(y, 14000.0, sr), 30.0, sr)
 
 
 # =================================================================== rustle
@@ -910,21 +1032,33 @@ def rustle(ctx: Ctx, x, material, moves, length_s, intensity, at):
         held = ((tt >= at) & (tt < at + span)).astype(float)
         held = np.convolve(held, _hann(int(0.1 * sr)) / (0.05 * sr), "same")
         g = g / (g.max() + 1e-12)
-        g = np.maximum(g, 0.06 * held)                     # fibres keep brushing between strokes
-        hiss = dsp.lowpass(dsp.lowpass(dsp.white(rng, n), 9000.0, sr, 0.6), 14000.0, sr)
+        g = np.maximum(g, 0.2 * held) ** 0.8               # fibres keep brushing between strokes
+        hiss = dsp.lowpass(dsp.lowpass(dsp.white(rng, n), 8000.0, sr, 0.6), 12000.0, sr)
         hiss = hiss + 0.5 * dsp.bandpass(dsp.pink(rng, n), 900.0, sr, 0.5)
-        fr = hiss * g * (1 + 0.25 * smooth_random(rng, n, sr, 25))
-        # fibre stick-slip: dense micro-crackle riding on the speed, which gives the rub its crisp grain
+        # v0.15: different patches of fabric take over from moment to moment, so each band comes and goes on
+        # its own (band envelopes far less correlated than one envelope on everything) and the brightness
+        # follows the hand speed
+        tilt = 3.0 * (g - 0.5)
+        fr = band_modulate(hiss, sr, rng, depth=0.6, rates=(0.5, 2.5), corr=0.3, f_lo=150.0, tilt=tilt) * g
+        # fibre stick-slip: dense micro-crackle riding on the speed, heavy-tailed sizes so the odd louder
+        # snag stands out (recordings: spiky band envelopes, positive kurtosis)
         idx = dsp.poisson_times(rng, (400 + 1600 * intensity) * g ** 1.5, sr)
         cr = np.zeros(n)
-        cr[idx] = rng.pareto(2.5, len(idx)) * rng.choice([-1, 1], len(idx))
+        cr[idx] = np.minimum(rng.pareto(2.0, len(idx)), 12.0) * rng.choice([-1, 1], len(idx))
         cr = dsp.highpass(cr, 2500.0, sr)
         snaps = np.zeros(n)
         idx = dsp.poisson_times(rng, 6 * intensity * g, sr)
         snaps[idx] = rng.uniform(0.5, 1.0, len(idx))
         # a soft low bump from the arm/body moving the garment
         body = dsp.lowpass(dsp.brown(rng, n), 200.0, sr) * g
-        out = _norm(fr) + 0.25 * _norm(cr) + 0.15 * _norm(dsp.bandpass(snaps, 1200.0, sr, 1.0)) + 0.12 * _norm(body)
+        # sparse soft knocks of buttons, seams and the arm under the garment (low and irregular)
+        knocks = np.zeros(n)
+        for j in dsp.poisson_times(rng, 2.5 * g, sr):
+            L = int(rng.uniform(0.01, 0.04) * sr)
+            dsp.place(knocks, dsp.lowpass(rng.standard_normal(L) * _hann(L), rng.uniform(250, 700), sr), j,
+                      rng.uniform(0.3, 1.0))
+        out = _norm(fr) + 0.2 * _norm(cr) + 0.08 * _norm(dsp.bandpass(snaps, 1200.0, sr, 1.0)) \
+            + 0.12 * _norm(body) + 0.3 * _norm(knocks)
         return dsp.highpass(dsp.lowpass(out, 16000.0, sr), 60.0, sr)
     return dsp.highpass(dsp.lowpass(out, 13000.0, sr), 150.0, sr)
 
@@ -963,14 +1097,29 @@ def splash(ctx: Ctx, x, size, speed, bloop, droplets, at):
     plunk = np.sin(2 * np.pi * f_pl * tt * (1 + 2.0 * tt)) * np.exp(-tt / (0.012 + 0.04 * size)) \
         * (1 - np.exp(-tt / 0.002))
     thud = dsp.lowpass(rng.standard_normal(L), 300.0, sr) * np.exp(-tt / (0.004 + 0.02 * size))
-    dsp.place(out, _norm(crack) + 0.6 * _norm(plunk) + 0.4 * _norm(thud), i0, 1.0)
+    # v0.15: the low end of a real splash is the water mass moving (a noisy, longer churn), not one tonal
+    # plunk: the plunk alone gave an isolated low spike (low-band envelope kurtosis 5 vs ~1 in recordings)
+    # and 63-125 Hz some 8 dB too strong
+    dsp.place(out, _norm(crack) + 0.12 * _norm(plunk) + 0.1 * _norm(thud), i0, 1.0)
     # (2) crown / sheet: smooth broadband burst, single envelope (no AM)
     dur = 0.04 + 0.12 * min(E, 3.0) ** 0.5
     Lw = int(dur * 4 * sr)
     tw = np.arange(Lw) / sr
-    sheet = dsp.lowpass(dsp.highpass(rng.standard_normal(Lw), 300.0, sr), 7000.0 / (1 + 2 * size), sr) \
+    sheet = dsp.lowpass(dsp.highpass(rng.standard_normal(Lw), 300.0, sr), 11000.0 / (1 + 2 * size), sr) \
         * (1 - np.exp(-tw / 0.004)) * np.exp(-tw / dur)
     dsp.place(out, _norm(sheet), i0 + int(0.002 * sr), 0.45)
+    # v0.15 sub-splashes: the crown collapses, the jet falls back, the object bobs: two to four further
+    # slaps and gushes of different size over the next half second. Hold-out splashes have an irregular
+    # level with second peaks and a plateau; the v0.14 engine decayed smoothly in dB from the first hit.
+    ts = at + 0.04
+    for _ in range(int(rng.integers(1, 4))):
+        ts += rng.uniform(0.06, 0.25)
+        ds = rng.uniform(0.03, 0.12) * min(E, 3.0) ** 0.3
+        Ls = int(ds * 4 * sr)
+        tsw = np.arange(Ls) / sr
+        gush = dsp.lowpass(dsp.highpass(rng.standard_normal(Ls), rng.uniform(200, 600), sr),
+                           rng.uniform(5000, 12000), sr) * (1 - np.exp(-tsw / rng.uniform(0.002, 0.015))) * np.exp(-tsw / ds)
+        dsp.place(out, _norm(gush), int(ts * sr), 0.45 * rng.uniform(0.2, 0.6))
     # (3) cavity collapse: pinch-off bubble, damped x2, natural small pitch rise (xi ~ 0.1)
     r = np.clip(0.15 * size, 0.002, 0.06) * rng.uniform(0.85, 1.15)
     tb = at + 0.03 + 0.3 * size / max(speed, 0.5) ** 0.5
@@ -992,7 +1141,7 @@ def splash(ctx: Ctx, x, size, speed, bloop, droplets, at):
         for _ in range(k):
             t = at + 0.03 + rng.gamma(2.0, t_peak / 1.0)
             i = int(t * sr)
-            if i >= n - 10:
+            if i >= n - 10 or t > at + 2.5 * t_peak + 0.4:     # no stray late drops after the wash
                 continue
             a = rng.pareto(2.0) + 0.2
             a = min(a, 3.0) * np.exp(-max(0.0, t - at - t_peak) / 0.3)
@@ -1010,13 +1159,23 @@ def splash(ctx: Ctx, x, size, speed, bloop, droplets, at):
         # it swells as the thrown-up water lands (peak near t_peak) and dies away after it
         tr = np.maximum(t - at, 0)
         decay = (0.4 * np.exp(-tr / 0.12) + 0.6 * (tr / t_peak) ** 1.5 * np.exp(1.5 * (1 - tr / t_peak))
-                 * np.where(tr > t_peak, np.exp(-(tr - t_peak) / 0.5), 1.0)) * np.clip(tr / 0.03, 0, 1) * (t >= at)
-        churn = dsp.lowpass(dsp.highpass(rng.standard_normal(n), 250.0, sr), 4500.0, sr) * decay
+                 * np.where(tr > t_peak, np.exp(-(tr - t_peak) / 0.4), 1.0)) * np.clip(tr / 0.03, 0, 1) * (t >= at)
+        # the churn does not die smoothly: the water sloshes back and forth (irregular 2-10 Hz swells)
+        decay = decay * np.exp(0.5 * smooth_random(rng, n, sr, 5.0))
+        churn = dsp.lowpass(dsp.highpass(rng.standard_normal(n), 250.0, sr), 4500.0, sr) * decay \
+            + 0.5 * dsp.lowpass(dsp.highpass(rng.standard_normal(n), 60.0, sr), 300.0, sr) * decay   # the mass of water moving
         cloud = np.zeros(n)
         for j in dsp.poisson_times(rng, 900.0 * decay, sr):
             rr = rng.uniform(0.001, 0.004)
             gb = bubble_grain(sr, rr, 0.12)
-            dsp.place(cloud, gb[: int(0.01 * sr)], j, rng.uniform(0.2, 1.0))
-        wash = 0.6 * _norm(churn) + 0.5 * _norm(cloud)
+            dsp.place(cloud, gb[: int(0.01 * sr)], j, rng.uniform(0.2, 1.0) * min(1.0, decay[j] / 0.3))   # late bubbles are small
+        # fizz: the bursting film of the foam - air above 6 kHz chopped fast (hold-out splashes flutter at
+        # 16-128 Hz up there; the v0.14 top was nearly empty)
+        fz = np.zeros(n)
+        for j in dsp.poisson_times(rng, 1500.0 * decay, sr):
+            Lf = int(rng.uniform(0.0003, 0.002) * sr) + 2
+            dsp.place(fz, rng.standard_normal(Lf) * _hann(Lf), j, (min(rng.pareto(2.0), 6.0) + 0.2) * min(1.0, decay[j] / 0.3))
+        fz = dsp.highpass(fz, 6000.0, sr)
+        wash = 0.6 * _norm(churn) + 0.5 * _norm(cloud) + 0.8 * _norm(fz)
         out += droplets * (0.3 * _norm(dr) + 0.35 * _norm(wash))
-    return dsp.highpass(dsp.lowpass(out, 14000.0, sr), 40.0, sr)
+    return dsp.highpass(dsp.lowpass(out, 16000.0, sr), 40.0, sr)

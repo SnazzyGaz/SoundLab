@@ -250,3 +250,58 @@ mean over three variations); "bands" is the mean octave-band difference 125 Hz-1
   that move with the jaw, a stronger chest band, a growl that builds and sags like one breath, a lower
   pitch (55 Hz) and a longer default (2.6 s). The bright `growl_2` reference is further away on bands: the
   recipe sits at the deep end (see the roadmap).
+
+## Texture statistics against hold-out recordings (v0.15)
+
+Seven sounds were compared with real recordings using texture statistics in the style of McDermott &
+Simoncelli (2011): 20 ERB-spaced bands from 80 Hz to 14 kHz, compressed Hilbert envelopes, and per band the
+level, coefficient of variation, kurtosis, modulation power in octave bands from 0.5 to 128 Hz, and the
+correlation of each band's envelope with its neighbour and with the band four away. Hold-out recordings (later
+windows of longer files and further public-domain / CC recordings, none used for tuning before) were weighted
+over the references already used. "Texture" is the mean |z| of the engine's statistics against the
+recordings (lower is better); "fit" is `compare_signals`. Both averaged over three variations.
+
+| sound | texture, hold-out | fit, hold-out | texture, earlier refs | fit, earlier refs |
+|---|---|---|---|---|
+| cloth_rustle | 1.31 -> 0.65 | 0.858 -> 0.554 | 1.28 -> 0.61 | 0.884 -> 0.534 |
+| creature_growl | 0.74 -> 0.55 | 0.776 -> 0.757 | 0.67 -> 0.48 | 0.692 -> 0.678 |
+| glass_break | 1.09 -> 0.73 | 0.939 -> 0.870 | 0.66 -> 0.55 | 0.504 -> 0.504 |
+| splash | 1.07 -> 0.82 | 0.683 -> 0.730 | 1.07 -> 0.84 | 0.702 -> 0.763 |
+| wind_gap | 1.28 -> 0.68 | 0.786 -> 0.733 | 1.00 -> 0.64 | 0.479 -> 0.437 |
+| door_creak | 0.85 -> 0.58 | 0.822 -> 0.766 | 0.93 -> 0.67 | 0.786 -> 0.711 |
+| rain | 0.76 -> 0.61 | 0.682 -> 0.608 | 0.42 -> 0.63 | 0.391 -> 0.374 |
+
+A new helper, `band_modulate`, splits a noise texture into half-octave bands and gives each band its own slow
+log-normal level fluctuation, partly shared (`corr`). The other 30 recipes render bit-identically.
+
+- **Cloth rustle**: one noise source under one hand-speed envelope made every band rise and fall together
+  (adjacent-band envelope correlation 0.84 vs 0.69-0.76), the dips between strokes were deeper than in
+  recordings, and the room's early reflections drew comb lines. Now the friction hiss goes through
+  `band_modulate` (bands come and go on their own, brightness follows the hand speed), a higher floor between
+  strokes, heavier-tailed fibre snags, sparse soft knocks of seams and buttons, a 4 s gesture, and the
+  `distance` block instead of the room (no comb lines).
+- **Creature growl**: no energy above 7 kHz and what was there only drifted slowly (recordings: breath noise
+  chopped at 16-128 Hz), voiced energy at 2-7 kHz too strong against the hold-out growls, and the pitch held
+  still. Now breath noise above 3 kHz is chopped by each glottal pulse and by the trill, the uvula is
+  audible as a rattle each time the flap lets go, the trill chokes the voice more deeply (`trill` 0.8), the
+  voiced mids are darker, the pitch bends slowly by a few semitones, and the room is closer and drier.
+- **Glass break**: one crack followed by a smooth, dense, high tinkle wash (mid-band envelope kurtosis
+  negative; recordings: a sawtooth of separate hits). Now a handful of distinct crashes (broadband smash,
+  short glassy ring, dull knock), spaced irregularly and getting weaker, a shorter fracture cascade, fewer
+  shards (30), shorter late tinkles and a drier room.
+- **Splash**: the low end was a lone tonal plunk (low-band envelope kurtosis 5 vs ~1, 63-125 Hz too strong)
+  and the level decayed smoothly in dB from the first hit. Now the low end is moving water (noisy churn), with
+  one to three sub-splashes (the crown collapsing, the jet falling back), sloshing swells in the wash, a fizz
+  of bursting foam above 6 kHz, late bubbles that get smaller, and no stray late drops.
+- **Wind gap**: the gust envelope was too deep: one common envelope on all bands made them far too correlated
+  (band four apart 0.54 vs 0.29) and the slow modulation dominated where recordings are mostly fast, steady
+  turbulence. Gustiness 0.45 -> 0.1, slower gusts, and a louder whistle (it sounds above a threshold speed).
+  The `wind` model is unchanged.
+- **Door creak**: a click per slip with a smooth speed arc: too regular and spiky at 2-4 kHz (envelope
+  kurtosis 1.7 vs -0.3). Now stick-slip is a continuous relaxation oscillation (force builds, drops in
+  10-25 % of the cycle), with slip-rate regime jumps (0.6-1.6x, quick glides), cycle jitter and shimmer, grip
+  chatter at ~9 Hz, two or three pushes of different strength, a friction-noise floor, a lighter low end, and
+  a slower opening (2.6 s).
+- **Rain**: no air above 7 kHz (12 kHz low-pass, dull hiss), five times too little slow modulation, and a
+  uniform fine texture. A new `texture` control (default 0, so other uses are unchanged) adds slow band-by-band
+  swells, air up to 14-16 kHz, a few drops right by the microphone and a tiny spray crackle on each near drop.
