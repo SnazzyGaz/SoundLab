@@ -23,7 +23,10 @@ my_library\
 
 - WAV always works; MP3/FLAC/OGG work when ffmpeg is installed.
 - One sound per file is best (one shot, one slam, a few steps); clips are cut to 4 seconds from the first
-  sound, faded out and loudness-matched, and the engine clips get exactly the same treatment.
+  sound, the decayed tail is trimmed (40 dB under the loudest moment), and every clip is matched in loudness
+  (BS.1770, -20 LUFS max momentary, -1 dBTP ceiling). The engine clips get exactly the same treatment, so
+  level and dead air give nothing away. Within each sound, all clips are also cut to the same
+  length (keeping the loudest part) and set to the same loudness.
 - Use recordings you are allowed to use (your own, a licensed sample library, CC0). Never put them in the
   SoundLab folder: the repo has a test that fails if any audio is found there.
 - Sounds without a matching recipe name are skipped and listed. Useful names: `bullet_impact`,

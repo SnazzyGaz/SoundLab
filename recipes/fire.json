@@ -182,5 +182,9 @@
   "0.crackle_rate": {
    "rel": 0.2
   }
+ },
+ "loop": {
+  "lead_s": 4.0,
+  "xfade_s": 0.5
  }
 }

@@ -113,6 +113,7 @@ class App:
             advanced.append(self._block_controls(f"post.{j}", "post", b))
         return {"id": rid, "name": r.get("name") or Path(rid).name, "category": r.get("category", "sfx"),
                 "duration": r.get("duration", 3.0), "seed": r.get("seed", 0), "macros": macros,
+                "loopable": bool(r.get("loop")),
                 "advanced": advanced, "vary": r.get("vary", {})}
 
     @staticmethod
@@ -156,10 +157,25 @@ class App:
         r["category"] = raw.get("category", r.get("category", "sfx"))
         return r, seed
 
-    def render(self, req: dict) -> dict:
+    def finished_audio(self, req: dict):
+        """Render as it will be exported: tail trim + loudness per category (or raw peak), or a seamless loop."""
+        from .. import render_loop
+        from ..finish import finish
+        raw = load_recipe(self.recipe_path(req["id"]))
         r, seed = self.concrete(req)
+        loop = float(req.get("loop") or 0) or None
+        if loop:
+            loop = max(1.0, min(loop, 120.0))
+            audio, sr = render_loop(r, loop, seed=seed)
+        else:
+            audio, sr = render_recipe(r, seed=seed)
+        audio, fin = finish(audio, sr, raw, level=req.get("level") or "lufs", trim=req.get("trim", True) is not False,
+                            loop=bool(loop))
+        return audio, sr, fin
+
+    def render(self, req: dict) -> dict:
         t0 = time.time()
-        audio, sr = render_recipe(r, seed=seed)
+        audio, sr, fin = self.finished_audio(req)
         dt = time.time() - t0
         key = uuid.uuid4().hex[:12]
         with self.lock:
@@ -168,6 +184,7 @@ class App:
             while len(self.order) > self.cache_size:
                 self.cache.pop(self.order.pop(0), None)
         return {"key": key, "url": f"/api/audio/{key}.wav", "sample_rate": sr, "seconds": len(audio) / sr,
+                "finish": fin,
                 "render_s": round(dt, 3), "peak": float(np.max(np.abs(audio)) if len(audio) else 0.0),
                 "waveform": waveform(audio), "spectrogram": spectrogram(audio, sr)}
 
@@ -176,6 +193,8 @@ class App:
         raw = load_recipe(self.recipe_path(req["id"]))
         defaults = {n: s.get("default", 0.5) for n, s in raw.get("macros", {}).items()}
         tags = {n: v for n, v in (req.get("macros") or {}).items() if n in defaults and v != defaults[n]}
+        if req.get("loop"):
+            tags["loop"] = f"{max(1.0, min(float(req['loop']), 120.0)):g}s"
         name = file_name(raw, Path(req["id"]).name, k, tags, ext)
         if req.get("overrides") or req.get("seed") not in (None, ""):
             name = name.replace(f"_v{k + 1:02d}{ext}", f"_custom_v{k + 1:02d}{ext}")
@@ -185,11 +204,10 @@ class App:
         from ..audio_io import write_mp3, write_wav
         k = int(req.get("variation") or 0) if k is None else k
         rq = dict(req, variation=k)
-        r, seed = self.concrete(rq)
-        audio, sr = render_recipe(r, seed=seed)
+        audio, sr, fin = self.finished_audio(rq)
         folder = self.out_dir / "exports"
         wav = folder / self.export_name(rq, k, ".wav")
-        out = {"wav": str(write_wav(wav, audio, sr, 24))}
+        out = {"wav": str(write_wav(wav, audio, sr, 24)), "seconds": round(len(audio) / sr, 3), "finish": fin}
         if req.get("mp3"):
             try:
                 out["mp3"] = str(write_mp3(wav.with_suffix(".mp3"), audio, sr))
@@ -285,11 +303,29 @@ class Handler(BaseHTTPRequestHandler):
     def _json(self, obj, code: int = 200):
         self._send(code, json.dumps(obj).encode(), "application/json")
 
+    def _origin_ok(self) -> bool:
+        """Only this page may talk to the server: Host must be 127.0.0.1:<port> or localhost:<port> (blocks
+        DNS rebinding) and an Origin header, when present, must be the same. Other web sites open in the
+        browser are refused."""
+        port = self.server.server_address[1]
+        allowed = {f"127.0.0.1:{port}", f"localhost:{port}"}
+        if (self.headers.get("Host") or "") not in allowed:
+            return False
+        origin = self.headers.get("Origin")
+        if origin is not None and origin not in {f"http://{a}" for a in allowed}:
+            return False
+        return True
+
+    def _forbidden(self, why: str):
+        return self._json({"error": f"forbidden: {why}"}, 403)
+
     def _body(self) -> dict:
         n = int(self.headers.get("Content-Length") or 0)
         return json.loads(self.rfile.read(n) or b"{}") if n else {}
 
     def do_GET(self):
+        if not self._origin_ok():
+            return self._forbidden("only http://127.0.0.1:<port> may use this server")
         u = urlparse(self.path)
         q = {k: v[0] for k, v in parse_qs(u.query).items()}
         path = unquote(u.path)
@@ -323,6 +359,10 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"error": str(e)}, 400)
 
     def do_POST(self):
+        if not self._origin_ok():
+            return self._forbidden("only http://127.0.0.1:<port> may use this server")
+        if (self.headers.get("Content-Type") or "").split(";")[0].strip().lower() != "application/json":
+            return self._forbidden("POST needs Content-Type: application/json")
         path = urlparse(self.path).path
         try:
             req = self._body()

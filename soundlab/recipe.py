@@ -156,6 +156,11 @@ def render(recipe: Any, sample_rate: int | None = None, seed: int | None = None,
     master = r.get("master", {})
     if master.get("highpass_hz"):
         mix = dsp.highpass(mix, float(master["highpass_hz"]), sr)
+    # DC blocker on every recipe: 2nd-order high pass at 7 Hz (inaudible, removes offsets that cost headroom
+    # and click at edits). "dc_block_hz": 0 in "master" turns it off.
+    dc_hz = float(master.get("dc_block_hz", 7.0))
+    if dc_hz > 0:
+        mix = dsp.highpass(mix - mix.mean(), dc_hz, sr)
     mix = dsp.fade(mix, sr, 0.0005, float(master.get("fade_out", 0.02)))
     if master.get("normalize_db", -1.0) is not None:
         mix = dsp.normalize_peak(mix, float(master.get("normalize_db", -1.0)))

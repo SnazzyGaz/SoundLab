@@ -1,4 +1,4 @@
-"""soundlab command line: render, batch, audition, models, describe, materials, analyze, match, compare, validate."""
+"""soundlab command line: render, batch, audition, models, describe, materials, analyze, match, compare, validate, gui, blindtest."""
 from __future__ import annotations
 
 import argparse
@@ -33,6 +33,14 @@ def main(argv=None) -> int:
     r.add_argument("--variations", type=int, default=0, help="write N files: v01 as written, v02.. seeded variations")
     r.add_argument("--variation", type=int, default=0, help="render only variation k (0 = as written)")
 
+    def _finish_args(p):
+        p.add_argument("--level", choices=["lufs", "peak"], default="lufs",
+                       help="lufs (default): loudness per category with a -1 dBTP ceiling; peak: raw -1 dBFS peak")
+        p.add_argument("--no-trim", action="store_true", help="keep the full recipe length (no tail trim)")
+        p.add_argument("--loop", type=float, metavar="SECONDS",
+                       help="write a seamless loop of this length (for loopable recipes: rain, wind, fire, ...)")
+    _finish_args(r)
+
     b = sub.add_parser("batch", help="render many recipes (folders, files, .txt lists) with variations and macro sweeps")
     b.add_argument("inputs", nargs="+")
     b.add_argument("-o", "--out", required=True, help="output folder")
@@ -44,6 +52,7 @@ def main(argv=None) -> int:
     b.add_argument("--sr", type=int)
     b.add_argument("--recursive", action="store_true")
     b.add_argument("--zip", action="store_true", help="also zip the output folder")
+    _finish_args(b)
 
     au = sub.add_parser("audition", help="quick preview: render at 24 kHz and play; --watch re-renders on save")
     au.add_argument("recipe")
@@ -137,21 +146,25 @@ def main(argv=None) -> int:
             from .macros import parse_macro_args
             mv = parse_macro_args(args.macro)
             out = args.out or str(Path(args.recipe).with_suffix(".wav"))
+            fk = {"level": args.level, "trim": not args.no_trim, "loop": args.loop}
+            if args.loop and not rec.get("loop"):
+                print("note: this recipe is not tagged as loopable; the loop may not sound seamless", file=sys.stderr)
             if args.variations and args.variations > 1:
                 o = Path(out)
                 for k in range(args.variations):
                     info = soundlab.render_to_file(rec, o.with_name(f"{o.stem}_v{k + 1:02d}{o.suffix}"), mp3=args.mp3,
-                                                   sample_rate=args.sr, macros=mv, variation=k)
+                                                   sample_rate=args.sr, macros=mv, variation=k, **fk)
                     print(json.dumps(info))
             else:
                 info = soundlab.render_to_file(rec, out, mp3=args.mp3, sample_rate=args.sr, seed=args.seed,
-                                               macros=mv, variation=args.variation)
+                                               macros=mv, variation=args.variation, **fk)
                 print(json.dumps(info))
         elif args.cmd == "batch":
             from .batch import batch_export, parse_sweep
             from .macros import parse_macro_args
             man = batch_export(args.inputs, args.out, args.variations, parse_macro_args(args.macro),
-                               parse_sweep(args.sweep), args.mp3, args.sr, args.recursive)
+                               parse_sweep(args.sweep), args.mp3, args.sr, args.recursive,
+                               level=args.level, trim=not args.no_trim, loop=args.loop)
             if args.zip:
                 import shutil
                 z = shutil.make_archive(str(Path(args.out).resolve()), "zip", root_dir=Path(args.out).resolve().parent,

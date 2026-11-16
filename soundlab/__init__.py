@@ -21,7 +21,7 @@ from .core import REGISTRY, RecipeError
 from .recipe import load as load_recipe
 from .recipe import render, validate
 
-__version__ = "0.12.0"
+__version__ = "0.13.0"
 __all__ = ["render", "render_to_file", "list_models", "describe", "macros", "variation", "batch", "validate",
            "load_recipe", "analyze",
            "analyze_file", "materials", "RecipeError", "__version__", "match", "compare"]
@@ -63,12 +63,51 @@ def batch(*args, **kw):
     return batch_export(*args, **kw)
 
 
+def render_loop(recipe: Any, seconds: float, macros: dict | None = None, variation: int = 0,
+                sample_rate: int | None = None, seed: int | None = None, xfade_s: float | None = None):
+    """Render a seamless loop of `seconds`: render lead-in + loop + crossfade, drop the lead-in (onsets,
+    build-ups), fold the extra part back over the start with an equal-power crossfade. Returns (audio, sr).
+    Recipes tagged with "loop" ({"lead_s", "xfade_s"}) are the stationary ones this is meant for."""
+    import copy
+    from .finish import fold_loop
+    from .recipe import resolve
+    raw = load_recipe(recipe)
+    cfg = raw.get("loop") or {}
+    lead = float(cfg.get("lead_s", 1.0))
+    xf = float(xfade_s if xfade_s is not None else cfg.get("xfade_s", 0.5))
+    xf = min(xf, seconds / 2)
+    r, vseed = resolve(raw, macros, variation)
+    r = copy.deepcopy(r)
+    r["duration"] = lead + seconds + xf + 0.2
+    r.setdefault("master", {})["fade_out"] = 0.0
+    if seed is None and variation:
+        seed = vseed
+    y, sr = render(r, sample_rate=sample_rate, seed=seed)
+    return fold_loop(y[int(round(lead * sr)):], sr, seconds, xf), sr
+
+
+def is_loopable(recipe: Any) -> bool:
+    return bool(load_recipe(recipe).get("loop"))
+
+
 def render_to_file(recipe: Any, path: str | Path, mp3: bool = False, sample_rate: int | None = None,
-                   seed: int | None = None, bits: int = 24, macros: dict | None = None, variation: int = 0) -> dict:
+                   seed: int | None = None, bits: int = 24, macros: dict | None = None, variation: int = 0,
+                   level: str = "lufs", trim: bool = True, loop: float | None = None) -> dict:
+    """Render and write a game-ready file: tail trimmed, loudness-normalised per category with a true-peak
+    ceiling (see soundlab.finish). level='peak' keeps the raw peak-normalised render; trim=False keeps the
+    full length; loop=SECONDS writes a seamless loop of that length instead."""
     from .audio_io import write_mp3, write_wav
-    audio, sr = render(recipe, sample_rate=sample_rate, seed=seed, macros=macros, variation=variation)
+    from .finish import finish
+    raw = load_recipe(recipe)
+    if loop:
+        audio, sr = render_loop(raw, float(loop), macros=macros, variation=variation, sample_rate=sample_rate,
+                                seed=seed)
+    else:
+        audio, sr = render(raw, sample_rate=sample_rate, seed=seed, macros=macros, variation=variation)
+    audio, fin = finish(audio, sr, raw, level=level, trim=trim, loop=bool(loop))
     path = Path(path)
-    out = {"wav": str(write_wav(path, audio, sr, bits)), "sample_rate": sr, "seconds": len(audio) / sr}
+    out = {"wav": str(write_wav(path, audio, sr, bits)), "sample_rate": sr, "seconds": len(audio) / sr,
+           "finish": fin}
     if mp3:
         out["mp3"] = str(write_mp3(path.with_suffix(".mp3"), audio, sr))
     return out

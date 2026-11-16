@@ -133,5 +133,9 @@
   "0.radius_mm": {
    "rel": 0.1
   }
+ },
+ "loop": {
+  "lead_s": 1.0,
+  "xfade_s": 0.5
  }
 }

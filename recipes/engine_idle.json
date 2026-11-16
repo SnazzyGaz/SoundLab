@@ -1,0 +1,264 @@
+{
+ "soundlab": 1,
+ "name": "Cross-plane V8 idling (steady, loopable), 4 m away",
+ "sample_rate": 48000,
+ "duration": 6.0,
+ "seed": 12,
+ "layers": [
+  {
+   "name": "engine",
+   "model": "engine",
+   "params": {
+    "cylinders": 8,
+    "firing": "crossplane_v8",
+    "rpm": 900,
+    "load": 0.35,
+    "exhaust_length": 1.32,
+    "muffler": 0.42,
+    "jitter": 0.062,
+    "intake": 0.363,
+    "mechanical": 0.25,
+    "whine": 0.04,
+    "pops": 0.0,
+    "body": 1.0,
+    "exhaust_noise": 0.184,
+    "pipe_ring": 0.377,
+    "exhaust_crack": 0.0,
+    "edge": 1.0,
+    "rasp": 0.6
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "distance",
+   "params": {
+    "distance": 4
+   }
+  },
+  {
+   "model": "ground",
+   "params": {
+    "source_height": 0.3,
+    "listener_height": 1.6,
+    "distance": 4,
+    "reflection": 0.35
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.2
+ },
+ "category": "vehicle",
+ "macros": {
+  "rpm": {
+   "default": 0.5,
+   "doc": "idle speed (slow .. fast idle)",
+   "map": [
+    {
+     "to": "0.rpm",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.7
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.5
+      ]
+     ]
+    }
+   ]
+  },
+  "load": {
+   "default": 0.5,
+   "doc": "throttle held (coasting .. light load)",
+   "map": [
+    {
+     "to": "0.load",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "size": {
+   "default": 0.5,
+   "doc": "small engine .. big engine (pipe length, low-end weight)",
+   "map": [
+    {
+     "to": "0.exhaust_length",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.7
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.4
+      ]
+     ]
+    },
+    {
+     "to": "0.body",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "quiet road car .. loud and raspy (muffler, rasp)",
+   "map": [
+    {
+     "to": "0.muffler",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -0.35
+      ]
+     ]
+    },
+    {
+     "to": "0.rasp",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, air absorption, more reflections)",
+   "map": [
+    {
+     "to": "post.0.distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       10
+      ]
+     ]
+    },
+    {
+     "to": "post.1.distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       10
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.jitter": {
+   "rel": 0.2
+  },
+  "0.exhaust_length": {
+   "rel": 0.03
+  }
+ },
+ "loop": {
+  "lead_s": 0.5,
+  "xfade_s": 0.5
+ }
+}

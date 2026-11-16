@@ -187,3 +187,66 @@ def test_blindtest_guessing_listener_passes(tmp_path):
     (tmp_path / "pack" / "answers" / "x.json").write_text(json.dumps({"answers": ans}))
     o = score_pack(tmp_path / "pack")["pooled"]["overall_physical"]
     assert o["n"] == 3 and o["pct"] == 0.0 and o["pass"] is True
+
+
+# ------------------------------------------------------------------------------------------- security
+def _req(url, body=None, headers=None, method=None):
+    data = json.dumps(body).encode() if body is not None else None
+    rq = urllib.request.Request(url, data, headers or {}, method=method)
+    try:
+        with urllib.request.urlopen(rq) as r:
+            return r.status
+    except urllib.error.HTTPError as e:
+        return e.code
+
+
+def test_rejects_other_origins_and_hosts(srv):
+    base, s, tmp = srv
+    port = s.server_address[1]
+    ok = {"Content-Type": "application/json"}
+    assert _req(base + "/api/recipes") == 200
+    assert _req(base + "/api/recipes", headers={"Origin": f"http://localhost:{port}"}) == 200
+    assert _req(base + "/api/recipes", headers={"Origin": "http://evil.example"}) == 403
+    assert _req(base + "/api/recipes", headers={"Host": f"evil.example:{port}"}) == 403      # DNS rebinding
+    assert _req(base + "/api/recipes", headers={"Host": "127.0.0.1:1"}) == 403
+    body = {"id": "coin", "n": 2}
+    assert _req(base + "/api/batch", body, dict(ok, Origin="http://evil.example")) == 403
+    assert _req(base + "/api/batch", body, {"Content-Type": "text/plain"}) == 403            # simple CORS request
+    assert _req(base + "/api/save", {"id": "coin", "name": "x"}, {"Content-Type": "application/x-www-form-urlencoded"}) == 403
+    assert not (tmp / "out" / "exports").exists() and not (tmp / "out" / "recipes").exists()
+    assert _req(base + "/api/render", {"id": "coin"}, dict(ok, Origin=f"http://127.0.0.1:{port}")) == 200
+
+
+def test_render_finishing_and_loop(srv):
+    base, s, tmp = srv
+    code, r = post(base + "/api/render", {"id": "hit"})
+    assert r["finish"]["level"] == "lufs" and r["seconds"] < 1.0
+    code, r = post(base + "/api/render", {"id": "hit", "level": "peak", "trim": False})
+    assert r["seconds"] == pytest.approx(1.5)
+    d = json.loads(get(base + "/api/recipe?id=rain")[2])
+    assert d["loopable"] and not json.loads(get(base + "/api/recipe?id=hit")[2])["loopable"]
+    code, r = post(base + "/api/render", {"id": "rain", "loop": 3})
+    assert r["seconds"] == pytest.approx(3.0) and r["finish"]["measured_by"] == "integrated"
+    code, r = post(base + "/api/export", {"id": "rain", "loop": 3})
+    assert Path(r["wav"]).name == "ambience_rain_loop3s_v01.wav"
+
+
+def test_pack_clips_of_a_sound_match_in_length_and_level(tmp_path):
+    from scipy.io import wavfile as wf
+    from soundlab.finish import momentary_max_lufs
+    lib = tmp_path / "library" / "hit"
+    lib.mkdir(parents=True)
+    rng = np.random.default_rng(1)
+    for i, (amp, secs) in enumerate([(0.9, 3.0), (0.05, 3.0)]):     # long, steady 'recordings' at very different levels
+        wf.write(lib / f"t{i}.wav", 48000, (amp * rng.standard_normal(int(secs * 48000))).astype(np.float32))
+    build_pack(tmp_path / "library", tmp_path / "pack", per_sound=2, max_s=4.0)
+    key = json.loads((tmp_path / "pack" / "key.json").read_text())
+    clips = {c["clip"]: c["truth"] for c in key["clips"]}
+    lens, lv = {"real": [], "engine": []}, []
+    for cid, truth in clips.items():
+        sr, x = wf.read(tmp_path / "pack" / "clips" / f"{cid}.wav")
+        x = x / 32768
+        lens[truth].append(len(x) / sr)
+        lv.append(momentary_max_lufs(x, sr))
+    assert max(lens["real"]) <= max(lens["engine"]) + 0.01          # the real takes were cut to the engine's length
+    assert max(lv) - min(lv) < 0.5

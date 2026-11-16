@@ -93,6 +93,13 @@
     <p class="hint">These set exact values and win over the sliders above for the same setting. Changed ones turn blue.</p>
     <div id="advanced"></div></details></div>
   <div class="card"><h3>Export</h3>
+    <div class="inline" style="margin-bottom:10px">
+      <span>Level</span><select id="level"><option value="lufs">Loudness per category (game-ready)</option><option value="peak">Peak -1 dBFS (raw)</option></select>
+      <label class="inline"><input type="checkbox" id="trim" checked> trim silent tail</label>
+      <span id="loopbox" class="inline" style="display:none"><label class="inline"><input type="checkbox" id="loopon"> seamless loop</label>
+        <input type="number" id="loops" min="1" max="120" step="1" value="10"> s</span>
+    </div>
+    <p class="hint" style="margin-top:0">Play uses the same settings, so what you hear is what gets exported.</p>
     <div class="inline">
       <button id="exp">Export WAV</button>
       <label class="inline"><input type="checkbox" id="mp3"> also MP3 (needs ffmpeg)</label>
@@ -216,13 +223,19 @@ function wire() {
   $("#seed").onchange = e => { state.seed = e.target.value; changed(); };
   $("#dice").onclick = () => { $("#seed").value = state.seed = String(Math.floor(Math.random() * 1e6)); changed(); };
   $("#reset").onclick = () => select(cur.id);
+  $("#loopbox").style.display = cur.loopable ? "" : "none";
+  for (const id of ["#level", "#trim", "#loopon", "#loops"]) $(id).onchange = changed;
   $("#exp").onclick = () => run("/api/export", {...req(), mp3: $("#mp3").checked}, r => "Saved " + r.wav + (r.mp3 ? "\n      " + r.mp3 : "") + (r.mp3_error ? "\nMP3 skipped: " + r.mp3_error : ""));
   $("#batch").onclick = () => run("/api/batch", {...req(), n: +$("#n").value || 10, mp3: $("#mp3").checked},
                                   r => `Saved ${r.files.length} variations in ${r.folder}` + (r.files.some(f => f.mp3_error) ? "\nMP3 skipped (ffmpeg not found)" : ""));
   $("#save").onclick = () => run("/api/save", {...req(), name: $("#newname").value}, r => { reloadList(r.id); return "Saved recipe " + r.path; });
 }
 
-function req() { return {id: cur.id, macros: state.macros, overrides: state.overrides, variation: state.variation, seed: state.seed}; }
+function req() {
+  const loop = cur.loopable && $("#loopon").checked ? Math.max(1, +$("#loops").value || 10) : 0;
+  return {id: cur.id, macros: state.macros, overrides: state.overrides, variation: state.variation, seed: state.seed,
+          level: $("#level").value, trim: $("#trim").checked, loop};
+}
 function changed() { pending = true; if ($("#auto").checked) render(true); else $("#status").textContent = "changed: press Play"; }
 
 async function run(path, body, done) {
@@ -241,8 +254,11 @@ async function render(play) {
     const r = await api("/api/render", req());
     if (my !== seq) return;           // a newer render is on its way
     lastKey = r.key; pending = false;
-    audio.src = r.url;
-    $("#status").textContent = `${r.seconds.toFixed(2)} s · rendered in ${r.render_s} s · peak ${(20 * Math.log10(r.peak + 1e-9)).toFixed(1)} dBFS`;
+    audio.src = r.url; audio.loop = !!req().loop;   // loops play round so the seam can be heard
+    const f = r.finish || {};
+    const lvl = f.result !== undefined ? ` · ${f.result} LUFS${f.measured_by === "integrated" ? " integrated" : " (max momentary)"}, target ${f.target}` +
+                (f.limiter_db ? ` · limited ${f.limiter_db} dB` : "") : "";
+    $("#status").textContent = `${r.seconds.toFixed(2)} s${req().loop ? " loop" : ""} · rendered in ${r.render_s} s · peak ${(20 * Math.log10(r.peak + 1e-9)).toFixed(1)} dBFS${lvl}`;
     drawWave(r.waveform); drawSpec(r.spectrogram);
     if (play) audio.play().catch(() => {});
   } catch (e) { if (my === seq) $("#status").textContent = "error: " + e.message; }

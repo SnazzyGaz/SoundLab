@@ -10,12 +10,15 @@ a library/plugin.
 
 What's in it:
 
-- **36 recipes** for game sound: footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind,
+- **37 recipes** for game sound: footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind,
   rain, glass break, sword swing and clash, metal clang, door creak and slam, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splash, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.
 - **Macro sliders** on every recipe (size, distance, intensity, material, ...), **seeded variations** and
   **batch export** with sensible file names.
+- **Game-ready exports**: loudness per category (BS.1770 LUFS, -1 dBTP ceiling), silent tails trimmed,
+  DC blocked, and **seamless loops** for rain, wind, fire, water and engine idle (`--loop 10`); see
+  [docs/export.md](docs/export.md).
 - A **slider app** in the browser (`soundlab gui`) with play, waveform/spectrogram preview and export.
 - A **blind listening test** in the browser (`/blindtest`, "real or synthesised?") and an A/B kit.
 - Fitting tools: analyse a recording, fit a recipe's controls to it (`soundlab match`), compare renders.
@@ -98,6 +101,8 @@ soundlab models                         # list all blocks and sound models by st
 soundlab describe engine                # controls, units, ranges, sources
 soundlab materials                      # material table (density, E, loss factor, T60 at 1 kHz)
 soundlab render recipes/engine.json -o engine.wav --mp3
+soundlab render recipes/rain.json --loop 10 -o rain_loop.wav   # seamless 10 s loop
+soundlab render recipes/hit.json --level peak --no-trim   # raw level, full length (default: LUFS per category, trimmed)
 soundlab render recipes/engine.json --set 0.cylinders=6 --seed 4 -o six.wav
 soundlab describe recipes/hit.json      # a recipe's macro sliders (the main controls)
 soundlab render recipes/hit.json -m material=metal -m size=0.8 -o bar.wav
@@ -159,6 +164,7 @@ matched to the reference recordings, the starting points for `soundlab match`). 
 - [docs/analysis.md](docs/analysis.md): the stem-split / feature tool and where it is going.
 - [docs/artefacts.md](docs/artefacts.md): synthesis artefacts (grain, hiss, tinny, digital,
   "plastic bucket"), how they were measured and fixed.
+- [docs/export.md](docs/export.md): loudness targets, tail trim, DC blocker, seamless loops.
 - [docs/macros-and-variations.md](docs/macros-and-variations.md): macro sliders, variations, batch export,
   naming, audition.
 - [docs/synth-blocks.md](docs/synth-blocks.md): the generic synthesis blocks (non-physical sounds, layering).

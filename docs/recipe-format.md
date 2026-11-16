@@ -33,7 +33,9 @@ Rules:
 - Automation: any control marked `automatable` accepts `[[t_seconds, value], ...]`. Frequencies and rpm
   interpolate in log space, other values linearly. Times are relative to the layer start.
 - List-valued controls (`formants`, `ratios`, `reflectors`) take plain lists.
-- Output is mono float, peak-normalised by `master.normalize_db` (set it to `null` to keep raw level).
+- Output is mono float, DC-blocked (7 Hz high pass; `master.dc_block_hz: 0` turns it off) and peak-normalised
+  by `master.normalize_db` (set it to `null` to keep raw level). Exports are then trimmed and levelled per
+  category ([export.md](export.md)).
 
 The CLI can override a single-model layer's parameter: `--set 0.rpm=3000` (layer index, parameter).
 
@@ -51,6 +53,8 @@ Optional top-level keys:
   Ops: `mul`, `add`, `stretch` (breakpoint times), `set`; `range` or piecewise `points`; optional `curve`,
   `clamp`. Targets: `L.param`, `L.B.param` (L = layer index or name), `L.gain_db`, `L.start`,
   `post.J.param`, `duration`, `master.gain_db`. At their defaults macros leave the recipe unchanged.
+- `"loop"`: `{"lead_s": 1, "xfade_s": 0.5}` marks a stationary recipe that can be exported as a seamless loop.
+- `"loudness_lufs"`: export loudness target instead of the category default.
 - `"vary"`: `{target: {"cents"|"rel"|"db"|"abs": amount}}`, the per-control jitter for variations.
 - `"master": {"gain_db": ...}`: level after normalising (used by `distance` macros).
 See [macros-and-variations.md](macros-and-variations.md).

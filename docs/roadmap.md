@@ -45,7 +45,6 @@ recipe sound and at least two listeners who did not tune the recipes.
   reference at that speed.
 - Explosion: one recipe cannot match a 2.5 s blast and a 7 s cinematic one; `explosion_small` covers the first.
 - Matchbox shake ~4 dB bright at 6.4-12.8 kHz.
-- Ambiences (wind, rain) are 8 s one-offs, not seamless loops.
 - The sword clash and bullet impacts follow the CC0 refs' bright balance; check them for tinny tops.
 - The pipe clang rings long (a free pipe does) and is very tonal.
 - Door creaks vary hugely in real life (CC0 refs from ~26 Hz ticking to a ~1.1 kHz squeal); ours sits at 260 Hz.

@@ -58,3 +58,18 @@ def test_stats():
     assert lo < 0.5 < hi
     assert abs(cp.binom_p_greater(10, 10) - 1 / 1024) < 1e-12
     assert cp.binom_p_greater(0, 10) == 1.0
+
+
+def test_prepare_matches_loudness_and_trims_dead_tails():
+    from soundlab.checkpoint import SR as PSR
+    from soundlab.checkpoint import prepare
+    from soundlab.finish import momentary_max_lufs, true_peak_db
+    rng = np.random.default_rng(5)
+    n = int(0.4 * PSR)
+    quiet = np.zeros(3 * PSR)
+    quiet[:n] = 0.01 * rng.standard_normal(n) * np.exp(-np.arange(n) / (0.05 * PSR))   # short, quiet, long silence
+    loud = 0.5 * rng.standard_normal(2 * PSR)                                           # loud and steady
+    a, b = prepare(quiet, 4.0), prepare(loud, 4.0)
+    assert abs(momentary_max_lufs(a, PSR) - momentary_max_lufs(b, PSR)) < 1.0
+    assert len(a) / PSR < 0.7                 # the 2.6 s of silence is gone
+    assert true_peak_db(a) <= -0.95 and true_peak_db(b) <= -0.95

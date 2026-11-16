@@ -101,25 +101,25 @@ def _load(path: Path) -> np.ndarray:
     return np.asarray(x, float)
 
 
-def prepare(x: np.ndarray, max_s: float, target_db: float = -20.0) -> np.ndarray:
-    """Trim leading silence, cap length, fade, and match loudness (RMS of the active part)."""
+def prepare(x: np.ndarray, max_s: float, target_lufs: float = -20.0, trim_db: float = 40.0) -> np.ndarray:
+    """Make real and engine clips alike so neither level nor dead air gives them away: trim leading silence,
+    cap the length, trim the decayed tail (once the 10 ms level is `trim_db` under its maximum, short fade),
+    and match loudness (maximum momentary loudness, BS.1770) under a -1 dBTP ceiling. The tail threshold is
+    40 dB rather than the export default of 60 so a recording's room tone and a render's clean silence end
+    at the same point of the decay."""
+    from .finish import normalize_loudness, trim_tail
     env = np.convolve(np.abs(x), np.ones(240) / 240, "same")
     thr = env.max() * 0.02 if env.max() > 0 else 0
     on = np.nonzero(env > thr)[0]
     if len(on):
         x = x[max(0, on[0] - int(0.01 * SR)):]
-    x = x[: int(max_s * SR)].copy()
+    x = np.array(x[: int(max_s * SR)], float)
+    x = trim_tail(x, SR, trim_db=trim_db, min_s=0.2, pad_s=0.05, fade_s=0.05)
     f = min(len(x) // 4, int(0.05 * SR))
     if f > 0:
         x[-f:] *= np.linspace(1, 0, f)
-    env = np.convolve(x ** 2, np.ones(2400) / 2400, "same")
-    act = env > env.max() * 0.01 if env.max() > 0 else np.ones(len(x), bool)
-    rms = math.sqrt(float(np.mean(x[act] ** 2))) if np.any(act) else 0.0
-    if rms > 0:
-        x *= 10 ** (target_db / 20) / rms
-    pk = np.max(np.abs(x)) if len(x) else 0
-    if pk > 0.95:                                   # never clip: scale both later by the same rule
-        x *= 0.95 / pk
+    if len(x) and np.max(np.abs(x)) > 0:
+        x, _ = normalize_loudness(x, SR, target_lufs, "momentary", -1.0)
     return x
 
 
@@ -263,6 +263,9 @@ def build_pack(library: Path, out: Path, recipes_dir: Path | None = None, per_so
             items.append({"sound": nm, "truth": "engine", "source": f"{have[nm].name} variation {k + 1}",
                           "audio": eng})
     rng.shuffle(items)
+    for it in items:
+        it["x"] = prepare(it["audio"](), max_s)
+    equalise_by_sound(items)
     out = Path(out)
     (out / "clips").mkdir(parents=True, exist_ok=True)
     old_answers = out / "answers"
@@ -275,7 +278,7 @@ def build_pack(library: Path, out: Path, recipes_dir: Path | None = None, per_so
            "clips": []}
     for i, it in enumerate(items, 1):
         cid = f"clip_{i:03d}"
-        write_wav(out / "clips" / f"{cid}.wav", prepare(it["audio"](), max_s), SR, 16)
+        write_wav(out / "clips" / f"{cid}.wav", it["x"], SR, 16)
         key["clips"].append({"clip": cid, "sound": it["sound"], "truth": it["truth"], "source": it["source"]})
     (out / "key.json").write_text(json.dumps(key, indent=1))
     (out / "pack.json").write_text(json.dumps({"version": 2, "clips": [c["clip"] for c in key["clips"]],
@@ -285,6 +288,37 @@ def build_pack(library: Path, out: Path, recipes_dir: Path | None = None, per_so
         "Listeners must not open key.json or the clips folder. Answers are saved in answers/<listener>.json.\n"
         "Score: `soundlab blindtest score <this folder>` or the Results link on the page.\n")
     return {"sounds": names, "clips": len(items), "skipped_no_recipe": skipped, "out": str(out)}
+
+
+def equalise_by_sound(items: list[dict], target_lufs: float = -20.0) -> None:
+    """Within each sound, real and engine clips must not differ in length or level. Every clip of a sound is
+    cut to the shorter of (longest real clip, longest engine clip); a clip that is longer keeps the window
+    around its loudest moment (so a slam after a handle rattle is not cut off), with 50 ms fades. Each clip
+    is then levelled again (BS.1770, -1 dBTP), and all clips of the sound are brought to the quietest one's
+    loudness (gain down only)."""
+    from .finish import momentary_max_lufs, normalize_loudness
+    by: dict[str, list[dict]] = {}
+    for it in items:
+        by.setdefault(it["sound"], []).append(it)
+    for group in by.values():
+        longest = {t: max((len(i["x"]) for i in group if i["truth"] == t), default=0) for t in ("real", "engine")}
+        cap = min(v for v in longest.values() if v > 0)
+        for it in group:
+            x = it["x"]
+            if len(x) > cap:
+                w = int(0.05 * SR)
+                env = np.convolve(x ** 2, np.ones(w) / w, "same")
+                start = int(np.clip(np.argmax(env) - int(0.03 * SR), 0, len(x) - cap))
+                x = x[start:start + cap].copy()
+                f = min(cap // 4, int(0.05 * SR))
+                if start > 0:
+                    x[:int(0.005 * SR)] *= np.linspace(0, 1, int(0.005 * SR))
+                x[-f:] *= 0.5 * (1 + np.cos(np.linspace(0, math.pi, f)))
+            it["x"], _ = normalize_loudness(x, SR, target_lufs, "momentary", -1.0)
+        lv = [momentary_max_lufs(it["x"], SR) for it in group]
+        low = min(lv)
+        for it, v in zip(group, lv):
+            it["x"] = it["x"] * 10 ** ((low - v) / 20)
 
 
 def load_answers(pack: Path) -> dict[str, dict]:

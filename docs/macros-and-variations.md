@@ -41,6 +41,8 @@ re-running a batch gives identical files, and asking for more variations never c
 
 `<category>_<name>[_<macro><value>...]_v<NN>.wav`, words inside a field joined by `-`:
 `impact_hit_materialmetal_v03.wav`, `pickup_coin-pickup_v01.wav`, `vehicle_engine_rpm0.85_load0.8_v01.wav`.
+When category and name are the same the name appears once (`footstep_v01.wav`); loops get a `loop10s` tag.
+Exported files are tail-trimmed and loudness-levelled per category; see [export.md](export.md).
 `category` comes from the recipe. `batch` also writes `manifest.json` (file, recipe, macros, variation,
 render time).
 
@@ -75,6 +77,7 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 | `duck.json` | animal | `size`, `intensity`, `distance` |
 | `engine.json` | vehicle | `rpm`, `load`, `size`, `intensity`, `distance` |
 | `engine_blips.json` | vehicle | `rpm`, `load`, `size`, `intensity`, `distance` |
+| `engine_idle.json` | vehicle | `rpm`, `load`, `size`, `intensity`, `distance` (loopable) |
 | `explosion.json` | explosion | `size`, `intensity`, `debris`, `distance` |
 | `explosion_small.json` | explosion | `size`, `intensity`, `debris`, `distance` |
 | `fire.json` | ambience | `size`, `intensity`, `distance` |
