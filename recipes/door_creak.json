@@ -1,0 +1,204 @@
+{
+ "soundlab": 1,
+ "name": "Door creak: stick-slip at the hinge as a door opens",
+ "category": "door",
+ "sample_rate": 48000,
+ "duration": 2.4,
+ "seed": 18,
+ "layers": [
+  {
+   "name": "main",
+   "model": "door_creak",
+   "params": {
+    "open_s": 1.8,
+    "pitch_hz": 260.0,
+    "pressure": 0.6,
+    "wander": 0.35,
+    "hinge": 0.5,
+    "door_size": 1.0,
+    "at": 0.05
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 45,
+    "absorption": 0.3,
+    "source_distance": 2.0
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "speed": {
+   "default": 0.5,
+   "doc": "slow, ticking .. quick groan",
+   "map": [
+    {
+     "to": "0.open_s",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       2.0
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.45
+      ]
+     ]
+    },
+    {
+     "to": "duration",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       1.9
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.5
+      ]
+     ]
+    }
+   ]
+  },
+  "pitch": {
+   "default": 0.5,
+   "doc": "low groan .. high squeal",
+   "map": [
+    {
+     "to": "0.pitch_hz",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.8
+      ]
+     ]
+    }
+   ]
+  },
+  "stiffness": {
+   "default": 0.5,
+   "doc": "oiled .. rusty",
+   "map": [
+    {
+     "to": "0.pressure",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.4
+      ]
+     ]
+    },
+    {
+     "to": "0.wander",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.2
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.pitch_hz": {
+   "rel": 0.12
+  },
+  "0.open_s": {
+   "rel": 0.12
+  },
+  "0.wander": {
+   "abs": 0.1
+  }
+ }
+}

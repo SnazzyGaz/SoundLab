@@ -595,6 +595,208 @@ A real metal coin, not the arcade blip. The coin is a thin free disc: its ring i
 
 Sources: Leissa 1969, Vibration of Plates, NASA SP-160 (free circular plate); Moffatt 2000, Nature 404 (Euler's disk); van den Doel, Kry & Pai 2001 (modal impacts); Cook 2002, Real Sound Synthesis (PhISM coins); CC0 Freesound coin recordings (refs/cc0, analysis only)
 
+### `wind`
+
+Wind: turbulence noise whose level and brightness follow a gusting wind speed (aeroacoustic dipole power ~ v^6, so level ~ v^3), slow 'howl' resonances whose pitch rides the speed (vortex shedding from wires and edges, f = St v / d, St ~ 0.2), optional whistle through a gap or keyhole (edge tone, high Q), and leaf rustle from trees (dense tiny contacts, rate ~ v^2).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `speed` | `8.0` | m/s | 1 .. 35 | mean wind speed (Beaufort 4 ~ 6-8 m/s, gale ~ 17-20 m/s) |
+| `gustiness` | `0.5` |  | 0 .. 1 | how much the speed varies (std as a fraction of the mean) |
+| `gust_hz` | `0.15` | Hz | 0.02 .. 2 | how quickly gusts come and go |
+| `howl` | `0.3` |  | 0 .. 1 | level of the moaning resonances |
+| `whistle` | `0.0` |  | 0 .. 1 | level of a whistle through a gap/keyhole |
+| `gap_mm` | `6.0` | mm | 1 .. 40 | gap size (whistle pitch = 0.2 v / gap) |
+| `trees` | `0.4` |  | 0 .. 1 | level of leaf rustle (trees, bushes) |
+| `rumble` | `0.15` |  | 0 .. 1 | low buffeting (wind on a mic or a building); keep low |
+
+Sources: Farnell 2010, Designing Sound (wind); Wikipedia: Aeolian sound; Strouhal number; Lighthill / Curle (dipole sound power ~ U^6)
+
+### `rain`
+
+Rain: individual near drops (impact click through the surface's response, and on water a Minnaert bubble when the drop entrains air) over the hiss of thousands of distant drops. Drop sizes are exponential (Marshall-Palmer); rate and hiss level follow the rain rate. Drop arrival is Poisson (no repeating pattern).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `rate_mm_h` | `5.0` | mm/h | 0.2 .. 100 | rain rate: drizzle ~0.5, moderate ~4, heavy ~16, downpour 50+ |
+| `surface` | `ground` |  | ground, leaves, roof, window, puddle |  |
+| `near` | `0.6` |  | 0 .. 1 | level of individually heard near drops |
+| `hiss` | `0.6` |  | 0 .. 1 | level of the distant hiss |
+| `drop_mm` | `1.8` | mm | 0.5 .. 5 | median drop diameter (grows with rain rate) |
+| `brightness` | `0.5` |  | 0 .. 1 | top end of the hiss (0 = far/indoors, 1 = close, outdoors) |
+
+Sources: Marshall & Palmer 1948 (drop size distribution); Prosperetti & Oguz 1993 (rain bubbles); Wikipedia: Minnaert resonance; van den Doel 2005 (liquid sounds)
+
+### `glass_break`
+
+A pane or bottle breaking: the fracture is a sharp broadband crack plus a brief, choked ring of the whole piece; then the shards fall (free fall, then 1-3 bounces) and each impact rings with its own small plate modes (f ~ h / size^2: big shards ~1-3 kHz, small ones only click), with a contact click, and a few late tinkles as pieces slide and settle. Shard sizes follow a power law (many small, few big).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `size` | `0.4` | m | 0.05 .. 2 | size of the pane/bottle |
+| `thickness_mm` | `4.0` | mm | 1 .. 12 | glass thickness |
+| `shards` | `60` | count | 5 .. 400 | number of pieces |
+| `energy` | `0.7` |  | 0 .. 1 | how hard it breaks (crack level, scatter) |
+| `height` | `0.9` | m | 0.1 .. 3 | fall height of the shards |
+| `floor` | `hard` |  | hard, wood, soft | what the shards land on |
+| `at` | `0.02` | s | 0 .. None | fracture time |
+
+Sources: Leissa 1969 (plate modes); Farnell 2010 (glass breaking); Cook 2002 (PhISEM)
+
+### `swing`
+
+Something swung fast past the ear (sword, stick, staff). Aeroacoustics: turbulent wake noise centred on the vortex-shedding frequency f = St v / d (St ~ 0.2, d = cross-section), level ~ v^3 (dipole); a thin edge also gives a narrow aeolian tone ('zing'). Speed follows a fast swing profile; the pitch is Doppler-shifted (up while approaching, down after the closest point) and the level peaks as it passes.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `speed` | `25.0` | m/s | 3 .. 60 | peak tip speed (sword swing ~20-40 m/s, est.) |
+| `swing_s` | `0.35` | s | 0.08 .. 2 | duration of the swing |
+| `width_mm` | `30.0` | mm | 3 .. 200 | cross-section facing the air (blade width / stick diameter) |
+| `edge_mm` | `4.0` | mm | 0.5 .. 30 | thin edge thickness (aeolian tone pitch) |
+| `edge` | `0.35` |  | 0 .. 1 | level of the edge tone ('zing') |
+| `doppler` | `1.0` |  | 0 .. 2 | Doppler amount (1 = physical) |
+| `closest_m` | `0.6` | m | 0.1 .. 5 | closest distance to the listener |
+| `at` | `0.03` | s | 0 .. None | start of the swing |
+
+Sources: Wikipedia: Aeolian sound; Strouhal number; Farnell 2010, Designing Sound (swishes); Curle 1955 (dipole sound from a body in flow)
+
+### `clash`
+
+Steel struck by steel: two blades (or a pipe/plate) ring with their own bending modes (each a bar with dense inharmonic overtones, strike near the edge excites many), slightly different so they beat; a very short metal-on-metal contact; then optional scrape as the edges slide (friction noise through the same modes: the 'shing').
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `object` | `sword` |  | sword, pipe, plate, pan |  |
+| `velocity` | `3.0` | m/s | 0.2 .. 15 | closing speed |
+| `scrape_s` | `0.25` | s | 0 .. 2 | how long the edges slide after the hit (0 = clean clang) |
+| `scrape` | `0.4` |  | 0 .. 1 | scrape level |
+| `damping` | `1.0` |  | 0.2 .. 10 | grip/hand damping multiplier (higher = shorter ring) |
+| `size` | `1.0` |  | 0.4 .. 2.5 | scales the object's length (bigger = lower) |
+| `second` | `0.7` |  | 0 .. 1 | level of the second object's ring (0 = struck by something dead) |
+| `at` | `0.02` | s | 0 .. None |  |
+
+Sources: van den Doel, Kry & Pai 2001; Euphonics: free-free beam modes; Avanzini et al. 2002 (friction)
+
+### `door_creak`
+
+A door creaking open: stick-slip at the hinge. The pin sticks, the door's push builds up, it slips; each slip is a small impulse into the hinge (small, well-damped metal modes) and the door leaf (a big, damped wooden panel). The slip rate rises with angular speed and pressure, and wanders cycle to cycle (no machine-regular buzz). Slow movement = separate ticks; faster = a tonal groan.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `open_s` | `1.8` | s | 0.3 .. 8 | how long the opening takes |
+| `pitch_hz` | `260.0` | Hz | 40 .. 1500 | slip rate at full speed (the creak's pitch) |
+| `pressure` | `0.6` |  | 0 .. 1 | how hard the hinge binds (louder, rougher, a bit higher) |
+| `wander` | `0.35` |  | 0 .. 1 | slip-rate wandering (hand speed changes, stick-slip chaos) |
+| `hinge` | `0.5` |  | 0 .. 1 | metal hinge resonance vs wooden door body |
+| `door_size` | `1.0` |  | 0.3 .. 2 | door size (1 = 2.0 x 0.8 m) |
+| `at` | `0.05` | s | 0 .. None |  |
+
+Sources: Wikipedia: Stick-slip phenomenon; Avanzini, Serafin & Rocchesso 2002 (friction models); Farnell 2010, Designing Sound (creaking door)
+
+### `door_slam`
+
+A door slammed shut: the leaf hits the frame and stop (a big, damped wooden panel driven by a 3-6 ms contact through the seal), the latch bolt snaps in (a small, short metal click), the house structure thumps, the door rattles back once or twice in the frame, and the room answers.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `force` | `0.7` |  | 0 .. 1 | how hard (closing speed) |
+| `door_size` | `1.0` |  | 0.3 .. 2 | door size (1 = 2.0 x 0.8 x 0.04 m) |
+| `latch` | `0.6` |  | 0 .. 1 | latch click level |
+| `rattle` | `0.4` |  | 0 .. 1 | rebound rattle in the frame |
+| `thump` | `0.25` |  | 0 .. 1 | low structure thump (keep low: a boomy slam reads as a cupboard on a drum) |
+| `at` | `0.03` | s | 0 .. None |  |
+
+Sources: van den Doel et al. 2001 (modal impacts); Farnell 2010 (doors)
+
+### `body_hit`
+
+A punch or body blow: a soft, heavy contact (fist into flesh, 6-15 ms) gives a low, damped thump from the torso (a lossy cavity, ~100-250 Hz); the skin/glove slaps (short broadband noise); clothing rustles. A face hit is bonier (shorter contact, higher, optional crack). Real punches are duller than film ones; `punch_up` adds the film sweetening.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `target` | `body` |  | body, face, belly |  |
+| `force` | `0.7` |  | 0 .. 1 | how hard |
+| `glove` | `bare` |  | bare, glove | bare knuckle (sharp slap) or boxing glove (pop) |
+| `cloth` | `0.4` |  | 0 .. 1 | clothing rustle level |
+| `crack` | `0.0` |  | 0 .. 1 | bone crack (face) |
+| `punch_up` | `0.15` |  | 0 .. 1 | film sweetening: extra low thump |
+| `at` | `0.02` | s | 0 .. None |  |
+
+Sources: Farnell 2010 (impacts); Cook 2002 (contact models)
+
+### `bullet_impact`
+
+A bullet hitting a surface (not the gunshot): a near-instant hard contact (tens of microseconds) gives a sharp crack. Wood: splintering noise and a damped board knock, splinters falling. Metal: a bright ping/clang of the plate, optional ricochet whine (a spinning, tumbling bullet: a noisy tone gliding down by Doppler as it leaves). Concrete: a hard crack, chips and grit raining down, a little dust hiss.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `material` | `concrete` |  | wood, metal, concrete |  |
+| `energy` | `0.7` |  | 0 .. 1 | impact energy (calibre/speed) |
+| `debris` | `0.6` |  | 0 .. 1 | chips/splinters/grit level |
+| `ricochet` | `0.0` |  | 0 .. 1 | ricochet whine level (metal and concrete) |
+| `at` | `0.02` | s | 0 .. None |  |
+
+Sources: Farnell 2010 (bullets, ricochets); van den Doel et al. 2001
+
+### `gunshot`
+
+A simple gunshot: the muzzle blast is a Friedlander pressure pulse (positive phase ~1-3 ms for a pistol, longer for big calibres), heavily overdriving any recorder (soft clipping, here oversampled), a supersonic bullet adds a sharp N-wave crack, and the action clacks. Put it in `room` or `outdoor` for the tail that makes it read as a gunshot.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `calibre` | `pistol` |  | pistol, rifle, shotgun |  |
+| `crack` | `0.5` |  | 0 .. 1 | supersonic crack level (0 for subsonic) |
+| `drive` | `1.5` |  | 0 .. 4 | recorder overload (soft clip) |
+| `mech` | `0.4` |  | 0 .. 1 | action/slide clack level |
+| `at` | `0.02` | s | 0 .. None |  |
+
+Sources: Wikipedia: Blast wave (Friedlander); Maher 2006, Modeling and signal processing of acoustic gunshot recordings; Farnell 2010 (guns)
+
+### `growl`
+
+A creature growl: source-filter. The source is a rough, irregular pulse train (vocal folds / false folds slapping at a low rate, strong jitter, period doubling = subharmonics, plus a slow 'flutter' amplitude modulation that gives the growl its rattle); the filter is a large vocal tract (formants scale as 1 / tract length: a bigger animal has lower formants). Breath noise rides on the pulses.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `f0` | `75.0` | Hz | 25 .. 400 | mean pulse rate (big cat growl ~ 30-100 Hz; dog ~ 100-250, est.) |
+| `size` | `1.0` |  | 0.3 .. 3 | creature size (scales the tract down in pitch; 1 = ~30 cm tract) |
+| `roughness` | `0.6` |  | 0 .. 1 | jitter, subharmonics and shimmer |
+| `flutter_hz` | `22.0` | Hz | 5 .. 60 | rattle/flutter rate of the growl |
+| `snarl` | `0.3` |  | 0 .. 1 | open, bright snarl (higher formants, more breath) |
+| `length_s` | `1.4` | s | 0.2 .. 6 | growl length |
+| `rise` | `0.3` |  | 0 .. 1 | pitch/level rise toward the middle (a menacing swell) |
+| `at` | `0.05` | s | 0 .. None |  |
+
+Sources: Titze 1994 (voice source); Fitch 1997 (formant dispersion and body size); Herzel et al. 1995 (subharmonics); Peters et al. 2009 (big cat vocal anatomy)
+
+### `rustle`
+
+Paper, cloth, leaves or plastic handled: hand movements (irregular gestures) drive the material. Paper and plastic crumple: sudden buckling of creases = crisp clicks with a power-law size spread (crackling noise, Houle & Sethna 1996), dense during fast movement. Cloth: soft friction noise between fibres, band-limited, with occasional snaps. Leaves: crisp, brittle grains.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `material` | `paper` |  | paper, cloth, leaves, plastic |  |
+| `moves` | `5` | count | 1 .. 40 | number of hand movements |
+| `length_s` | `1.5` | s | 0.2 .. 10 | how long the handling lasts |
+| `intensity` | `0.6` |  | 0 .. 1 | how vigorous |
+| `at` | `0.03` | s | 0 .. None |  |
+
+Sources: Houle & Sethna 1996, Phys Rev E 54 (acoustic emission from crumpling paper); Cook 1997 (PhISEM); Farnell 2010
+
+### `splash`
+
+An object dropping into water: the impact slap (short, its brightness falls with size), the air cavity pinching off into a big bubble (Minnaert 'bloop', f = 3.26 / r), a cloud of smaller bubbles fading, then droplets falling back (each a tiny drip with its own bubble).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `size` | `0.08` | m | 0.01 .. 0.6 | object size |
+| `speed` | `3.0` | m/s | 0.5 .. 12 | entry speed |
+| `bloop` | `0.6` |  | 0 .. 1 | level of the pinch-off bubble |
+| `droplets` | `0.5` |  | 0 .. 1 | level of the falling-back droplets |
+| `at` | `0.03` | s | 0 .. None |  |
+
+Sources: Minnaert 1933; Prosperetti & Oguz 1993; van den Doel 2005; Phillips et al. 2018
+
 ## Stage: synth
 
 ### `osc`

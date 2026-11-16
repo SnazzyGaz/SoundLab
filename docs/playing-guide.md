@@ -326,3 +326,74 @@ Euler's disk whose rate rises toward a finite end time, ending in a small clack 
 recordings the wobble is as loud as the first impact or louder and builds toward the end; v8 does that.
 Macros: `floor` (tile/wood/table/stone), `metal`, `size`, `height`, `spin`, `distance`.
 `coin_jingle.json` is a handful of coins shaken in a hand (not fitted to a recording).
+
+
+## Game library (0.9): how each new sound works
+
+All sixteen have macros, seeded variations (`--variations N`) and a category; the models live in
+`soundlab/models/library.py`. Physics where the mechanism decides the sound, simple blocks otherwise. None
+has had a listening check yet; the CC0 recordings used as checks are listed in `docs/fitting.md`.
+
+**Wind (`wind`, `wind_gap`).** Wind has no sound of its own: you hear turbulence on obstacles. A slowly
+wandering speed v(t) (gusts) drives everything: the broadband body opens up with speed (level ~ v^3, a
+dipole), a few resonant 'howl' bands move with v, leaves rustle faster in gusts, and a gap or keyhole
+whistles at f = 0.2 v / gap (Strouhal) only above a threshold speed. The model is level-normalised: speed
+shows up as brightness and gust contrast, loudness is the mix's job. Macros: `strength`, `gusts`, `trees`, `howl`, `distance`. `wind_gap` is the
+whistling-gap preset (`strength`, `pitch`, `whistle`, `distance`).
+
+**Rain (`rain`).** Near drops are counted individually (Poisson, rate rising with mm/h, sizes exponential
+around the median drop): each is a click plus the struck surface's ring (ground, leaves, tin roof, window,
+puddle; puddles add Minnaert bubbles). Behind them a hiss of distant drops and a low wash of run-off and
+far splashes that grows with the rate. Fitted to a CC0 heavy-rain recording with a hold-out (see
+fitting.md). Macros: `intensity`, `surface` (ground/leaves/roof/window/puddle), `closeness`, `distance`.
+
+**Glass break (`glass_break`).** A sharp crack plus a choked ring of the whole pane, then shards fall (free
+fall, 1-3 bounces). Each shard is a small free plate: f1 = 5.25/(2 pi a^2) * sqrt(D / rho h), so a 6 cm piece
+of 4 mm glass rings near 5 kHz and anything under ~2 cm is above hearing and only clicks. Sizes follow a power
+law (many small, a few big; big ones land flat and are choked). Fitted to a CC0 smash with a hold-out.
+Macros: `size`, `intensity`, `floor` (hard/wood/soft), `distance`.
+
+**Sword swing (`sword_swing`).** Aeroacoustics: wake noise centred on the vortex-shedding frequency
+St v / d (St ~ 0.2), level ~ v^3, plus a thin-edge tone (the 'zing'); speed follows the arm (fast attack,
+slower stop) and the blade passes the ear at the midpoint, so Doppler lifts the approach and drops the
+retreat. Macros: `speed`, `object`, `zing`, `distance`.
+
+**Sword clash and metal clang (`sword_clash`, `metal_clang`).** Steel bars or plates (bending modes, dense and
+inharmonic), two slightly different objects that beat, a very short metal contact, then optional scrape
+through the same modes (the 'shing'). The hand/grip soaks up the lowest modes, so a held sword is bright and
+short; a hanging pipe rings long and is very tonal. Macros: `object` (sword/pipe/plate/pan), `intensity`, `scrape`, `ring`, `distance` / `object` (pipe/plate/pan/sword), `intensity`, `size`, `ring`, `distance`.
+
+**Door creak (`door_creak`).** Stick-slip at the hinge: each slip is a tiny impulse into the hinge (small,
+damped metal modes) and the door leaf (a big damped wooden panel). The slip rate (the creak's pitch) follows
+the swing speed and pressure and wanders cycle to cycle; near standstill it breaks into sparse ticks.
+Macros: `speed`, `pitch`, `stiffness`, `distance`.
+
+**Door slam (`door_slam`).** The leaf edge hits the stop (1-2.6 ms wooden contact), the leaf rings as a
+damped oak plate (its lowest modes pinned at impact), a short wood-on-wood knock, rebound rattles in the frame,
+optional latch click and a small structural thump (kept low: a boomy slam reads as a cupboard on a drum).
+Fitted to a CC0 slam with a hold-out. Macros: `intensity`, `size`, `rattle`, `distance`.
+
+**Punch (`punch`).** A soft heavy contact (6-15 ms) into a lossy torso (damped 100-350 Hz modes), a skin or
+glove slap, clothing rustle; face hits are bonier with an optional crack. Real punches are duller than film
+ones; `sweeten` adds the film thump. Macros: `target` (body/face/belly), `glove` (bare/glove), `intensity`, `sweeten`, `distance`.
+
+**Bullet impact (`bullet_impact`).** Not the shot: a near-instant contact (sharp crack), then the material:
+wood splinters and a damped board knock; metal pings with an optional ricochet whine gliding down by Doppler;
+concrete chips and grit with dust hiss. Macros: `material` (concrete/wood/metal), `intensity`, `debris`, `ricochet`, `distance`.
+
+**Gunshot (`gunshot`, simple).** A Friedlander blast wave (time constant by calibre), recorder overload
+(4x oversampled soft clip so it does not alias), a supersonic crack (N-wave) and the action's clack, in a
+room. Macros: `calibre` (pistol/rifle/shotgun), `crack`, `distance`.
+
+**Creature growl (`creature_growl`).** Source-filter: a rough, irregular pulse train (strong jitter, period
+doubling = subharmonics, shimmer) with a slow flutter that gives the rattle, through a large vocal tract
+(formants scale down with size, a broad chest band below). Pitch first: the default pulse rate (45 Hz) comes
+from the envelope rate of four CC0 growls (32-63 Hz). Macros: `size`, `roughness`, `snarl`, `length`, `distance`.
+
+**Paper and cloth rustle (`paper_rustle`, `cloth_rustle`).** Irregular hand gestures drive the material:
+paper/plastic/leaves are bursts of crinkle clicks (heavy-tailed sizes) with a crisp top; cloth is band-passed
+friction noise with occasional snaps. Macros: `material` (paper/plastic/leaves/cloth), `intensity`, `length`, `distance` / `intensity`, `length`, `distance`.
+
+**Splash (`splash`).** Impact slap (darker for bigger objects), the air cavity pinching off into a big bubble
+(Minnaert 'bloop' f = 3.26 / r, chirping up as it rises), a fading cloud of small bubbles, droplets falling back.
+Macros: `size`, `intensity`, `distance`.

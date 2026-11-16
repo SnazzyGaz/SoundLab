@@ -8,13 +8,13 @@ physically informed stochastic models whose controls still map to real quantitie
 By Garyck Arntzen ([@_mintydoge](https://x.com/_mintydoge)). MIT licence. Standalone project; AIDAW uses it as
 a library/plugin.
 
-Status: **0.8.1** (heel and toe now flam into one step: 35 ms default gap). New in 0.8: a body-weight `footstep` model (shoe: trainer/boot/heel; surface:
+Status: **0.9.0**: a game-ready library of 36 recipes + 7 generic-block demos. New in 0.9: wind (gusts, trees, whistling gap), rain (light to heavy on ground/leaves/roof/window/puddle), glass break (fracture + shard debris), sword swing (with Doppler), sword clash and metal clang, door creak (hinge stick-slip) and slam, punch, bullet impacts (wood/metal/concrete), a simple gunshot, a creature growl (rough source + vocal tract), paper and cloth rustle, splash; plus the blind checkpoint kit (`tools/checkpoint.py`). In 0.8.1 heel and toe flam into one step (35 ms gap). New in 0.8: a body-weight `footstep` model (shoe: trainer/boot/heel; surface:
 wood/stone/gravel), the default `hit` is now a damped board knock (the old quick resonant sound is
 `dowel.json` / `-m object=dowel`), and a physical `coin` (drop with bounces and Euler's-disk wobble, plus a
 jingle; the retro blip stays as `blocks/coin_pickup.json`). Every recipe has macro sliders (size, distance, intensity, material, ...), seeded
 variations, batch export with sensible names and a quick audition loop. Physical models for the five reference sounds tuned by ear and to reference clips, plus a
 generic synth toolkit (oscillators, FM, noise, grains, filters, envelopes, distortion, delay, chorus, reverb)
-for non-physical game sounds. Next: more recipes (roadmap step 4) and the blind checkpoint. See
+for non-physical game sounds. Next: a listening check of the new sounds, then the blind checkpoint (step 5). See
 [docs/roadmap.md](docs/roadmap.md).
 
 ## The five stages
@@ -92,7 +92,7 @@ control takes a breakpoint list `[[time_s, value], ...]`.
 ```
 
 Shipped recipes: `duck`, `engine`, `foghorn`, `explosion`, `match` (reference sounds), `matchbox` (shake +
-strike + flame), `engine_blips`, `explosion_small`, `foghorn_pattern`, `glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), `hit` and `footstep` (material/surface macros), `water`, `recipes/blocks/*` (generic-synth demos: UI click/confirm, coin, power-up, laser,
+strike + flame), `engine_blips`, `explosion_small`, `foghorn_pattern`, `glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), `hit`, `dowel`, `footstep`, `coin`, `coin_jingle`, `water`; the 0.9 game library: `wind`, `wind_gap`, `rain`, `glass_break`, `sword_swing`, `sword_clash`, `metal_clang`, `door_creak`, `door_slam`, `punch`, `bullet_impact`, `gunshot`, `creature_growl`, `paper_rustle`, `cloth_rustle`, `splash`; `recipes/blocks/*` (generic-synth demos: UI click/confirm, coin, power-up, laser,
 magic shimmer, whoosh), and `recipes/fit/*_fit.json` (dry recipes
 matched to the reference recordings, the starting points for `soundlab match`). Full format: [docs/recipe-format.md](docs/recipe-format.md).
 
@@ -112,6 +112,7 @@ matched to the reference recordings, the starting points for `soundlab match`). 
   a fit report.
 - [docs/architecture.md](docs/architecture.md): code layout and how AIDAW plugs in.
 - [docs/licensing.md](docs/licensing.md): what we may copy, what is reference-only.
+- [docs/checkpoint.md](docs/checkpoint.md): the blind A/B checkpoint kit (build a listening set, score it).
 - [docs/roadmap.md](docs/roadmap.md): build order and status.
 
 ## Tests

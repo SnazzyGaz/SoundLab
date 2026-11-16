@@ -1,0 +1,139 @@
+{
+ "soundlab": 1,
+ "name": "Gunshot (simple): Friedlander muzzle blast, supersonic crack, action clack, in a large space",
+ "category": "weapon",
+ "sample_rate": 48000,
+ "duration": 2.0,
+ "seed": 22,
+ "layers": [
+  {
+   "name": "main",
+   "model": "gunshot",
+   "params": {
+    "calibre": "pistol",
+    "crack": 0.5,
+    "drive": 1.5,
+    "mech": 0.4,
+    "at": 0.02
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 600,
+    "absorption": 0.2,
+    "source_distance": 5.0
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "calibre": {
+   "default": "pistol",
+   "doc": "weapon type",
+   "choices": {
+    "pistol": [
+     {
+      "to": "0.calibre",
+      "op": "set",
+      "value": "pistol"
+     }
+    ],
+    "rifle": [
+     {
+      "to": "0.calibre",
+      "op": "set",
+      "value": "rifle"
+     }
+    ],
+    "shotgun": [
+     {
+      "to": "0.calibre",
+      "op": "set",
+      "value": "shotgun"
+     }
+    ]
+   }
+  },
+  "crack": {
+   "default": 0.5,
+   "doc": "subsonic .. sharp supersonic crack",
+   "map": [
+    {
+     "to": "0.crack",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.4
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.drive": {
+   "rel": 0.1
+  }
+ }
+}

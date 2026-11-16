@@ -1,4 +1,4 @@
-# Macros, variations, batch export and audition (0.7.0; 0.8.0 notes)
+# Macros, variations, batch export and audition (0.7.0; 0.8.0 notes; 0.9.0 library)
 
 Roadmap steps 2 and 3. **Macros are the primary interface**: every recipe declares a few sliders (0-1) or
 named choices, and each one moves several underlying controls with a sensible curve. The physical controls
@@ -62,9 +62,14 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 | recipe | category | macros |
 |---|---|---|
 | `blaster.json` | scifi | `size`, `intensity`, `length` |
+| `bullet_impact.json` | weapon | `material` (concrete, wood, metal), `intensity`, `debris`, `ricochet`, `distance` |
 | `car_passby.json` | vehicle | `speed`, `distance` |
+| `cloth_rustle.json` | foley | `intensity`, `length`, `distance` |
 | `coin.json` | coin | `floor` (tile, wood, table, stone), `metal` (cupronickel, bronze, steel, brass, aluminium), `size`, `height`, `spin`, `distance` |
 | `coin_jingle.json` | coin | `metal` (cupronickel, bronze, steel, brass, aluminium), `coins`, `shake`, `length`, `distance` |
+| `creature_growl.json` | creature | `size`, `roughness`, `snarl`, `length`, `distance` |
+| `door_creak.json` | door | `speed`, `pitch`, `stiffness`, `distance` |
+| `door_slam.json` | door | `intensity`, `size`, `rattle`, `distance` |
 | `dowel.json` | impact | `material` (wood, metal, glass, plastic, stone, cardboard), `size`, `intensity`, `hardness`, `distance` |
 | `drip.json` | water | `size`, `intensity`, `distance` |
 | `duck.json` | animal | `size`, `intensity`, `distance` |
@@ -76,11 +81,22 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 | `foghorn.json` | ambience | `size`, `intensity`, `length`, `distance` |
 | `foghorn_pattern.json` | ambience | `size`, `intensity`, `length`, `distance` |
 | `footstep.json` | footstep | `shoe` (trainer, boot, heel), `surface` (wood, stone, gravel), `size`, `intensity`, `pace`, `creak`, `distance` |
+| `glass_break.json` | glass | `size`, `intensity`, `floor` (hard, wood, soft), `distance` |
 | `glass_hit_room.json` | impact | `size`, `intensity`, `distance` |
+| `gunshot.json` | weapon | `calibre` (pistol, rifle, shotgun), `crack`, `distance` |
 | `hit.json` | impact | `object` (board, door, dowel), `material` (wood, metal, glass, plastic, stone, cardboard), `size`, `intensity`, `hardness`, `distance` |
 | `match.json` | foley | `size`, `intensity`, `wetness`, `distance` |
 | `matchbox.json` | foley | `intensity`, `size`, `wetness`, `distance` |
+| `metal_clang.json` | impact | `object` (pipe, plate, pan, sword), `intensity`, `size`, `ring`, `distance` |
+| `paper_rustle.json` | foley | `material` (paper, plastic, leaves, cloth), `intensity`, `length`, `distance` |
+| `punch.json` | combat | `target` (body, face, belly), `glove` (bare, glove), `intensity`, `sweeten`, `distance` |
+| `rain.json` | ambience | `intensity`, `surface` (ground, leaves, roof, window, puddle), `closeness`, `distance` |
+| `splash.json` | water | `size`, `intensity`, `distance` |
+| `sword_clash.json` | weapon | `object` (sword, pipe, plate, pan), `intensity`, `scrape`, `ring`, `distance` |
+| `sword_swing.json` | whoosh | `speed`, `object`, `zing`, `distance` |
 | `water.json` | water | `size`, `intensity`, `distance` |
+| `wind.json` | ambience | `strength`, `gusts`, `trees`, `howl`, `distance` |
+| `wind_gap.json` | ambience | `strength`, `pitch`, `whistle`, `distance` |
 | `blocks/coin_pickup.json` | pickup | `pitch`, `length`, `brightness` |
 | `blocks/laser_zap.json` | scifi | `pitch`, `length`, `intensity` |
 | `blocks/magic_shimmer.json` | magic | `pitch`, `density`, `size` |

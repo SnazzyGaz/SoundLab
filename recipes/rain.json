@@ -1,0 +1,187 @@
+{
+ "soundlab": 1,
+ "name": "Rain: near drops on a surface over distant hiss (surface: ground/leaves/roof/window/puddle)",
+ "category": "ambience",
+ "sample_rate": 48000,
+ "duration": 8.0,
+ "seed": 13,
+ "layers": [
+  {
+   "name": "main",
+   "model": "rain",
+   "params": {
+    "rate_mm_h": 5.0,
+    "surface": "ground",
+    "near": 0.55,
+    "hiss": 0.2,
+    "drop_mm": 1.3,
+    "brightness": 0.43
+   }
+  }
+ ],
+ "post": [],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.5
+ },
+ "macros": {
+  "intensity": {
+   "default": 0.5,
+   "doc": "drizzle .. downpour",
+   "map": [
+    {
+     "to": "0.rate_mm_h",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.1
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "0.drop_mm",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.5
+      ]
+     ]
+    }
+   ]
+  },
+  "surface": {
+   "default": "ground",
+   "doc": "what the near drops hit",
+   "choices": {
+    "ground": [
+     {
+      "to": "0.surface",
+      "op": "set",
+      "value": "ground"
+     }
+    ],
+    "leaves": [
+     {
+      "to": "0.surface",
+      "op": "set",
+      "value": "leaves"
+     }
+    ],
+    "roof": [
+     {
+      "to": "0.surface",
+      "op": "set",
+      "value": "roof"
+     }
+    ],
+    "window": [
+     {
+      "to": "0.surface",
+      "op": "set",
+      "value": "window"
+     }
+    ],
+    "puddle": [
+     {
+      "to": "0.surface",
+      "op": "set",
+      "value": "puddle"
+     }
+    ]
+   }
+  },
+  "closeness": {
+   "default": 0.5,
+   "doc": "heard from indoors/far .. right next to it",
+   "map": [
+    {
+     "to": "0.near",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    },
+    {
+     "to": "0.brightness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.4
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.rate_mm_h": {
+   "rel": 0.2
+  }
+ }
+}

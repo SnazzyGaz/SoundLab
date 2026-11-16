@@ -65,14 +65,16 @@ def onepole_lp(x, f, sr):
 
 
 def svf_loop(x: np.ndarray, fc: np.ndarray, q: float, sr: int, mode: str = "bp") -> np.ndarray:
-    """Reference per-sample TPT state-variable filter (slow Python loop, kept for tests). mode: lp|bp|hp."""
+    """Reference per-sample TPT state-variable filter (slow Python loop, kept for tests). mode: lp|bp|hp|bpn
+    (bpn = unity-gain band-pass, added in 0.9 for moving cutoffs)."""
     fc = np.broadcast_to(np.asarray(fc, float), x.shape)
     g = np.tan(np.pi * np.clip(fc, 5.0, sr * 0.45) / sr)
     k = 1.0 / q
     a1 = 1.0 / (1.0 + g * (g + k))
     ic1 = ic2 = 0.0
     out = np.empty_like(x, dtype=float)
-    m = {"lp": 0, "bp": 1, "hp": 2}[mode]
+    m = {"lp": 0, "bp": 1, "hp": 2, "bpn": 1}[mode]
+    scale = k if mode == "bpn" else 1.0
     xs = x.tolist()
     gs = g.tolist()
     a1s = a1.tolist()
@@ -86,7 +88,7 @@ def svf_loop(x: np.ndarray, fc: np.ndarray, q: float, sr: int, mode: str = "bp")
         if m == 0:
             out[i] = v2
         elif m == 1:
-            out[i] = v1
+            out[i] = scale * v1
         else:
             out[i] = xs[i] - k * v1 - v2
     return out

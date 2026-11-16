@@ -1,0 +1,181 @@
+{
+ "soundlab": 1,
+ "name": "Wind: gusty wind with trees (aeroacoustic noise, howl, leaf rustle)",
+ "category": "ambience",
+ "sample_rate": 48000,
+ "duration": 8.0,
+ "seed": 11,
+ "layers": [
+  {
+   "name": "main",
+   "model": "wind",
+   "params": {
+    "speed": 8.0,
+    "gustiness": 0.5,
+    "gust_hz": 0.15,
+    "howl": 0.3,
+    "whistle": 0.0,
+    "gap_mm": 6.0,
+    "trees": 0.4,
+    "rumble": 0.15
+   }
+  }
+ ],
+ "post": [],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.5
+ },
+ "macros": {
+  "strength": {
+   "default": 0.5,
+   "doc": "breeze .. gale",
+   "map": [
+    {
+     "to": "0.speed",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    }
+   ]
+  },
+  "gusts": {
+   "default": 0.5,
+   "doc": "steady .. very gusty",
+   "map": [
+    {
+     "to": "0.gustiness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.4
+      ]
+     ]
+    },
+    {
+     "to": "0.gust_hz",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.8
+      ]
+     ]
+    }
+   ]
+  },
+  "trees": {
+   "default": 0.5,
+   "doc": "open ground .. in a wood",
+   "map": [
+    {
+     "to": "0.trees",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.5
+      ]
+     ]
+    }
+   ]
+  },
+  "howl": {
+   "default": 0.5,
+   "doc": "hiss only .. moaning",
+   "map": [
+    {
+     "to": "0.howl",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.speed": {
+   "rel": 0.1
+  },
+  "0.gust_hz": {
+   "rel": 0.2
+  }
+ }
+}

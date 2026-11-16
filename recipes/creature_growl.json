@@ -1,0 +1,229 @@
+{
+ "soundlab": 1,
+ "name": "Creature growl: rough low pulses through a large vocal tract",
+ "category": "creature",
+ "sample_rate": 48000,
+ "duration": 2.0,
+ "seed": 23,
+ "layers": [
+  {
+   "name": "main",
+   "model": "growl",
+   "params": {
+    "f0": 45.0,
+    "size": 1.5,
+    "roughness": 0.6,
+    "flutter_hz": 22.0,
+    "snarl": 0.3,
+    "length_s": 1.4,
+    "rise": 0.3,
+    "at": 0.05
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 60,
+    "absorption": 0.3,
+    "source_distance": 2.0
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "dog .. huge beast",
+   "map": [
+    {
+     "to": "0.size",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.45
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.2
+      ]
+     ]
+    },
+    {
+     "to": "0.f0",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       2.2
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.55
+      ]
+     ]
+    }
+   ]
+  },
+  "roughness": {
+   "default": 0.5,
+   "doc": "purr-like .. ragged",
+   "map": [
+    {
+     "to": "0.roughness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.35
+      ]
+     ]
+    }
+   ]
+  },
+  "snarl": {
+   "default": 0.5,
+   "doc": "closed rumble .. open snarl",
+   "map": [
+    {
+     "to": "0.snarl",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ]
+    }
+   ]
+  },
+  "length": {
+   "default": 0.5,
+   "doc": "short .. long",
+   "map": [
+    {
+     "to": "0.length_s",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    },
+    {
+     "to": "duration",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.3
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.f0": {
+   "cents": 80
+  },
+  "0.flutter_hz": {
+   "rel": 0.15
+  },
+  "0.length_s": {
+   "rel": 0.1
+  }
+ }
+}

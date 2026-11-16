@@ -160,3 +160,32 @@ clip 0.383 -> 0.496; hold-outs 0.902 -> 1.228 and 0.472 -> 0.579), stone 0.566 -
 footstep controls with the gap locked gained little (0.496 -> 0.456) and pushed three controls to their
 bounds, so it was not kept. Here the ear overrides the metric: those recordings seem to be slow walks with a
 distinct toe-down, and a single-number spectral distance rewards copying that.
+
+## Game library checks against CC0 recordings (0.9.0)
+
+Refs: Freesound CC0 previews picked automatically from searches (2 per sound, rain roof/window found none),
+kept in `soundlab-research/refs/cc0` with `SOURCES.md`; never in the repo. They are loose matches: a
+"paper" search returned a 48 s handling recording dominated by rumble, a "bullet metal" one is 0.1 s. So most
+sounds were checked on band balance (energy in 20-100/100-300/300-1k/1-3k/3-8k/8-16k Hz) and decay, and only
+three were fitted with `soundlab match` plus a hold-out:
+
+| recipe | fitted to | controls | fit before -> after | hold-out (second recording) | adopted |
+|---|---|---|---|---|---|
+| rain | rain_heavy_1 (10-16 s) | near, hiss, brightness, drop_mm | 0.566 -> 0.402 | rain_heavy_2: 0.637 -> 0.529 | yes (hiss 0.2, near 0.55, brightness 0.43, drop 1.3 mm) |
+| door_slam | door_slam_1 | force, rattle, thump, latch | 0.264 -> 0.255 | door_slam_2: 1.25 -> 1.248 (that take has a long room tail) | yes (force 0.85, rattle 0.25, latch 0.45) |
+| glass_break | glass_smash_1 | shards, energy, height | 0.538 -> 0.335 | glass_smash_2: 0.475 -> 0.433 | partly: shards 100; height hit its lower bound (0.1 m), set to 0.4 m (hold-out 0.463, fit 0.475) |
+
+Changes driven by the band checks (before -> after, distance in dB RMS over the six bands to the closest ref):
+- **Rain** lacked everything under 300 Hz (-38 dB vs the refs' -13): added the low wash; 10.9 -> 3.4 dB.
+- **Door slam** was a boom (100-300 Hz on top, contact 3.9 ms): the leaf's lowest modes are pinned at impact
+  and the edge contact is 1-2.6 ms; 10.4 -> 2.6 dB.
+- **Glass**: the first version's shards rang above Nyquist (wrong plate formula); fixed, now 4.4 dB.
+- **Sword clash**: the refs put most energy at 3-8 kHz with 0.1-0.3 s decays; ours was 300 Hz-3 kHz and 0.8 s.
+  Grip damping and a high-pass moved it up (decay 0.37 s). Still ~15 dB from the refs on bands, partly on
+  purpose (no tinny tops).
+- **Creature growl**: pitch first. YIN finds almost no voicing in rough growls (1-21 % of frames), so the pulse
+  rate was taken from the envelope periodicity: 32-63 Hz across four refs -> default f0 45 Hz, size 1.5.
+  The refs disagree on balance (two low-heavy, one mid, one bright), so the band distance stays 6-22 dB.
+- **Door creak**: refs range from 26 Hz ticking to a 1.1 kHz squeal; ours (260 Hz) sits between; 5.5 dB to one.
+
+Not fitted: wind (3.6 dB to the trees ref as is), swing, clash, bullets, gunshot, punch, rustles, splash.

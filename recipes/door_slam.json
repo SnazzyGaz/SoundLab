@@ -1,0 +1,182 @@
+{
+ "soundlab": 1,
+ "name": "Door slam: panel into frame, latch, structure thump, rattle, room",
+ "category": "door",
+ "sample_rate": 48000,
+ "duration": 1.5,
+ "seed": 19,
+ "layers": [
+  {
+   "name": "main",
+   "model": "door_slam",
+   "params": {
+    "force": 0.85,
+    "door_size": 1.0,
+    "latch": 0.45,
+    "rattle": 0.25,
+    "thump": 0.25,
+    "at": 0.03
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 50,
+    "absorption": 0.3,
+    "source_distance": 2.5
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "intensity": {
+   "default": 0.5,
+   "doc": "close .. slam",
+   "map": [
+    {
+     "to": "0.force",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.6
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "size": {
+   "default": 0.5,
+   "doc": "cupboard .. heavy door",
+   "map": [
+    {
+     "to": "0.door_size",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.4
+      ]
+     ]
+    },
+    {
+     "to": "0.thump",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.2
+      ]
+     ]
+    }
+   ]
+  },
+  "rattle": {
+   "default": 0.5,
+   "doc": "solid .. loose in its frame",
+   "map": [
+    {
+     "to": "0.rattle",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.5
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.force": {
+   "abs": 0.08
+  },
+  "0.door_size": {
+   "rel": 0.05
+  }
+ }
+}

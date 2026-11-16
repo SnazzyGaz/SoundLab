@@ -1,0 +1,175 @@
+{
+ "soundlab": 1,
+ "name": "Cloth rustle: clothing/fabric movement",
+ "category": "foley",
+ "sample_rate": 48000,
+ "duration": 2.0,
+ "seed": 25,
+ "layers": [
+  {
+   "name": "main",
+   "model": "rustle",
+   "params": {
+    "material": "cloth",
+    "moves": 4,
+    "length_s": 1.5,
+    "intensity": 0.5,
+    "at": 0.03
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 30,
+    "absorption": 0.35,
+    "source_distance": 0.8
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "intensity": {
+   "default": 0.5,
+   "doc": "gentle .. vigorous",
+   "map": [
+    {
+     "to": "0.intensity",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.4
+      ]
+     ]
+    }
+   ]
+  },
+  "length": {
+   "default": 0.5,
+   "doc": "brief .. long",
+   "map": [
+    {
+     "to": "0.length_s",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    },
+    {
+     "to": "0.moves",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    },
+    {
+     "to": "duration",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.2
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.moves": {
+   "abs": 1
+  },
+  "0.intensity": {
+   "abs": 0.08
+  }
+ }
+}

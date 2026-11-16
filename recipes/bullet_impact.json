@@ -1,0 +1,190 @@
+{
+ "soundlab": 1,
+ "name": "Bullet impact on a surface (material: concrete/wood/metal), debris and optional ricochet",
+ "category": "weapon",
+ "sample_rate": 48000,
+ "duration": 1.5,
+ "seed": 21,
+ "layers": [
+  {
+   "name": "main",
+   "model": "bullet_impact",
+   "params": {
+    "material": "concrete",
+    "energy": 0.7,
+    "debris": 0.6,
+    "ricochet": 0.0,
+    "at": 0.02
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 80,
+    "absorption": 0.25,
+    "source_distance": 3.0
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "material": {
+   "default": "concrete",
+   "doc": "what is hit",
+   "choices": {
+    "concrete": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "concrete"
+     }
+    ],
+    "wood": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "wood"
+     }
+    ],
+    "metal": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "metal"
+     }
+    ]
+   }
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "small calibre .. heavy",
+   "map": [
+    {
+     "to": "0.energy",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "debris": {
+   "default": 0.5,
+   "doc": "clean .. lots of debris",
+   "map": [
+    {
+     "to": "0.debris",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.4
+      ]
+     ]
+    }
+   ]
+  },
+  "ricochet": {
+   "default": 0.5,
+   "doc": "no ricochet .. whining ricochet",
+   "map": [
+    {
+     "to": "0.ricochet",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.8
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.energy": {
+   "abs": 0.08
+  },
+  "0.debris": {
+   "abs": 0.1
+  }
+ }
+}
