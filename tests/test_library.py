@@ -123,7 +123,7 @@ def test_door_creak_pitch_follows_slip_rate():
 def test_growl_is_voiced_with_its_pitch():
     # 0.10: the growl must be a voice (periodic glottal pulses), not a friction-like click train
     from soundlab.analysis import f0_track
-    y = run("growl", 1.8, f0=80.0, roughness=0.0, rise=0.0, snarl=0.0, length_s=1.6)
+    y = run("growl", 1.8, f0=80.0, roughness=0.0, rise=0.0, snarl=0.0, length_s=1.6, trill=0.0, wet=0.0)
     T, F, A, R = f0_track(y, SR, 30, 1500, 0.25)
     F = np.array(F)
     v = F[np.isfinite(F)]
@@ -132,12 +132,37 @@ def test_growl_is_voiced_with_its_pitch():
 
 def test_growl_roughness_adds_subharmonic():
     def sub(rough):
-        y = run("growl", 1.8, seed=2, f0=80.0, roughness=rough, rise=0.0, snarl=0.0, length_s=1.6)
+        y = run("growl", 1.8, seed=2, f0=80.0, roughness=rough, rise=0.0, snarl=0.0, length_s=1.6, trill=0.0)
         seg = y[int(0.4 * SR):int(1.4 * SR)]
         S = np.abs(np.fft.rfft(seg * np.hanning(len(seg)))) ** 2
         f = np.fft.rfftfreq(len(seg), 1 / SR)
         return S[(f > 34) & (f < 46)].sum() / S[(f > 74) & (f < 86)].sum()
     assert sub(1.0) > 3 * sub(0.0)
+
+
+def test_growl_trill_flutters_at_its_rate():
+    # 0.11: the uvular/ventricular trill modulates the voice at ~flutter_hz (irregularly)
+    y = run("growl", 2.2, seed=3, f0=120.0, roughness=0.0, flutter_hz=24.0, trill=0.9, length_s=2.0, rise=0.0)
+    e = np.abs(signal.hilbert(y[int(0.4 * SR):int(1.8 * SR)]))
+    e = signal.lfilter(*signal.butter(2, 60 / (SR / 2)), e)
+    assert abs(peak_hz(e - e.mean(), 12, 45) / 24.0 - 1) < 0.25
+
+
+def am_index(y, lo=500, hi=4000):
+    """Envelope fluctuation at 4-40 Hz (flutter/shudder) relative to the mean level."""
+    b, a = signal.butter(4, [lo / (SR / 2), hi / (SR / 2)], "band")
+    yb = signal.lfilter(b, a, y)
+    e = np.sqrt(np.convolve(yb ** 2, np.ones(480) / 480, "same"))[::48]
+    e = e / e.mean()
+    S = np.abs(np.fft.rfft(e - 1)) ** 2
+    f = np.fft.rfftfreq(len(e), 1 / 1000)
+    return float(np.sqrt(S[(f > 4) & (f < 40)].sum() / len(e) ** 2 * 2))
+
+
+def test_rain_wash_is_stationary():
+    # 0.11 ('shuddering like paper bags'): no flutter in the wash
+    y = run("rain", 6.0, rate_mm_h=5.0, near=0.0, hiss=1.0)[SR // 2:]
+    assert am_index(y) < 0.12
 
 
 def _grain(y, lo=2000, hi=8000):
@@ -193,3 +218,16 @@ def test_bullet_materials_differ():
     metal = run("bullet_impact", 1.0, material="metal")
     conc = run("bullet_impact", 1.0, material="concrete")
     assert tonal(metal) > tonal(conc) + 6
+
+
+def test_gunshot_bright_shock_and_big_tail():
+    # 0.11 ('potato gun / air gun'): a bright first millisecond and a loud, long reflective tail
+    y = run("gunshot", 3.0, at=0.02)
+    i0 = int(0.02 * SR)
+    first = y[i0:i0 + int(0.003 * SR)]
+    P = np.abs(np.fft.rfft(first, 4096)) ** 2
+    f = np.fft.rfftfreq(4096, 1 / SR)
+    assert (P * f).sum() / P.sum() > 3000
+    lv = lambda a, b: 10 * np.log10(np.mean(y[i0 + int(a * SR):i0 + int(b * SR)] ** 2))
+    assert lv(0.3, 0.6) - lv(0, 0.005) > -18
+    assert lv(0.6, 1.0) - lv(0, 0.005) > -26

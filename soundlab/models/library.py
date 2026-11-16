@@ -97,13 +97,13 @@ def wind(ctx: Ctx, x, speed, gustiness, gust_hz, howl, whistle, gap_mm, trees, r
         w = dsp.svf(dsp.white(rng, n), f_w, 40.0, sr, "bpn") + 0.3 * dsp.svf(dsp.white(rng, n), f_w * 2.02, 30.0, sr, "bpn")
         out += whistle * 0.7 * _norm(w * on * amp ** 0.5)
     if trees > 0:
-        # 0.10 ('very grainy'): leaves were thousands of separate clicks per second, which read as grain.
-        # A canopy is so many leaves that the sum is continuous: filtered noise whose level flutters smoothly
-        # (leaf groups moving, ~5-15 Hz) and swells with the gusts.
-        flut = np.exp(0.35 * smooth_random(rng, n, sr, 9.0)) * np.exp(0.2 * smooth_random(rng, n, sr, 2.5))
-        leaves = dsp.lowpass(dsp.bandpass(dsp.pink(rng, n), 1800.0 + 600.0 * min(speed / 10.0, 2.0), sr, 0.45),
+        # 0.10: continuous leaf noise instead of clicks (grain). 0.11 ('a plastic bag waving'): the 9 Hz
+        # flutter was too deep and too regular. Now only a shallow, irregular wobble (two unrelated rates) and a
+        # lower level; off by default in wind.json (the `trees` macro brings it in).
+        flut = np.exp(0.10 * smooth_random(rng, n, sr, 3.3) + 0.06 * smooth_random(rng, n, sr, 11.7))
+        leaves = dsp.lowpass(dsp.bandpass(dsp.pink(rng, n), 1800.0 + 600.0 * min(speed / 10.0, 2.0), sr, 0.4),
                              5000.0, sr) * flut * amp ** 0.7
-        out += trees * 0.45 * _norm(leaves)
+        out += trees * 0.3 * _norm(leaves)
     if rumble > 0:
         r = dsp.lowpass(dsp.brown(rng, n), 90.0, sr, 0.5) * amp
         out += rumble * 0.5 * _norm(r)
@@ -140,7 +140,8 @@ def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     su = RAIN_SURFACES[surface]
     R = rate_mm_h
-    swell = np.exp(0.15 * smooth_random(rng, n, sr, 0.2))
+    # 0.11 ('shuddering like paper bags'): only a gentle, slow variation; the wash itself is stationary
+    swell = np.exp(0.05 * smooth_random(rng, n, sr, 0.1))
     out = np.zeros(n)
     if near > 0:
         rate = 25.0 * R ** 0.8 * swell                    # near drops heard individually (est.)
@@ -173,13 +174,23 @@ def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness):
             drops = drops + 0.8 * _norm(b)
         out += near * _norm(drops)
     if hiss > 0:
-        # the diffuse wash: drops too many and too far to hear one by one. Darker top than before (0.10).
+        # the diffuse wash (0.11): tens of thousands of distant micro-drops per second, each a soft 0.1-0.25 ms tap with a
+        # random size, summed. Many independent taps average into a smooth, statistically stationary hiss with a
+        # fine rain texture; no amplitude modulation is applied (the 0.10 30 Hz 'patter' AM was the shudder).
         top = 2200.0 + 4500.0 * brightness
-        patter = np.exp(0.3 * smooth_random(rng, n, sr, 30.0))     # dense, smooth patter, no clicks
-        h = dsp.lowpass(dsp.highpass(dsp.pink(rng, n), 400.0, sr), top, sr) * swell * patter
+        mrate = (25000.0 + 4000.0 * R) * swell                  # far drops per second (est.; enough to overlap)
+        idx = dsp.poisson_times(rng, mrate, sr)
+        imp = np.zeros(n)
+        np.add.at(imp, idx, rng.exponential(1.0, len(idx)) * rng.choice([-1.0, 1.0], len(idx)))
+        micro = np.zeros(n)
+        for k, w_ms in enumerate((0.08, 0.15, 0.25)):
+            part = imp * (rng.integers(0, 3, n) == k)
+            w = max(3, int(w_ms * 1e-3 * sr))
+            micro += np.convolve(part, _hann(w), "same")
+        h = dsp.lowpass(dsp.highpass(micro, 400.0, sr), top, sr)
         out += hiss * (0.45 + 0.6 * min(R / 20.0, 1.0)) * _norm(h)
-        # the low wash of thousands of distant splashes and run-off
-        wash = dsp.lowpass(dsp.highpass(dsp.pink(rng, n), 70.0, sr), 450.0, sr) * swell
+        # the low wash of distant splashes and run-off: stationary
+        wash = dsp.lowpass(dsp.highpass(dsp.pink(rng, n), 70.0, sr), 450.0, sr)
         out += hiss * (0.12 + 0.45 * min(R / 16.0, 1.0)) * _norm(wash)
     return dsp.highpass(dsp.lowpass(out, 12000.0, sr), 60.0, sr)
 
@@ -560,32 +571,38 @@ def bullet_impact(ctx: Ctx, x, material, energy, debris, ricochet, at):
 
 # =================================================================== gunshot
 GUNS = {
-    # Friedlander positive phase t* (s), gas-body low-pass (Hz), body decay (s), boom decay (s), boom level,
-    # crack level, N-wave length (s). Estimates from Maher 2006 / Beck et al. 2011 muzzle-blast durations.
-    "pistol": dict(ts=0.0011, body_fc=6000.0, body_tau=0.022, boom_tau=0.045, boom=0.55, crack=0.35, nw=0.00025),
-    "rifle": dict(ts=0.0016, body_fc=8000.0, body_tau=0.028, boom_tau=0.060, boom=0.6, crack=1.0, nw=0.0004),
-    "shotgun": dict(ts=0.0026, body_fc=4500.0, body_tau=0.040, boom_tau=0.090, boom=0.8, crack=0.0, nw=0.0004),
+    # shock: positive-phase length of the muzzle shock (s); roar: propellant combustion decay (s) and its
+    # brightness (Hz); boom: low gas push level/decay; sonic: supersonic N-wave level; tail: reflective decay
+    # time (s) at 'street'. Estimates: Maher 2006, Beck et al. 2011; tail ratios from CC0 gunshot/shotgun
+    # recordings (level 0.3-0.6 s after the shot ~-12 dB, 0.6-1 s ~-15..-20 dB re the first 5 ms).
+    "pistol": dict(shock=0.00025, roar_tau=0.018, roar_hz=3500.0, boom=0.1, boom_tau=0.025, sonic=0.35, tail=2.6,
+                   slide=True),
+    "rifle": dict(shock=0.00035, roar_tau=0.024, roar_hz=4200.0, boom=0.12, boom_tau=0.03, sonic=1.0, tail=3.0,
+                  slide=False),
+    "shotgun": dict(shock=0.0005, roar_tau=0.034, roar_hz=2600.0, boom=0.22, boom_tau=0.045, sonic=0.0, tail=3.2,
+                    slide=False),
 }
 
 
 @model("gunshot", "sound",
-       "A gunshot (0.10, after 'a stone hitting a mildly metallic wall'). Layers, each physical: (1) the "
-       "muzzle blast, a Friedlander pressure pulse (positive phase ~1-3 ms by calibre) that starts the sound "
-       "with a very fast, loud broadband crack; (2) the expanding, turbulent propellant gas: a dense broadband "
-       "burst decaying in tens of ms (the body); (3) the low-mid boom of the gas cloud pushing air (a "
-       "low-passed burst, ~40-90 ms); all three drive the recorder or ear into overload (oversampled soft clip: "
-       "loud, compressed, no aliasing); (4) the supersonic bullet's N-wave crack (rifles; none for shotguns); "
-       "(5) the environment: discrete slap echoes off nearby walls/ground and a dark diffuse tail. No ringing "
-       "parts: the action clack is a dry noise burst.",
+       "A firearm shot (0.11, after 'a potato gun / air-gun punch'). What makes it a firearm, in order: "
+       "(1) the muzzle shock: a near-instant pressure jump (microseconds) lasting a fraction of a millisecond, "
+       "so the first millisecond is very loud and full of high frequencies; (2) the propellant combustion "
+       "roar: bright, broadband, turbulent flame/gas, tens of ms; (3) only a modest low gas push (too much "
+       "low-mid is the 'poof' of an air cannon); (4) all of it saturates the microphone/ear: hard, almost "
+       "painful clipping and compression (oversampled, so no aliasing); (5) the supersonic N-wave for rifles; "
+       "(6) the dry clack of the action; (7) the reflections: loud slapback off walls/ground and a long "
+       "reverberant tail, which is what gives a gunshot its size (CC0 recordings: still ~-12 dB 0.3-0.6 s "
+       "after the shot, ~-15..-20 dB up to 1 s).",
        [
            Param("calibre", "pistol", "", choices=tuple(GUNS)),
            Param("crack", 0.5, "", 0, 1, "supersonic crack level (scaled by calibre; shotguns have none)"),
-           Param("drive", 2.0, "", 0, 4, "overload of the recorder/ear (soft clip): more = louder, denser"),
-           Param("body", 0.7, "", 0, 1, "gas body + low boom level"),
-           Param("echo", 0.6, "", 0, 1, "slap echoes and tail level"),
-           Param("space", "street", "", choices=("street", "room", "open"), doc="where: street (walls near, "
-                 "strong slaps), room (dense, short), open field (one late ground/treeline echo, long dark tail)"),
-           Param("mech", 0.25, "", 0, 1, "action/slide clack level (dry)"),
+           Param("drive", 3.0, "", 0, 6, "saturation of the mic/ear: more = louder, denser, harsher"),
+           Param("body", 0.5, "", 0, 1, "combustion roar + low push level relative to the shock"),
+           Param("echo", 0.8, "", 0, 1, "slapback and tail level"),
+           Param("space", "street", "", choices=("street", "room", "open"), doc="street (walls near: strong "
+                 "slaps, ~2 s tail), room (dense, short, boomy), open field (late treeline/hill echoes, long tail)"),
+           Param("mech", 0.4, "", 0, 1, "action clack level (slide/bolt, dry)"),
            Param("at", 0.02, "s", 0, None),
        ], ["Wikipedia: Blast wave (Friedlander)", "Maher 2006, Modeling and signal processing of acoustic gunshot "
            "recordings", "Beck, Nakasone & Marr 2011 (muzzle blast variation)", "Farnell 2010 (guns)"])
@@ -594,57 +611,81 @@ def gunshot(ctx: Ctx, x, calibre, crack, drive, body, echo, space, mech, at):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     g = GUNS[calibre]
     i0 = int(at * sr)
-    m = n - i0
     os = 4
     so = sr * os
-    L = min(m, int(0.4 * sr)) * os
+    L = min(n - i0, int(0.25 * sr)) * os
     tt = np.arange(L) / so
-    blast = friedlander(L, so, g["ts"] * rng.uniform(0.9, 1.1))
-    gas = dsp.lowpass(rng.standard_normal(L), g["body_fc"], so) * np.exp(-tt / g["body_tau"]) \
-        * (1 - np.exp(-tt / 0.0004))
-    boom = dsp.lowpass(dsp.lowpass(rng.standard_normal(L), 180.0, so), 180.0, so) * np.exp(-tt / g["boom_tau"]) \
-        * (1 - np.exp(-tt / 0.002))
-    src = _norm(blast) + body * (0.8 * _norm(gas) + g["boom"] * 0.7 * _norm(boom))
+    # (1) muzzle shock: instant rise, Friedlander decay over a fraction of a ms, plus the shock front's own
+    # broadband turbulence (first ~1 ms); the low part of the pulse is trimmed (that is the 'poof')
+    shock = friedlander(L, so, g["shock"] * rng.uniform(0.9, 1.1))
+    shock = dsp.highpass(shock, 250.0, so)
+    front = dsp.highpass(rng.standard_normal(L), 1500.0, so) * np.exp(-tt / 0.0006)
+    # (2) combustion roar: bright broadband, fast attack, tens of ms
+    roar = dsp.highpass(rng.standard_normal(L), 300.0, so)
+    roar = roar + 0.8 * dsp.bandpass(roar, g["roar_hz"], so, 0.6)
+    roar *= np.exp(-tt / g["roar_tau"]) * (1 - np.exp(-tt / 0.0002))
+    # (3) modest low gas push
+    boom = dsp.lowpass(dsp.lowpass(rng.standard_normal(L), 200.0, so), 200.0, so) * np.exp(-tt / g["boom_tau"]) \
+        * (1 - np.exp(-tt / 0.001))
+    src = 1.0 * _norm(shock) + 0.6 * _norm(front) + body * (1.0 * _norm(roar) + g["boom"] * _norm(boom))
+    # (4) saturation: hard soft-clip, then a second stage (mic preamp) - the first 20-40 ms sit at the ceiling
     if drive > 0:
-        src = np.tanh(drive * 1.5 * src / np.max(np.abs(src))) / np.tanh(drive * 1.5)
+        k = 1.0 + 2.5 * drive
+        src = np.tanh(k * src / np.max(np.abs(src))) / np.tanh(k)
+        src = np.clip(1.2 * src, -1.0, 1.0)
     dry = signal.resample_poly(src, 1, os)[: L // os]
     out = np.zeros(n)
     dsp.place(out, dry, i0, 1.0)
-    if crack > 0 and g["crack"] > 0:                  # N-wave arrives just before the blast (bullet outruns it)
-        Ln = int(g["nw"] * sr) + 2
+    if crack > 0 and g["sonic"] > 0:                  # (5) N-wave just ahead of the blast
+        Ln = int(0.0004 * sr) + 2
         cr = np.zeros(n)
         dsp.place(cr, np.linspace(1, -1, Ln), max(0, i0 - int(0.0015 * sr)), 1.0)
-        out += crack * g["crack"] * 0.8 * dsp.lowpass(cr, 15000.0, sr)
-    if mech > 0:                                      # dry action clack: filtered noise burst, no modes
-        Lm = int(0.012 * sr)
-        ck = dsp.bandpass(rng.standard_normal(Lm), 2200.0, sr, 0.6) * np.exp(-np.arange(Lm) / (0.002 * sr))
-        dsp.place(out, ck / (np.max(np.abs(ck)) + 1e-12), i0 + int(rng.uniform(0.05, 0.09) * sr), 0.12 * mech)
-    if echo > 0:
-        sp = {"street": dict(slaps=(0.018, 0.045, 0.07, 0.11, 0.16), lvl=0.55, tail=0.9, tail_lvl=0.18, lp=3500.0),
-              "room": dict(slaps=(0.006, 0.011, 0.017, 0.024), lvl=0.5, tail=0.5, tail_lvl=0.25, lp=5000.0),
-              "open": dict(slaps=(0.09, 0.42), lvl=0.35, tail=1.8, tail_lvl=0.12, lp=2200.0)}[space]
+        out += crack * g["sonic"] * 0.9 * dsp.lowpass(cr, 16000.0, sr)
+    if mech > 0:                                      # (6) dry action: slide back + forward (pistol), bolt tick
+        times = (0.006, 0.03) if g["slide"] else (0.05,)
+        for tm in times:
+            Lm = int(0.006 * sr)
+            ck = dsp.highpass(rng.standard_normal(Lm), 1200.0, sr) * np.exp(-np.arange(Lm) / (0.0012 * sr))
+            dsp.place(out, ck / (np.max(np.abs(ck)) + 1e-12), i0 + int(tm * rng.uniform(0.85, 1.15) * sr), 0.18 * mech)
+    if echo > 0:                                      # (7) reflections: they give the size
+        sp = {"street": dict(slaps=(0.014, 0.032, 0.055, 0.085, 0.13, 0.2, 0.29), lvl=0.85, decay=0.8,
+                             tail=1.25 * g["tail"], tail_db=-3.0, lp=4500.0),
+              "room": dict(slaps=(0.004, 0.007, 0.011, 0.016, 0.022, 0.03), lvl=0.8, decay=0.8,
+                           tail=0.35 * g["tail"] + 0.2, tail_db=-4.0, lp=5000.0),
+              "open": dict(slaps=(0.012, 0.35, 0.62, 0.95), lvl=0.6, decay=0.75,
+                           tail=g["tail"] * 1.4, tail_db=-10.0, lp=3500.0)}[space]
         slap_src = dsp.lowpass(out, sp["lp"], sr)
         wet = np.zeros(n)
         for k, d in enumerate(sp["slaps"]):
-            dd = int(d * rng.uniform(0.85, 1.15) * sr)
+            dd = int(d * rng.uniform(0.9, 1.1) * sr)
             if dd < n:
-                wet[dd:] += slap_src[:n - dd] * sp["lvl"] * (0.7 ** k) * rng.uniform(0.7, 1.0)
-        # diffuse tail: noise with the shot's energy, dark, exponential (est. reverberant decay)
+                wet[dd:] += slap_src[:n - dd] * sp["lvl"] * (sp["decay"] ** k) * rng.uniform(0.75, 1.0)
+        # diffuse reverberant tail: stationary noise under an exponential (RT60 = tail), darkening as it decays
         Lt = n - i0
         tl = np.arange(Lt) / sr
-        tail = dsp.lowpass(rng.standard_normal(Lt), sp["lp"] * 0.6, sr) * np.exp(-6.91 * tl / sp["tail"]) \
-            * (1 - np.exp(-tl / 0.015))
-        dsp.place(wet, tail * np.max(np.abs(out)) * sp["tail_lvl"], i0, 1.0)
+        nz = rng.standard_normal(Lt)
+        bright = dsp.lowpass(nz, sp["lp"] * 0.7, sr)
+        dark = dsp.lowpass(nz, sp["lp"] * 0.25, sr)
+        mix = np.exp(-tl / (0.25 * sp["tail"]))
+        tail = (mix * bright / np.std(bright) + (1 - mix) * dark / np.std(dark)) * np.exp(-6.91 * tl / sp["tail"]) \
+            * (1 - np.exp(-tl / 0.008))
+        tail = dsp.highpass(tail, 150.0, sr)
+        dsp.place(wet, tail * 10 ** (sp["tail_db"] / 20) / (np.max(np.abs(tail[: int(0.05 * sr)])) + 1e-12), i0 + int(0.004 * sr), 1.0)
         out += echo * wet
-    return dsp.highpass(out, 40.0, sr)
+    # the mic hears shot and reflections together: one last soft limit so the shock stays the loudest moment
+    out = dsp.highpass(out, 45.0, sr)
+    return np.tanh(1.6 * out / (np.max(np.abs(out[i0:i0 + int(0.003 * sr)])) + 1e-12)) / np.tanh(1.6)
 
 
 # =================================================================== creature growl
-def glottal_source(rng, n, sr, f0_curve, amp_curve, jitter, shimmer, subharm, oq=0.6):
-    """Voiced source, one cycle at a time: Rosenberg glottal flow pulses (open quotient `oq`, smooth opening,
-    faster closing) whose derivative is the radiated excitation. Period jitter, shimmer and period doubling
-    (alternate long/strong and short/weak cycles = subharmonics) are true cycle-to-cycle effects. Returns
-    (excitation, flow) - the flow gates breath noise."""
+def glottal_source(rng, n, sr, f0_curve, amp_curve, jitter, shimmer, subharm, oq=0.6, ta=0.04):
+    """Voiced source, one cycle at a time, LF-style (Liljencrants-Fant shape, simplified): the glottal flow
+    opens smoothly (raised cosine to its peak at ~0.66 of the open phase), falls to the excitation instant Te,
+    then closes through an exponential return phase of length `ta` x period instead of slamming shut. The
+    return phase is what keeps a low voice from sounding like a train of clicks (a hard closure at 40-80 Hz is
+    a ratchet / stick-slip judder). The excitation is the flow derivative. Period jitter, shimmer and period
+    doubling (alternating long/strong and short/weak cycles = subharmonics) are cycle-to-cycle.
+    Returns (excitation, flow)."""
     out = np.zeros(n)
     flow = np.zeros(n)
     t = float(rng.uniform(0, sr / max(f0_curve[0], 1.0)))
@@ -655,12 +696,17 @@ def glottal_source(rng, n, sr, f0_curve, amp_curve, jitter, shimmer, subharm, oq
         side = 1 if k % 2 else -1
         period = P * (1 + 0.25 * subharm * side) * (1 + jitter * rng.standard_normal())
         period = max(period, 0.4 * P)
-        A = amp_curve[i] * max(0.1, 1 + shimmer * rng.standard_normal()) * (1 - 0.45 * subharm * (k % 2))
+        A = amp_curve[i] * max(0.1, 1 + shimmer * rng.standard_normal()) * (1 - 0.5 * subharm * (k % 2))
         if A > 1e-4:
-            To = max(4, int(oq * period))
-            Tp = max(2, int(0.66 * To))
-            u = np.arange(To, dtype=float)
-            g = np.where(u < Tp, 0.5 * (1 - np.cos(np.pi * u / Tp)), np.cos(0.5 * np.pi * (u - Tp) / max(To - Tp, 1)))
+            Te = max(4, int(oq * period * rng.uniform(0.92, 1.08)))
+            Tp = max(2, int(0.7 * Te))
+            Ta = max(2.0, ta * period)
+            Lc = int(Te + 5 * Ta)
+            u = np.arange(Lc, dtype=float)
+            g = np.where(u < Tp, 0.5 * (1 - np.cos(np.pi * u / Tp)),
+                         np.where(u < Te, 0.5 + 0.5 * np.cos(np.pi * (u - Tp) / max(Te - Tp, 1)), 0.0))
+            ge = 0.5 + 0.5 * np.cos(np.pi * (Te - 1 - Tp) / max(Te - Tp, 1))     # flow left at Te
+            g = np.where(u >= Te, ge * np.exp(-(u - Te) / Ta), g)
             dsp.place(flow, g, i, A)
             dsp.place(out, np.diff(g, append=0.0), i, A)
         t += period
@@ -668,53 +714,77 @@ def glottal_source(rng, n, sr, f0_curve, amp_curve, jitter, shimmer, subharm, oq
     return out, flow
 
 
+def trill_gate(rng, n, sr, rate_hz, depth, irregular=0.2):
+    """Uvular / ventricular-fold trill: the soft tissue flaps in the airflow at ~18-35 Hz, briefly choking it
+    each cycle. Cycle by cycle (random period and depth), smooth closures, so it is a fleshy flutter, not a
+    periodic tick. Returns a gain curve (1 = open)."""
+    gate = np.ones(n)
+    t = float(rng.uniform(0, sr / rate_hz))
+    while t < n:
+        P = sr / rate_hz * (1 + irregular * rng.standard_normal())
+        P = max(P, 0.4 * sr / rate_hz)
+        Lc = int(P * rng.uniform(0.35, 0.6))             # closed part of the cycle
+        d = depth * rng.uniform(0.55, 1.0)
+        i = int(t)
+        seg = gate[i:i + Lc]
+        seg *= 1 - d * _hann(Lc)[: len(seg)]
+        t += P
+    return gate
+
+
 @model("growl", "sound",
-       "A creature growl, voiced (0.10, after 'something pushed along a floor'). The old source was "
-       "narrow clicks at ~45 Hz: a click train at that rate is what stick-slip friction sounds like. Now: "
-       "vocal-fold pulses with a real open phase (Rosenberg flow, open quotient ~0.6), pitch ~60-120 Hz with "
-       "chaotic wander, jitter, shimmer and period doubling (the subharmonic an octave down is the growl's "
-       "menace), through a long open vocal tract (formants of a tube closed at the glottis, F_n = (2n-1) c / 4L; "
-       "bigger creature = longer tract = lower, denser formants), breath noise gated by the airflow and shaped by "
-       "the same tract, and slow amplitude swells.",
+       "A creature growl, guttural and voiced (0.11, after 'a wooden chair pushed on a wood floor'). "
+       "Source-filter. Source: LF-style vocal-fold pulses (smooth opening, soft exponential return phase, no hard "
+       "clicks) with chaotic pitch, jitter, shimmer and strong period doubling (subharmonics); a uvular / "
+       "ventricular-fold trill at ~18-35 Hz chokes the airflow irregularly each cycle (the 'uvulation' - CC0 "
+       "tiger/growl recordings flutter at 18-22 Hz); wet throat turbulence (noise gated by the airflow and the "
+       "trill). Filter: a long open tract (tube formants (2n-1) c / 4L) with BROAD resonances: narrow ones ring "
+       "after every pulse like a wooden board, which was the 'chair on a floor'. A chest band carries the bass.",
        [
-           Param("f0", 85.0, "Hz", 25, 400, "voice pitch (big cat roar/growl ~ 60-120 Hz with subharmonics; dog ~ 150-300)"),
-           Param("size", 1.0, "", 0.3, 3, "creature size (1 = ~45 cm vocal tract; formants ~ 1/size)"),
+           Param("f0", 70.0, "Hz", 25, 400, "voice pitch (big cat ~ 50-120 Hz plus subharmonics; dog ~ 150-300)"),
+           Param("size", 1.0, "", 0.3, 3, "creature size (1 = ~50 cm vocal tract; formants ~ 1/size)"),
            Param("roughness", 0.6, "", 0, 1, "jitter, shimmer, subharmonics and pitch chaos"),
-           Param("flutter_hz", 18.0, "Hz", 5, 60, "rate of the gentle rattle in the airflow"),
+           Param("flutter_hz", 24.0, "Hz", 8, 45, "uvular/ventricular trill rate"),
+           Param("trill", 0.6, "", 0, 1, "trill depth (0 = plain voice)"),
+           Param("wet", 0.5, "", 0, 1, "wet throat turbulence level"),
            Param("snarl", 0.3, "", 0, 1, "open, bright snarl (raised formants, more breath)"),
            Param("length_s", 1.6, "s", 0.2, 6, "growl length"),
            Param("rise", 0.4, "", 0, 1, "swells: pitch/level rise toward the middle"),
            Param("at", 0.05, "s", 0, None),
-       ], ["Titze 1994 (voice source)", "Rosenberg 1971 (glottal pulse)", "Fitch 1997 (formant dispersion and "
-           "body size)", "Herzel et al. 1995 (subharmonics)", "Peters et al. 2009 (big cat vocal anatomy)"])
-def growl(ctx: Ctx, x, f0, size, roughness, flutter_hz, snarl, length_s, rise, at):
+       ], ["Titze 1994 (voice source)", "Fant, Liljencrants & Lin 1985 (LF glottal model)", "Fitch 1997 (formant "
+           "dispersion and body size)", "Herzel et al. 1995 (subharmonics)", "Peters et al. 2009 (big cat vocal "
+           "anatomy)", "Sakakibara et al. 2004 (ventricular-fold vibration, growl voice)"])
+def growl(ctx: Ctx, x, f0, size, roughness, flutter_hz, trill, wet, snarl, length_s, rise, at):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     t = np.arange(n) / sr
     u = np.clip((t - at) / length_s, 0, 1)
     on = (t >= at) & (u < 1)
-    attack = np.clip((t - at) / 0.12, 0, 1)
-    env = np.where(on, np.sin(np.pi * u) ** 0.6 * attack, 0.0)
-    env *= (1 + rise * 0.6 * np.sin(np.pi * u)) * np.exp(0.25 * smooth_random(rng, n, sr, 1.5))   # swells
-    chaos = 0.03 + 0.07 * roughness
-    fcurve = f0 * (1 + rise * 0.2 * np.sin(np.pi * u)) * np.exp(chaos * smooth_random(rng, n, sr, 6)
+    attack = np.clip((t - at) / 0.15, 0, 1)
+    env = np.where(on, np.sin(np.pi * u) ** 0.5 * attack, 0.0)
+    env *= (1 + rise * 0.6 * np.sin(np.pi * u)) * np.exp(0.25 * smooth_random(rng, n, sr, 1.2))   # swells
+    chaos = 0.03 + 0.08 * roughness
+    fcurve = f0 * (1 + rise * 0.2 * np.sin(np.pi * u)) * np.exp(chaos * smooth_random(rng, n, sr, 5)
                                                                 + 0.02 * smooth_random(rng, n, sr, 1))
-    flutter = 1 + 0.18 * roughness * np.sin(2 * np.pi * np.cumsum(flutter_hz * (1 + 0.15 * smooth_random(rng, n, sr, 3))) / sr)
-    src, flow = glottal_source(rng, n, sr, fcurve, env * flutter, jitter=0.01 + 0.05 * roughness,
-                               shimmer=0.05 + 0.15 * roughness, subharm=0.15 + 0.5 * roughness)
-    # breath: turbulent noise at the glottis, modulated by the flow (pulsed, not steady hiss)
-    breath = dsp.highpass(rng.standard_normal(n), 300.0, sr) * (0.3 + dsp.lowpass(flow, 400.0, sr)) * env
-    Lt = 0.45 * size                                     # tract length (m)
+    gate = trill_gate(rng, n, sr, flutter_hz, trill) if trill > 0 else np.ones(n)
+    src, flow = glottal_source(rng, n, sr, fcurve, env * gate, jitter=0.02 + 0.07 * roughness,
+                               shimmer=0.08 + 0.2 * roughness, subharm=0.3 + 0.6 * roughness)
+    # wet throat: turbulent noise riding on the airflow and choked by the trill (it gurgles with it)
+    turb = dsp.bandpass(rng.standard_normal(n), 900.0, sr, 0.5) * (0.25 + dsp.lowpass(flow, 300.0, sr)) * env * gate
+    Lt = 0.5 * size
     s = 1.0 + 0.25 * snarl
     formants = []
     for k in range(6):
         fk = (2 * k + 1) * C / (4 * Lt) * s
-        if fk > 6000:
+        if fk > 5500:
             break
-        formants.append([fk, 5.0 + k, -1.5 * k + 1.5 * snarl * k])
-    exc = src / (np.max(np.abs(src)) + 1e-12) + (0.12 + 0.25 * snarl) * breath / (np.max(np.abs(breath)) + 1e-12)
-    y = call("formant", ctx, exc, formants=formants, shift=1.0, dry=0.03)
-    y = _norm(y) + 0.12 * _norm(dsp.lowpass(src, 250.0, sr))        # chest: the fundamental + subharmonic body
-    return dsp.highpass(dsp.lowpass(y, 6500.0, sr), 35.0, sr)
+        formants.append([fk, 2.5 + 0.3 * k, -2.0 * k + 1.5 * snarl * k])
+    srcn = src / (np.max(np.abs(src)) + 1e-12)
+    turbn = turb / (np.max(np.abs(turb)) + 1e-12)
+    exc = srcn + (0.1 + 0.4 * wet + 0.2 * snarl) * turbn
+    y = call("formant", ctx, exc, formants=formants, shift=1.0, dry=0.05)
+    chest = dsp.lowpass(dsp.lowpass(srcn, 220.0, sr), 220.0, sr)       # guttural bass: fundamental + subharmonic
+    y = _norm(y) + 0.5 * _norm(chest)
+    return dsp.highpass(dsp.lowpass(y, 6000.0, sr), 30.0, sr)
 
 
 # =================================================================== rustle
@@ -757,67 +827,70 @@ def rustle(ctx: Ctx, x, material, moves, length_s, intensity, at):
 
 # =================================================================== splash
 @model("splash", "sound",
-       "An object dropping into water (0.10, after 'gamey and lasery, crunchy on top'). The splash is "
-       "mostly a broadband, turbulent wash (the crown and the water thrown up, a few hundred ms), started by a "
-       "soft impact slap. The pinch-off bubble ('bloop', Minnaert f = 3.26 / r) is real but in a splash it is "
-       "strongly damped by the churning surface and barely rises in pitch, so it sits low and short under the "
-       "wash; small bubbles overlap into a fizz rather than separate chirps. Droplets falling back are soft "
-       "patters (low-passed, a few ms), only a few with a tiny damped bubble.",
+       "An object dropping into water (0.11, after 'bird wings flapping and a minor droplet'). In order: "
+       "(1) the impact: the object slaps the surface - a sharp, short broadband crack (a few ms), with a dull "
+       "thud for big objects; (2) the crown and sheet of water thrown up: a short, smooth noise burst (no "
+       "amplitude modulation - a fluttering noise envelope is what read as wing flaps); (3) the air cavity "
+       "collapsing into the pinch-off bubble: a damped low 'bloop' (Minnaert f = 3.26 / r) with the small "
+       "natural pitch rise; (4) the spray falling back: many small droplets (tens to hundreds) over ~0.3-1 s, "
+       "each a soft tick with, often, its own tiny entrained bubble (a 'plip' at 1-6 kHz that dies in a few ms). "
+       "Overlapping, they make the dense patter that says 'water'.",
        [
            Param("size", 0.08, "m", 0.01, 0.6, "object size"),
            Param("speed", 3.0, "m/s", 0.5, 12, "entry speed"),
-           Param("bloop", 0.35, "", 0, 1, "level of the pinch-off bubble"),
-           Param("droplets", 0.4, "", 0, 1, "level of the falling-back droplets"),
+           Param("bloop", 0.5, "", 0, 1, "level of the cavity-collapse bubble"),
+           Param("droplets", 0.8, "", 0, 1, "level of the falling-back spray"),
            Param("at", 0.03, "s", 0, None),
-       ], ["Minnaert 1933", "Prosperetti & Oguz 1993", "van den Doel 2005", "Phillips et al. 2018"])
+       ], ["Minnaert 1933", "Prosperetti & Oguz 1993", "van den Doel 2005", "Phillips et al. 2018",
+           "Franz 1959 (splashes as sources of sound in liquids)"])
 def splash(ctx: Ctx, x, size, speed, bloop, droplets, at):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     i0 = int(at * sr)
     out = np.zeros(n)
     E = (speed / 3.0) * (size / 0.08) ** 0.7               # relative splash energy
-    # slap: short soft impact, darker for bigger objects
-    L = int((0.006 + 0.03 * size) * sr)
+    # (1) impact slap: sharp broadband crack + a dull thud that grows with size
+    L = int(0.012 * sr)
     tt = np.arange(L) / sr
-    slap = dsp.lowpass(rng.standard_normal(L), 6000.0 / (1 + 4 * size), sr) * np.exp(-tt / (0.003 + 0.012 * size)) \
-        * (1 - np.exp(-tt / 0.0005))
-    dsp.place(out, _norm(slap), i0, 0.6)
-    # wash: the crown and thrown water, turbulent broadband noise with fast random fluctuation
-    dur = 0.15 + 0.5 * min(E, 3.0) ** 0.5 * (size / 0.08) ** 0.3
-    Lw = min(n - i0, int((dur * 2.5) * sr))
+    crack = dsp.highpass(rng.standard_normal(L), 400.0, sr) * np.exp(-tt / (0.0012 + 0.004 * size)) \
+        * (1 - np.exp(-tt / 0.0002))
+    thud = dsp.lowpass(rng.standard_normal(L), 300.0, sr) * np.exp(-tt / (0.004 + 0.02 * size))
+    dsp.place(out, _norm(crack) + min(1.0, 3 * size) * 0.5 * _norm(thud), i0, 1.0)
+    # (2) crown / sheet: smooth broadband burst, single envelope (no AM)
+    dur = 0.04 + 0.12 * min(E, 3.0) ** 0.5
+    Lw = int(dur * 4 * sr)
     tw = np.arange(Lw) / sr
-    wenv = (1 - np.exp(-tw / 0.012)) * np.exp(-tw / (0.35 * dur))
-    turb = np.exp(0.5 * smooth_random(rng, Lw, sr, 35))
-    wash = dsp.bandpass(dsp.pink(rng, Lw), 1200.0 / (1 + 2 * size), sr, 0.35) * wenv * turb
-    wash = dsp.lowpass(wash, 7000.0, sr)
-    dsp.place(out, _norm(wash), i0 + int(0.004 * sr), 1.0)
-    # bloop: pinch-off bubble, damped x4 by the churn, tiny pitch rise, low level
+    sheet = dsp.lowpass(dsp.highpass(rng.standard_normal(Lw), 300.0, sr), 7000.0 / (1 + 2 * size), sr) \
+        * (1 - np.exp(-tw / 0.004)) * np.exp(-tw / dur)
+    dsp.place(out, _norm(sheet), i0 + int(0.002 * sr), 0.55)
+    # (3) cavity collapse: pinch-off bubble, damped x2, natural small pitch rise (xi ~ 0.1)
     r = np.clip(0.15 * size, 0.002, 0.06) * rng.uniform(0.85, 1.15)
     tb = at + 0.03 + 0.3 * size / max(speed, 0.5) ** 0.5
-    f0 = 3.26 / r
-    Lb = int(min(0.25, 6.0 / (4 * (0.13 / r + 0.0072 * r ** -1.5))) * sr)
+    d = 2 * (0.13 / r + 0.0072 * r ** -1.5)
+    Lb = int(min(0.3, 6.0 / d) * sr)
     tbb = np.arange(Lb) / sr
-    d = 4 * (0.13 / r + 0.0072 * r ** -1.5)
-    bb = np.sin(2 * np.pi * np.cumsum(f0 * (1 + 0.6 * tbb)) / sr) * np.exp(-d * tbb) * (1 - np.exp(-tbb / 0.002))
-    dsp.place(out, bb, int(tb * sr), bloop * 0.35)
-    # fizz: many small bubbles overlapping, near-constant pitch, low level, softened top
-    rate = [[0, 0], [at, 0], [at + 0.03, 400 * min(E, 3.0)], [at + 0.3, 60], [at + 0.9, 0]]
-    cloud = call("bubbles", ctx.child(), rate=rate, r_min_mm=0.8, r_max_mm=max(1.5, 20 * size), size_exponent=2.6, xi=0.02)
-    out += 0.18 * _norm(dsp.lowpass(cloud, 3500.0, sr))
+    f0 = 3.26 / r
+    bb = np.sin(2 * np.pi * np.cumsum(f0 * (1 + 0.1 * d * tbb)) / sr) * np.exp(-d * tbb) * (1 - np.exp(-tbb / 0.002))
+    dsp.place(out, bb, int(tb * sr), bloop * 0.45)
+    # (4) spray falling back: dense, overlapping droplets
     if droplets > 0:
         dr = np.zeros(n)
-        k = int(8 + 40 * size * speed / 3)
+        k = int(40 + 220 * min(E, 4.0) * (size / 0.08) ** 0.3)
+        t_peak = 0.12 + 0.25 * size ** 0.5 * min(speed / 3.0, 2.0) ** 0.5
         for _ in range(k):
-            t = at + 0.1 + rng.gamma(2.0, 0.07 + 0.25 * size)
+            t = at + 0.03 + rng.gamma(2.2, t_peak / 1.2)
             i = int(t * sr)
-            if i >= n:
+            if i >= n - 10:
                 continue
-            Ld = int(rng.uniform(0.002, 0.005) * sr)
-            pat = dsp.lowpass(rng.standard_normal(Ld) * _hann(Ld), rng.uniform(1500, 3500), sr)
-            dsp.place(dr, pat / (np.max(np.abs(pat)) + 1e-12), i, rng.uniform(0.2, 1.0))
-            if rng.random() < 0.2:                       # an occasional tiny, damped drip bubble
-                rr = rng.uniform(0.0015, 0.003)
-                gb = bubble_grain(sr, rr, 0.02)
-                gb = gb[: int(0.02 * sr)] * np.exp(-np.arange(min(len(gb), int(0.02 * sr))) / (0.004 * sr))
-                dsp.place(dr, gb, i + int(0.003 * sr), 0.25 * rng.uniform(0.3, 1.0))
-        out += droplets * 0.35 * _norm(dr)
-    return dsp.highpass(dsp.lowpass(out, 9000.0, sr), 60.0, sr)
+            a = rng.pareto(2.0) + 0.2
+            a = min(a, 3.0) * np.exp(-max(0.0, t - at - t_peak) / 0.5)
+            Ld = max(4, int(rng.uniform(0.0005, 0.0015) * sr))       # soft tick
+            tick = dsp.lowpass(rng.standard_normal(Ld) * _hann(Ld), rng.uniform(2500, 6000), sr)
+            dsp.place(dr, tick / (np.max(np.abs(tick)) + 1e-12), i, 0.5 * a)
+            if rng.random() < 0.6:                                   # entrained bubble 'plip'
+                rr = rng.uniform(0.0006, 0.0025)
+                gb = bubble_grain(sr, rr, 0.1)
+                Lg = min(len(gb), int(0.012 * sr))
+                gb = gb[:Lg] * (1 - np.exp(-np.arange(Lg) / (0.0003 * sr)))
+                dsp.place(dr, gb, i + int(rng.uniform(0.0005, 0.003) * sr), a * rng.uniform(0.4, 1.0) * (rr / 0.0015) ** 0.5)
+        out += droplets * 0.6 * _norm(dr)
+    return dsp.highpass(dsp.lowpass(out, 11000.0, sr), 50.0, sr)

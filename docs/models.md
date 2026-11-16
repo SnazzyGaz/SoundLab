@@ -741,37 +741,39 @@ Sources: Farnell 2010 (bullets, ricochets); van den Doel et al. 2001
 
 ### `gunshot`
 
-A gunshot (0.10, after 'a stone hitting a mildly metallic wall'). Layers, each physical: (1) the muzzle blast, a Friedlander pressure pulse (positive phase ~1-3 ms by calibre) that starts the sound with a very fast, loud broadband crack; (2) the expanding, turbulent propellant gas: a dense broadband burst decaying in tens of ms (the body); (3) the low-mid boom of the gas cloud pushing air (a low-passed burst, ~40-90 ms); all three drive the recorder or ear into overload (oversampled soft clip: loud, compressed, no aliasing); (4) the supersonic bullet's N-wave crack (rifles; none for shotguns); (5) the environment: discrete slap echoes off nearby walls/ground and a dark diffuse tail. No ringing parts: the action clack is a dry noise burst.
+A firearm shot (0.11, after 'a potato gun / air-gun punch'). What makes it a firearm, in order: (1) the muzzle shock: a near-instant pressure jump (microseconds) lasting a fraction of a millisecond, so the first millisecond is very loud and full of high frequencies; (2) the propellant combustion roar: bright, broadband, turbulent flame/gas, tens of ms; (3) only a modest low gas push (too much low-mid is the 'poof' of an air cannon); (4) all of it saturates the microphone/ear: hard, almost painful clipping and compression (oversampled, so no aliasing); (5) the supersonic N-wave for rifles; (6) the dry clack of the action; (7) the reflections: loud slapback off walls/ground and a long reverberant tail, which is what gives a gunshot its size (CC0 recordings: still ~-12 dB 0.3-0.6 s after the shot, ~-15..-20 dB up to 1 s).
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
 | `calibre` | `pistol` |  | pistol, rifle, shotgun |  |
 | `crack` | `0.5` |  | 0 .. 1 | supersonic crack level (scaled by calibre; shotguns have none) |
-| `drive` | `2.0` |  | 0 .. 4 | overload of the recorder/ear (soft clip): more = louder, denser |
-| `body` | `0.7` |  | 0 .. 1 | gas body + low boom level |
-| `echo` | `0.6` |  | 0 .. 1 | slap echoes and tail level |
-| `space` | `street` |  | street, room, open | where: street (walls near, strong slaps), room (dense, short), open field (one late ground/treeline echo, long dark tail) |
-| `mech` | `0.25` |  | 0 .. 1 | action/slide clack level (dry) |
+| `drive` | `3.0` |  | 0 .. 6 | saturation of the mic/ear: more = louder, denser, harsher |
+| `body` | `0.5` |  | 0 .. 1 | combustion roar + low push level relative to the shock |
+| `echo` | `0.8` |  | 0 .. 1 | slapback and tail level |
+| `space` | `street` |  | street, room, open | street (walls near: strong slaps, ~2 s tail), room (dense, short, boomy), open field (late treeline/hill echoes, long tail) |
+| `mech` | `0.4` |  | 0 .. 1 | action clack level (slide/bolt, dry) |
 | `at` | `0.02` | s | 0 .. None |  |
 
 Sources: Wikipedia: Blast wave (Friedlander); Maher 2006, Modeling and signal processing of acoustic gunshot recordings; Beck, Nakasone & Marr 2011 (muzzle blast variation); Farnell 2010 (guns)
 
 ### `growl`
 
-A creature growl, voiced (0.10, after 'something pushed along a floor'). The old source was narrow clicks at ~45 Hz: a click train at that rate is what stick-slip friction sounds like. Now: vocal-fold pulses with a real open phase (Rosenberg flow, open quotient ~0.6), pitch ~60-120 Hz with chaotic wander, jitter, shimmer and period doubling (the subharmonic an octave down is the growl's menace), through a long open vocal tract (formants of a tube closed at the glottis, F_n = (2n-1) c / 4L; bigger creature = longer tract = lower, denser formants), breath noise gated by the airflow and shaped by the same tract, and slow amplitude swells.
+A creature growl, guttural and voiced (0.11, after 'a wooden chair pushed on a wood floor'). Source-filter. Source: LF-style vocal-fold pulses (smooth opening, soft exponential return phase, no hard clicks) with chaotic pitch, jitter, shimmer and strong period doubling (subharmonics); a uvular / ventricular-fold trill at ~18-35 Hz chokes the airflow irregularly each cycle (the 'uvulation' - CC0 tiger/growl recordings flutter at 18-22 Hz); wet throat turbulence (noise gated by the airflow and the trill). Filter: a long open tract (tube formants (2n-1) c / 4L) with BROAD resonances: narrow ones ring after every pulse like a wooden board, which was the 'chair on a floor'. A chest band carries the bass.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
-| `f0` | `85.0` | Hz | 25 .. 400 | voice pitch (big cat roar/growl ~ 60-120 Hz with subharmonics; dog ~ 150-300) |
-| `size` | `1.0` |  | 0.3 .. 3 | creature size (1 = ~45 cm vocal tract; formants ~ 1/size) |
+| `f0` | `70.0` | Hz | 25 .. 400 | voice pitch (big cat ~ 50-120 Hz plus subharmonics; dog ~ 150-300) |
+| `size` | `1.0` |  | 0.3 .. 3 | creature size (1 = ~50 cm vocal tract; formants ~ 1/size) |
 | `roughness` | `0.6` |  | 0 .. 1 | jitter, shimmer, subharmonics and pitch chaos |
-| `flutter_hz` | `18.0` | Hz | 5 .. 60 | rate of the gentle rattle in the airflow |
+| `flutter_hz` | `24.0` | Hz | 8 .. 45 | uvular/ventricular trill rate |
+| `trill` | `0.6` |  | 0 .. 1 | trill depth (0 = plain voice) |
+| `wet` | `0.5` |  | 0 .. 1 | wet throat turbulence level |
 | `snarl` | `0.3` |  | 0 .. 1 | open, bright snarl (raised formants, more breath) |
 | `length_s` | `1.6` | s | 0.2 .. 6 | growl length |
 | `rise` | `0.4` |  | 0 .. 1 | swells: pitch/level rise toward the middle |
 | `at` | `0.05` | s | 0 .. None |  |
 
-Sources: Titze 1994 (voice source); Rosenberg 1971 (glottal pulse); Fitch 1997 (formant dispersion and body size); Herzel et al. 1995 (subharmonics); Peters et al. 2009 (big cat vocal anatomy)
+Sources: Titze 1994 (voice source); Fant, Liljencrants & Lin 1985 (LF glottal model); Fitch 1997 (formant dispersion and body size); Herzel et al. 1995 (subharmonics); Peters et al. 2009 (big cat vocal anatomy); Sakakibara et al. 2004 (ventricular-fold vibration, growl voice)
 
 ### `rustle`
 
@@ -789,17 +791,17 @@ Sources: Houle & Sethna 1996, Phys Rev E 54 (acoustic emission from crumpling pa
 
 ### `splash`
 
-An object dropping into water (0.10, after 'gamey and lasery, crunchy on top'). The splash is mostly a broadband, turbulent wash (the crown and the water thrown up, a few hundred ms), started by a soft impact slap. The pinch-off bubble ('bloop', Minnaert f = 3.26 / r) is real but in a splash it is strongly damped by the churning surface and barely rises in pitch, so it sits low and short under the wash; small bubbles overlap into a fizz rather than separate chirps. Droplets falling back are soft patters (low-passed, a few ms), only a few with a tiny damped bubble.
+An object dropping into water (0.11, after 'bird wings flapping and a minor droplet'). In order: (1) the impact: the object slaps the surface - a sharp, short broadband crack (a few ms), with a dull thud for big objects; (2) the crown and sheet of water thrown up: a short, smooth noise burst (no amplitude modulation - a fluttering noise envelope is what read as wing flaps); (3) the air cavity collapsing into the pinch-off bubble: a damped low 'bloop' (Minnaert f = 3.26 / r) with the small natural pitch rise; (4) the spray falling back: many small droplets (tens to hundreds) over ~0.3-1 s, each a soft tick with, often, its own tiny entrained bubble (a 'plip' at 1-6 kHz that dies in a few ms). Overlapping, they make the dense patter that says 'water'.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
 | `size` | `0.08` | m | 0.01 .. 0.6 | object size |
 | `speed` | `3.0` | m/s | 0.5 .. 12 | entry speed |
-| `bloop` | `0.35` |  | 0 .. 1 | level of the pinch-off bubble |
-| `droplets` | `0.4` |  | 0 .. 1 | level of the falling-back droplets |
+| `bloop` | `0.5` |  | 0 .. 1 | level of the cavity-collapse bubble |
+| `droplets` | `0.8` |  | 0 .. 1 | level of the falling-back spray |
 | `at` | `0.03` | s | 0 .. None |  |
 
-Sources: Minnaert 1933; Prosperetti & Oguz 1993; van den Doel 2005; Phillips et al. 2018
+Sources: Minnaert 1933; Prosperetti & Oguz 1993; van den Doel 2005; Phillips et al. 2018; Franz 1959 (splashes as sources of sound in liquids)
 
 ## Stage: synth
 

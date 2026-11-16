@@ -3,7 +3,7 @@
  "name": "Gunshot (simple): Friedlander muzzle blast, supersonic crack, action clack, in a large space",
  "category": "weapon",
  "sample_rate": 48000,
- "duration": 2.0,
+ "duration": 3.0,
  "seed": 22,
  "layers": [
   {
@@ -12,29 +12,19 @@
    "params": {
     "calibre": "pistol",
     "crack": 0.5,
-    "drive": 2.0,
-    "mech": 0.25,
+    "drive": 3.0,
+    "mech": 0.4,
     "at": 0.02,
-    "body": 0.7,
-    "echo": 0.6,
+    "body": 0.5,
+    "echo": 0.8,
     "space": "street"
    }
   }
  ],
- "post": [
-  {
-   "model": "room",
-   "params": {
-    "volume": 600,
-    "absorption": 0.2,
-    "source_distance": 5.0,
-    "wet": 0.35
-   }
-  }
- ],
+ "post": [],
  "master": {
   "normalize_db": -1.0,
-  "fade_out": 0.05
+  "fade_out": 0.3
  },
  "macros": {
   "calibre": {
@@ -144,24 +134,6 @@
    "doc": "near .. far (level, more room sound)",
    "map": [
     {
-     "to": "post.0.source_distance",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.4
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       8
-      ]
-     ]
-    },
-    {
      "to": "master.gain_db",
      "op": "add",
      "points": [
@@ -181,6 +153,24 @@
      "clamp": [
       -40,
       0
+     ]
+    },
+    {
+     "to": "0.echo",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.2
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.2
+      ]
      ]
     }
    ]

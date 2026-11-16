@@ -196,3 +196,10 @@ After a listening check, rain (fitted hiss 0.2 overruled: louder diffuse wash, s
 (the 0.9 CC0 match was a light door) were changed by ear. Band distances now: rain 3.2/3.4 dB to the two
 heavy-rain refs (unchanged), door slam 13.6/15.8 dB (heavier than both refs, on purpose), growl 4.3 dB to
 the big-creature ref (was 13.4), gunshot 8.0/6.3 dB (was 9.0/5.3). No new fits.
+
+### 0.11.0: what the refs were used for
+
+No fits. Five CC0 firearm recordings (gunshot_1/2, gun_shotgun_2/3; one more shotgun preview failed to
+download) gave the gunshot's attack, first-5 ms brightness and tail ratios; four growls + one tiger growl gave
+the trill rate (18-22 Hz). Rain's band distance to the heavy-rain refs: 5.2 / 3.5 dB; growl 4-5 dB to the
+big-creature ref. Listening decides.

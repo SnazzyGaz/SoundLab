@@ -433,3 +433,36 @@ very grainy, wind gap better ... rain a bit too much crackle on top." Each was f
   smooth pulse low-passed at 5 kHz, near drops are quieter (0.28), and the diffuse wash is louder, with a
   smooth fast patter and a darker top. Top-band spike measure 8.3 -> 4.9, at the floor of plain noise. The 0.9
   fit (hiss 0.2) is overruled by ear; band distance to the heavy-rain refs stays ~3 dB.
+
+### 0.11: second round after the v10 review
+
+Notes: "gunshot still a potato-gun / air-gun expulsion ... water like bird wings flapping and a minor droplet ...
+door slam ok ... creature like a wooden chair pushed on a wood floor, more guttural bass and uvulation ... wind
+good but like a plastic bag waving ... rain shuddering like paper bags rubbing." Door slam and wind gap left alone.
+
+- **Gunshot.** Studied five CC0 recordings (2 gunshots, 3 shotguns): the first 5 ms carry the peak (centroid up
+  to 7 kHz in the close one); the level is still about -12 dB 0.3-0.6 s later and -15..-20 dB up to 1 s - the
+  reflections dominate the perceived size. Ours had a 1 ms Friedlander pulse (most energy at 100-300 Hz:
+  the air-cannon 'poof'), its peak 18 ms late, and a tail at -22/-36 dB. Now: an instant muzzle shock
+  (0.25-0.5 ms, low part trimmed) plus shock-front turbulence (bright first ms), a bright broadband combustion
+  roar (18-34 ms), only a small low push, two-stage hard saturation (the first tens of ms at the ceiling),
+  dry slide/bolt clacks, loud slapback (7 slaps, -1.5 dB first) and a 2.6-4 s darkening tail, with a final mic
+  limit so the shock stays the loudest moment. Measured: first-5 ms centroid 6.3 kHz; level -8 / -13 / -19 / -27 dB
+  at 0.1-0.3 / 0.3-0.6 / 0.6-1 / 1-1.5 s (shotgun refs: -6 / -12 / -15..-20 / -20..-31). Crest 12-13 dB
+  (refs 14-21): denser, more compressed, on purpose. The recipe's room post is gone (the model has its own
+  space: street / room / open).
+- **Splash.** The 0.10 wash had a 35 Hz random amplitude flutter: flapping wings. Now four physical stages:
+  sharp impact crack (+ thud for big objects), a smooth crown/sheet burst (one envelope, no AM), a damped
+  cavity bloop with its small natural rise, and a dense spray of 40-300 falling droplets over ~0.3-1 s, each a
+  soft tick with, 60 % of the time, a tiny 1-6 kHz bubble 'plip' that dies in a few ms. New `spray` macro.
+- **Creature growl.** Narrow formants (Q 5-10) rang after every pulse like a wooden board (with an 85 Hz pulse
+  train: a chair juddering on a floor). Now: LF-style glottal pulses with a soft exponential return phase,
+  strong period doubling (subharmonic 35 Hz), a cycle-by-cycle uvular/ventricular-fold trill at ~24 Hz (CC0
+  growls flutter at 18-22 Hz) that chokes voice and breath, wet throat turbulence, broad formants (Q 2.5-4) on
+  a 55 cm tract, and a stronger chest band for the guttural bass. New macros `uvula` and `wet`.
+- **Wind.** The leaf layer's 9 Hz flutter (depth 0.35) read as a plastic bag. Now a shallow, irregular wobble at a
+  lower level, and off by default (`trees` macro brings it in).
+- **Rain.** The 0.10 wash had a 30 Hz random amplitude 'patter' (the shudder) on top of a 0.2 Hz swell. Now the
+  wash is ~45,000 micro-drops per second, each a 0.1-0.25 ms soft tap, summed - stationary by construction;
+  only a very slow ±5 % swell remains. 4-40 Hz envelope fluctuation: 0.27 (v10) -> 0.10 (v11), same as the
+  steadier CC0 heavy-rain ref (0.09); top-band spikes at the plain-noise floor.
