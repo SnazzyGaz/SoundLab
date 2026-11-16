@@ -73,29 +73,48 @@ def damped_grain(sr, freqs, t60s, amps, L=None):
            Param("gap_mm", 6.0, "mm", 1, 40, "gap size (whistle pitch = 0.2 v / gap)"),
            Param("trees", 0.4, "", 0, 1, "level of leaf rustle (trees, bushes)"),
            Param("rumble", 0.15, "", 0, 1, "low buffeting (wind on a mic or a building); keep low"),
+           Param("indoors", 0.0, "", 0, 1, "heard from inside through a window or wall: the wind noise is "
+                 "low-passed (mass law), the whistle made at the gap itself is not"),
        ], ["Farnell 2010, Designing Sound (wind)", "Wikipedia: Aeolian sound; Strouhal number",
            "Lighthill / Curle (dipole sound power ~ U^6)"])
-def wind(ctx: Ctx, x, speed, gustiness, gust_hz, howl, whistle, gap_mm, trees, rumble):
+def wind(ctx: Ctx, x, speed, gustiness, gust_hz, howl, whistle, gap_mm, trees, rumble, indoors):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
-    g = smooth_random(rng, n, sr, gust_hz) + 0.3 * smooth_random(rng, n, sr, gust_hz * 4)
-    v = np.maximum(speed * (1 + gustiness * 0.6 * g), 0.15 * speed)
+    # v0.14: gusts carry faster flurries as well (0.5-2 Hz), so the level and brightness keep moving on a
+    # scale of seconds; CC0 wind refs have ~4x more envelope energy below 4 Hz than the old model
+    g = smooth_random(rng, n, sr, gust_hz) + 0.5 * smooth_random(rng, n, sr, gust_hz * 5)
+    g = g / (g.std() + 1e-12)
+    v = np.maximum(speed * (1 + gustiness * 0.7 * g), 0.12 * speed)
     rel = v / speed
     amp = rel ** 3 / np.max(rel ** 3)
-    # body: pink noise, low-passed by a cutoff that opens with speed
-    fc = np.clip(250.0 + 45.0 * v, 150, 4000)
-    body = dsp.svf(dsp.pink(rng, n), fc, 0.6, sr, "lp") * amp
-    out = _norm(body)
+    # body: pink noise through a low-pass that opens with speed. v0.14: the corner sits at ~1.5 kHz at
+    # 8 m/s and moves strongly with the gusts (f ~ v^1.5): real wind is broadband up to 2-4 kHz and gets
+    # brighter as it gets louder; the old ~600 Hz corner made a dark rumble whose grain sat at 60-250 Hz
+    fc = np.clip(3500.0 * rel ** 1.5 * (speed / 8.0) ** 0.5, 250, 10000)
+    body = dsp.svf(dsp.pink(rng, n), fc, 0.5, sr, "lp") + 0.3 * dsp.svf(dsp.pink(rng, n), np.minimum(4 * fc, 16000), 0.5, sr, "lp")
+    # turbulent eddies make the level waver irregularly at a few Hz (two unrelated random rates, shallow: a
+    # deep regular flutter is the plastic-bag sound)
+    eddy = np.exp(0.18 * smooth_random(rng, n, sr, 4.1) + 0.12 * smooth_random(rng, n, sr, 10.7))
+    out = _norm(body * amp * eddy)
     if howl > 0:
+        # broad moaning resonances (Q 2.5-4; narrow ones beat into a fast grainy flutter)
         h = np.zeros(n)
-        for k, (base, q) in enumerate(((22.0, 8.0), (37.0, 10.0), (61.0, 7.0))):
+        for k, (base, q) in enumerate(((22.0, 3.0), (37.0, 4.0), (61.0, 2.5))):
             drift = 1 + 0.04 * smooth_random(rng, n, sr, 0.3)
             h += dsp.svf(dsp.white(rng, n), np.clip(base * v * drift, 60, 3000), q, sr, "bpn") * (0.6 ** k)
-        out += howl * 0.8 * _norm(h * amp ** 0.8)
+        out += howl * 0.5 * _norm(h * amp ** 0.8)
+    if indoors > 0:
+        # a wall or closed window passes little above a few hundred Hz (mass law: ~6 dB per octave more loss)
+        wall = dsp.lowpass(dsp.lowpass(out, 220.0, sr, 0.6), 600.0, sr)
+        out = (1 - indoors) * out + indoors * 1.5 * wall
     if whistle > 0:
-        f_w = np.clip(0.2 * v / (gap_mm * 1e-3), 150, 3500)
-        on = np.clip((rel - 0.8) / 0.4, 0, 1) ** 2  # only sounds above a threshold speed (est.)
-        w = dsp.svf(dsp.white(rng, n), f_w, 40.0, sr, "bpn") + 0.3 * dsp.svf(dsp.white(rng, n), f_w * 2.02, 30.0, sr, "bpn")
-        out += whistle * 0.7 * _norm(w * on * amp ** 0.5)
+        # v0.14: the edge tone locks onto the gap's own resonance, so its pitch is nearly steady (CC0 refs: a
+        # thin, stable line) while its level comes and goes with the flow; only a slight pull with speed
+        f_res = np.clip(0.2 * speed / (gap_mm * 1e-3), 150, 3500) * rng.uniform(0.97, 1.03)
+        f_w = f_res * (1 + 0.02 * (rel - 1)) * (1 + 0.004 * smooth_random(rng, n, sr, 2.0))
+        on = np.clip((rel - 0.75) / 0.4, 0, 1) ** 2  # only sounds above a threshold speed (est.)
+        flick = np.exp(0.35 * smooth_random(rng, n, sr, 3.0))   # the lock is unsteady: the tone flickers
+        w = dsp.svf(dsp.white(rng, n), f_w, 120.0, sr, "bpn") + 0.15 * dsp.svf(dsp.white(rng, n), f_w * 2.0, 90.0, sr, "bpn")
+        out += whistle * 0.5 * _norm(w * on * flick * amp ** 0.5)
     if trees > 0:
         # continuous leaf noise, not clicks (clicks read as grain). A deep, regular 9 Hz flutter sounds like a
         # plastic bag waving, so only a shallow, irregular wobble (two unrelated rates) at a low level; off by default in wind.json (the `trees` macro brings it in).
@@ -214,14 +233,26 @@ def glass_break(ctx: Ctx, x, size, thickness_mm, shards, energy, height, floor, 
     h = thickness_mm * 1e-3
     i0 = int(at * sr)
     out = np.zeros(n)
-    # fracture: crack noise (5-15 ms) + choked ring of the whole pane
+    # fracture (v0.14): not one click but a cascade. The crack branches across the pane at ~1500 m/s, so a
+    # 40 cm pane fails in well under a millisecond per branch, but the pieces keep cracking off and knocking
+    # each other for 30-120 ms: a dense burst of bright clicks whose rate decays. CC0 refs: the break is the
+    # loudest moment, with energy up to 16-20 kHz.
     L = int(0.03 * sr)
     tt = np.arange(L) / sr
     crack = dsp.highpass(rng.standard_normal(L), 1500.0, sr) * np.exp(-tt / (0.004 + 0.006 * energy))
     f, a = mode_set("plate", materials.get("glass"), size, size * 0.75, h, 0, 30, None, 0.3, rng)
-    pane = _mode_ir(sr, f, np.full(len(f), 0.05), a, max_len=int(0.1 * sr))
-    frac = 0.5 * _norm(pane)
+    pane = _mode_ir(sr, f, np.full(len(f), 0.03), a, max_len=int(0.1 * sr))
+    frac = 0.2 * _norm(pane)
     frac[:L] += 0.9 * _norm(crack)
+    Lc = int((0.03 + 0.09 * energy) * sr)
+    tc = np.arange(Lc) / sr
+    rate = (2500.0 + 4000.0 * energy) * np.exp(-tc / (0.012 + 0.03 * energy))
+    idx = dsp.poisson_times(rng, rate, sr)
+    clicks = np.zeros(Lc)
+    clicks[idx] = np.minimum(rng.pareto(1.5, len(idx)) + 0.2, 8.0) * rng.choice([-1.0, 1.0], len(idx))
+    clicks = dsp.highpass(clicks, 2500.0, sr) + 0.5 * dsp.bandpass(clicks, rng.uniform(4000, 7000), sr, 1.2)
+    frac = np.pad(frac, (0, max(0, Lc - len(frac))))
+    frac[:Lc] += 0.6 * _norm(clicks)
     dsp.place(out, frac, i0, 0.5 + 0.5 * energy)
     # shards
     E, rho, nu = 60e9, 2500, 0.24
@@ -230,10 +261,14 @@ def glass_break(ctx: Ctx, x, size, thickness_mm, shards, energy, height, floor, 
     s = np.clip(size * 0.06 * rng.random(int(shards)) ** (-1 / 2.0), 0.008, size * 0.5)
     shard_out = np.zeros(n)
     floor_t60 = {"hard": 1.0, "wood": 0.6, "soft": 0.25}[floor]
-    floor_lp = {"hard": 12000.0, "wood": 7000.0, "soft": 3000.0}[floor]
+    floor_lp = {"hard": 16000.0, "wood": 8000.0, "soft": 3000.0}[floor]
     for si in s:
-        t = at + rng.uniform(0, 0.03) + math.sqrt(2 * height * rng.uniform(0.6, 1.0) / G)
-        v = math.sqrt(2 * G * height) * rng.uniform(0.6, 1.0)
+        # pieces break off all over the pane (and off the frame) and knock into each other on the way down, so
+        # the first impacts come right after the break and keep coming: each piece falls a random part of the
+        # height (v0.14; one common fall time left a silent gap that does not happen in real breaks)
+        hf = height * rng.uniform(0.02, 1.0) ** 1.5
+        t = at + rng.uniform(0.002, 0.04) + math.sqrt(2 * hf / G)
+        v = math.sqrt(2 * G * max(hf, 0.05)) * rng.uniform(0.6, 1.0)
         # free plate of diameter si: f1 = lambda^2 / (2 pi a^2) sqrt(D / rho h), lambda^2 ~ 5.25, a = si / 2
         f1 = 5.25 / (2 * math.pi * (si / 2) ** 2) * k * rng.uniform(0.8, 1.25)
         for b in range(rng.integers(1, 4)):
@@ -245,10 +280,10 @@ def glass_break(ctx: Ctx, x, size, thickness_mm, shards, energy, height, floor, 
             # big pieces land flat and are choked by the floor (est.)
             t60 = np.clip(0.25 * (2000.0 / np.maximum(fr, 200)) ** 0.5, 0.03, 0.35) * floor_t60 * min(1.0, (0.04 / si) ** 0.7)
             g = _mode_ir(sr, fr, t60, [1, .6, .4, .25], max_len=int(0.35 * sr))   # empty if all above Nyquist
-            m = max(3, int(rng.uniform(0.03, 0.1) * 1e-3 * sr))
+            m = max(3, int(rng.uniform(0.02, 0.06) * 1e-3 * sr))
             clk = np.zeros(m + 96)
             clk[:m] = _hann(m)
-            clk = _norm(dsp.bandpass(clk, rng.uniform(3500, 7500), sr, 0.8))
+            clk = _norm(dsp.bandpass(clk, rng.uniform(5000, 12000), sr, 0.8))
             gk = np.zeros(max(len(g), len(clk)))
             if np.any(g):
                 gk[:len(g)] += 0.6 * _norm(g)
@@ -256,16 +291,19 @@ def glass_break(ctx: Ctx, x, size, thickness_mm, shards, energy, height, floor, 
             dsp.place(shard_out, gk, i, A)
             v *= rng.uniform(0.2, 0.4)
             t += 2 * v / G + rng.uniform(0.002, 0.01)
-    # late tinkles (pieces sliding and settling), rate decaying
+    # tinkles of pieces sliding and settling: they start while the shower is still landing and thin out
+    # gradually (no gap before them)
     tail = np.zeros(n)
     t_end = at + math.sqrt(2 * height / G)
-    for _ in range(int(shards * 0.3)):
-        t = t_end + rng.exponential(0.25)
-        fr = rng.uniform(2500, 7000) * np.array([1.0, 1.62])
-        dsp.place(tail, _mode_ir(sr, fr, [0.04, 0.03], [1, .5]), int(t * sr), rng.uniform(0.05, 0.3))
-    debris = dsp.lowpass(_norm(shard_out) + 0.3 * _norm(tail), floor_lp, sr)
-    out += 0.5 * _norm(debris) * (0.7 + 0.3 * energy)
-    return dsp.highpass(dsp.lowpass(out, 13000.0, sr), 150.0, sr)
+    for _ in range(int(shards * 0.4)):
+        t = at + 0.05 + rng.exponential(0.6 * (t_end - at) + 0.1)
+        fr = rng.uniform(3000, 11000) * np.array([1.0, 1.62])
+        dsp.place(tail, _mode_ir(sr, fr, [0.04, 0.03], [1, .5]), int(t * sr),
+                  rng.uniform(0.05, 0.3) * math.exp(-max(0.0, t - t_end) / 0.4))
+    # big pieces land flat and are choked by the floor: their low modes hardly ring (high-pass, est.)
+    debris = dsp.highpass(dsp.lowpass(_norm(shard_out) + 0.3 * _norm(tail), floor_lp, sr), 1000.0, sr)
+    out += 0.2 * _norm(debris) * (0.7 + 0.3 * energy)
+    return dsp.highpass(dsp.lowpass(out, 18000.0, sr), 150.0, sr)
 
 
 # =================================================================== sword swing / whoosh
@@ -314,7 +352,11 @@ CLASH_OBJECTS = {
     # shape, length, width, thickness (m), extra damping (grip), contact ms
     # hp: the hand/grip and mounting soak up the lowest bending modes (est.; CC0 clash refs put most energy
     # at 3-8 kHz with ~0.1-0.3 s decays)
-    "sword": dict(shape="bar", length=0.75, width=0.04, thickness=0.0045, damp=12.0, contact=0.05, hp=350.0),
+    # sword (v0.14): a thin blade radiates poorly below its coincidence frequency, the grip and the other blade
+    # choke the ring quickly, and the edge-on-edge contact itself is a bright burst (CC0 clash refs: most energy
+    # 4-12 kHz, -20 dB after ~0.12 s). radiate/crash/shelf are only set for the sword, so the others are unchanged.
+    "sword": dict(shape="bar", length=0.75, width=0.04, thickness=0.0045, damp=30.0, contact=0.05, hp=120.0,
+                  radiate=True, crash=0.8, shelf=False),
     "pipe": dict(shape="bar", length=0.9, width=0.04, thickness=0.012, damp=2.0, contact=0.12, hp=150.0),
     "plate": dict(shape="plate", length=0.5, width=0.4, thickness=0.002, damp=3.0, contact=0.1, hp=200.0),
     "pan": dict(shape="plate", length=0.28, width=0.28, thickness=0.003, damp=12.0, contact=0.15, hp=150.0),
@@ -359,8 +401,26 @@ def clash(ctx: Ctx, x, object, velocity, scrape_s, scrape, damping, size, second
                  thickness=ob["thickness"], n_modes=64, strike_pos=rng.uniform(0.02, 0.08),
                  extra_damping=ob["damp"] * damping, detune=0.01, max_t60=3.0)
         out += lev * _norm(y)
-    # keep the top civil (no tinny tops): gentle shelf down above ~7 kHz
-    out = 0.75 * out + 0.25 * dsp.lowpass(out, 7000.0, sr)
+    if ob.get("radiate"):
+        # radiation efficiency of a thin plate/blade falls off below the coincidence frequency
+        # f_c = c^2 / (1.81 c_L h) (~2.8 kHz for 4.5 mm steel): the low bending modes barely reach the air
+        mat = materials.get("steel")
+        f_c = C ** 2 / (1.81 * math.sqrt(mat["E"] / mat["rho"]) * ob["thickness"])
+        out = dsp.highpass(out, 1.2 * f_c, sr, 0.6)
+    if ob.get("crash", 0) > 0:
+        # edge-on-edge contact: a bright, very short grinding burst (a few ms, rough), louder for harder blows
+        L = int(0.04 * sr)
+        tt = np.arange(L) / sr
+        burst = dsp.highpass(rng.standard_normal(L), 2500.0, sr) * np.exp(-tt / (0.004 + 0.002 * min(velocity / 3, 2))) \
+            * (1 - np.exp(-tt / 0.0003)) * (1 + 0.5 * smooth_random(rng, L, sr, 400))
+        # plus the dull knock of the two blades' bodies and hilts (low, damped within ~15 ms)
+        knock = dsp.lowpass(rng.standard_normal(L), 500.0, sr) * np.exp(-tt / 0.006)
+        cr = np.zeros(n)
+        dsp.place(cr, _norm(burst) + 0.05 * _norm(knock), i0, 1.0)
+        out = _norm(out) + ob["crash"] * min(velocity / 3, 1.5) * cr
+    if ob.get("shelf", True):
+        # keep the top civil (no tinny tops): gentle shelf down above ~7 kHz
+        out = 0.75 * out + 0.25 * dsp.lowpass(out, 7000.0, sr)
     return dsp.highpass(dsp.highpass(out, ob["hp"], sr), ob["hp"], sr)
 
 
@@ -758,32 +818,46 @@ def growl(ctx: Ctx, x, f0, size, roughness, flutter_hz, trill, wet, snarl, lengt
     t = np.arange(n) / sr
     u = np.clip((t - at) / length_s, 0, 1)
     on = (t >= at) & (u < 1)
-    attack = np.clip((t - at) / 0.15, 0, 1)
-    env = np.where(on, np.sin(np.pi * u) ** 0.5 * attack, 0.0)
-    env *= (1 + rise * 0.6 * np.sin(np.pi * u)) * np.exp(0.25 * smooth_random(rng, n, sr, 1.2))   # swells
+    # v0.14 envelope: a growl is one exhalation, so it builds in ~0.1-0.3 s and then sags as the breath runs
+    # out (CC0 growl refs), rather than a symmetric swell; the release is a soft 15% of the length
+    attack = np.clip((t - at) / rng.uniform(0.1, 0.3), 0, 1) ** 1.5
+    sag = np.exp(-u * (0.9 + 0.8 * (1 - rise)))
+    release = np.clip((1 - u) / 0.15, 0, 1) ** 1.5
+    env = np.where(on, attack * sag * release, 0.0)
+    env *= (1 + rise * 0.25 * np.sin(np.pi * u)) * np.exp(0.2 * smooth_random(rng, n, sr, 1.5))   # swells
     chaos = 0.03 + 0.08 * roughness
     fcurve = f0 * (1 + rise * 0.2 * np.sin(np.pi * u)) * np.exp(chaos * smooth_random(rng, n, sr, 5)
                                                                 + 0.02 * smooth_random(rng, n, sr, 1))
     gate = trill_gate(rng, n, sr, flutter_hz, trill) if trill > 0 else np.ones(n)
-    src, flow = glottal_source(rng, n, sr, fcurve, env * gate, jitter=0.02 + 0.07 * roughness,
-                               shimmer=0.08 + 0.2 * roughness, subharm=0.3 + 0.6 * roughness)
+    # v0.14 source: a longer open phase and a slow return phase. The closure is soft tissue meeting soft
+    # tissue, so each cycle carries little energy above ~1 kHz; sharp closures plus the tract made a
+    # stick-slip judder: a pushed object, not a throat
+    # Cycle-to-cycle jitter kept moderate (~1-4%): the CC0 growls show clear harmonics up to 2-5 kHz, their
+    # roughness comes from subharmonics and the trill; 6-9% jitter smeared the harmonics into scraping noise.
+    src, flow = glottal_source(rng, n, sr, fcurve, env * gate, jitter=0.01 + 0.035 * roughness,
+                               shimmer=0.05 + 0.15 * roughness, subharm=0.3 + 0.6 * roughness, oq=0.75, ta=0.12)
     # wet throat: turbulent noise riding on the airflow and choked by the trill (it gurgles with it)
-    turb = dsp.bandpass(rng.standard_normal(n), 900.0, sr, 0.5) * (0.25 + dsp.lowpass(flow, 300.0, sr)) * env * gate
+    turb = dsp.bandpass(rng.standard_normal(n), 700.0, sr, 0.5) * (0.25 + dsp.lowpass(flow, 300.0, sr)) * env * gate
     Lt = 0.5 * size
     s = 1.0 + 0.25 * snarl
-    formants = []
+    # v0.14 tract: the jaw and tongue move during the growl, so the formants move (F1 most, ~+-20% with the
+    # mouth opening as the growl gets louder, plus a slow wander); fixed resonances ring like a board.
+    # Broad resonances, and the upper ones weaker: big growls have little energy above 1-2 kHz.
+    jaw = np.clip(0.5 * env / (env.max() + 1e-12) + 0.15 * smooth_random(rng, n, sr, 2.0), 0, 1)
+    srcn = src / (np.max(np.abs(src)) + 1e-12)
+    turbn = turb / (np.max(np.abs(turb)) + 1e-12)
+    exc = srcn + (0.15 + 0.5 * wet + 0.2 * snarl) * turbn
+    y = 0.05 * exc
     for k in range(6):
         fk = (2 * k + 1) * C / (4 * Lt) * s
         if fk > 5500:
             break
-        formants.append([fk, 2.5 + 0.3 * k, -2.0 * k + 1.5 * snarl * k])
-    srcn = src / (np.max(np.abs(src)) + 1e-12)
-    turbn = turb / (np.max(np.abs(turb)) + 1e-12)
-    exc = srcn + (0.1 + 0.4 * wet + 0.2 * snarl) * turbn
-    y = call("formant", ctx, exc, formants=formants, shift=1.0, dry=0.05)
+        move = (0.8 + 0.4 * jaw) if k == 0 else (0.92 + 0.16 * jaw) * (1 + 0.04 * smooth_random(rng, n, sr, 0.7))
+        g = 10 ** ((-4.0 * k + 1.5 * snarl * k) / 20)
+        y = y + g * dsp.svf(exc, np.clip(fk * move, 40, 0.45 * sr), 1.8 + 0.3 * k, sr, "bp")
     chest = dsp.lowpass(dsp.lowpass(srcn, 220.0, sr), 220.0, sr)       # guttural bass: fundamental + subharmonic
-    y = _norm(y) + 0.5 * _norm(chest)
-    return dsp.highpass(dsp.lowpass(y, 6000.0, sr), 30.0, sr)
+    y = _norm(y) + 0.8 * _norm(chest)
+    return dsp.highpass(dsp.lowpass(dsp.lowpass(y, 3500.0, sr, 0.6), 8000.0, sr), 30.0, sr)
 
 
 # =================================================================== rustle
@@ -816,11 +890,42 @@ def rustle(ctx: Ctx, x, material, moves, length_s, intensity, at):
         air = dsp.bandpass(imp, spec[0] * 2.4, sr, 0.8)       # the crisp top of each crinkle (CC0 refs: strong 8-16 kHz)
         out = _norm(cr) + 0.25 * _norm(bed) + 0.3 * _norm(air)
     else:
-        fr = dsp.bandpass(dsp.pink(rng, n), 1600.0, sr, 0.45) * g * (1 + 0.4 * np.abs(smooth_random(rng, n, sr, 30)))
+        # cloth (v0.14). Fabric rubbing on fabric is a smooth friction hiss whose level follows the hand's speed:
+        # each stroke swells and fades over ~0.25-0.6 s, strokes overlap (the hand reverses, it does not stop),
+        # and the spectrum is broad: rising to 2-8 kHz and still strong at 10-16 kHz (CC0 cloth refs). The
+        # old 1.6 kHz band-pass with short, separated pushes sounded muffled and chopped into bursts.
+        g = np.zeros(n)
+        m = max(1, int(moves))
+        span = max(length_s, 0.3)
+        starts = at + np.sort(rng.uniform(0, 1, m)) * span * 0.85
+        starts = at + (np.arange(m) + 0.5 * rng.uniform(-0.6, 0.6, m)) * span / m if m > 1 else starts
+        gap = span / m
+        for t0 in starts:
+            L = int(np.clip(gap * rng.uniform(0.65, 0.9), 0.15, 0.6) * sr)
+            up = rng.uniform(0.35, 0.65)                  # rise and fall need not be symmetric
+            k = np.arange(L) / L
+            shape = np.where(k < up, np.sin(0.5 * np.pi * k / up) ** 2, np.cos(0.5 * np.pi * (k - up) / (1 - up)) ** 2)
+            dsp.place(g, shape * rng.uniform(0.5, 1.0), int(max(t0, 0) * sr))
+        tt = np.arange(n) / sr
+        held = ((tt >= at) & (tt < at + span)).astype(float)
+        held = np.convolve(held, _hann(int(0.1 * sr)) / (0.05 * sr), "same")
+        g = g / (g.max() + 1e-12)
+        g = np.maximum(g, 0.06 * held)                     # fibres keep brushing between strokes
+        hiss = dsp.lowpass(dsp.lowpass(dsp.white(rng, n), 9000.0, sr, 0.6), 14000.0, sr)
+        hiss = hiss + 0.5 * dsp.bandpass(dsp.pink(rng, n), 900.0, sr, 0.5)
+        fr = hiss * g * (1 + 0.25 * smooth_random(rng, n, sr, 25))
+        # fibre stick-slip: dense micro-crackle riding on the speed, which gives the rub its crisp grain
+        idx = dsp.poisson_times(rng, (400 + 1600 * intensity) * g ** 1.5, sr)
+        cr = np.zeros(n)
+        cr[idx] = rng.pareto(2.5, len(idx)) * rng.choice([-1, 1], len(idx))
+        cr = dsp.highpass(cr, 2500.0, sr)
         snaps = np.zeros(n)
         idx = dsp.poisson_times(rng, 6 * intensity * g, sr)
         snaps[idx] = rng.uniform(0.5, 1.0, len(idx))
-        out = _norm(fr) + 0.3 * _norm(dsp.bandpass(snaps, 1200.0, sr, 1.0))
+        # a soft low bump from the arm/body moving the garment
+        body = dsp.lowpass(dsp.brown(rng, n), 200.0, sr) * g
+        out = _norm(fr) + 0.25 * _norm(cr) + 0.15 * _norm(dsp.bandpass(snaps, 1200.0, sr, 1.0)) + 0.12 * _norm(body)
+        return dsp.highpass(dsp.lowpass(out, 16000.0, sr), 60.0, sr)
     return dsp.highpass(dsp.lowpass(out, 13000.0, sr), 150.0, sr)
 
 
@@ -847,20 +952,25 @@ def splash(ctx: Ctx, x, size, speed, bloop, droplets, at):
     i0 = int(at * sr)
     out = np.zeros(n)
     E = (speed / 3.0) * (size / 0.08) ** 0.7               # relative splash energy
-    # (1) impact slap: sharp broadband crack + a dull thud that grows with size
-    L = int(0.012 * sr)
+    # (1) impact slap: sharp broadband crack + a low 'plunk' (v0.14: the water mass pushed aside and the
+    # opening air cavity give a strong 60-250 Hz thump; CC0 splash refs carry as much energy at 63-125 Hz as
+    # at 1-2 kHz, the old thud was ~15 dB too weak)
+    L = int(0.06 * sr)
     tt = np.arange(L) / sr
     crack = dsp.highpass(rng.standard_normal(L), 400.0, sr) * np.exp(-tt / (0.0012 + 0.004 * size)) \
         * (1 - np.exp(-tt / 0.0002))
+    f_pl = np.clip(25.0 / max(size, 0.02) ** 0.5, 50.0, 250.0) * rng.uniform(0.9, 1.1)   # cavity/mass thump (est.)
+    plunk = np.sin(2 * np.pi * f_pl * tt * (1 + 2.0 * tt)) * np.exp(-tt / (0.012 + 0.04 * size)) \
+        * (1 - np.exp(-tt / 0.002))
     thud = dsp.lowpass(rng.standard_normal(L), 300.0, sr) * np.exp(-tt / (0.004 + 0.02 * size))
-    dsp.place(out, _norm(crack) + min(1.0, 3 * size) * 0.5 * _norm(thud), i0, 1.0)
+    dsp.place(out, _norm(crack) + 0.6 * _norm(plunk) + 0.4 * _norm(thud), i0, 1.0)
     # (2) crown / sheet: smooth broadband burst, single envelope (no AM)
     dur = 0.04 + 0.12 * min(E, 3.0) ** 0.5
     Lw = int(dur * 4 * sr)
     tw = np.arange(Lw) / sr
     sheet = dsp.lowpass(dsp.highpass(rng.standard_normal(Lw), 300.0, sr), 7000.0 / (1 + 2 * size), sr) \
         * (1 - np.exp(-tw / 0.004)) * np.exp(-tw / dur)
-    dsp.place(out, _norm(sheet), i0 + int(0.002 * sr), 0.55)
+    dsp.place(out, _norm(sheet), i0 + int(0.002 * sr), 0.45)
     # (3) cavity collapse: pinch-off bubble, damped x2, natural small pitch rise (xi ~ 0.1)
     r = np.clip(0.15 * size, 0.002, 0.06) * rng.uniform(0.85, 1.15)
     tb = at + 0.03 + 0.3 * size / max(speed, 0.5) ** 0.5
@@ -870,26 +980,43 @@ def splash(ctx: Ctx, x, size, speed, bloop, droplets, at):
     f0 = 3.26 / r
     bb = np.sin(2 * np.pi * np.cumsum(f0 * (1 + 0.1 * d * tbb)) / sr) * np.exp(-d * tbb) * (1 - np.exp(-tbb / 0.002))
     dsp.place(out, bb, int(tb * sr), bloop * 0.45)
-    # (4) spray falling back: dense, overlapping droplets
+    # (4) spray falling back. v0.14: the water thrown up flies for 2 v_up / g (v_up ~ 0.6 x entry speed, est.):
+    # ~0.3-0.8 s, spread over a wide range, so the fall-back lasts about a second, not a few hundred ms
+    # ("too fast"). Under the separate drops, the churned water and bubble cloud give a continuous, decaying
+    # wash; without it the tail fell apart into isolated ticks with silence between them.
     if droplets > 0:
         dr = np.zeros(n)
         k = int(40 + 220 * min(E, 4.0) * (size / 0.08) ** 0.3)
-        t_peak = 0.12 + 0.25 * size ** 0.5 * min(speed / 3.0, 2.0) ** 0.5
+        v_up = 0.6 * speed * (size / 0.08) ** 0.15
+        t_peak = 0.08 + 2 * v_up / G * 0.6
         for _ in range(k):
-            t = at + 0.03 + rng.gamma(2.2, t_peak / 1.2)
+            t = at + 0.03 + rng.gamma(2.0, t_peak / 1.0)
             i = int(t * sr)
             if i >= n - 10:
                 continue
             a = rng.pareto(2.0) + 0.2
-            a = min(a, 3.0) * np.exp(-max(0.0, t - at - t_peak) / 0.5)
+            a = min(a, 3.0) * np.exp(-max(0.0, t - at - t_peak) / 0.3)
             Ld = max(4, int(rng.uniform(0.0005, 0.0015) * sr))       # soft tick
             tick = dsp.lowpass(rng.standard_normal(Ld) * _hann(Ld), rng.uniform(2500, 6000), sr)
-            dsp.place(dr, tick / (np.max(np.abs(tick)) + 1e-12), i, 0.5 * a)
+            dsp.place(dr, tick / (np.max(np.abs(tick)) + 1e-12), i, 0.35 * a)
             if rng.random() < 0.6:                                   # entrained bubble 'plip'
                 rr = rng.uniform(0.0006, 0.0025)
                 gb = bubble_grain(sr, rr, 0.1)
                 Lg = min(len(gb), int(0.012 * sr))
                 gb = gb[:Lg] * (1 - np.exp(-np.arange(Lg) / (0.0003 * sr)))
                 dsp.place(dr, gb, i + int(rng.uniform(0.0005, 0.003) * sr), a * rng.uniform(0.4, 1.0) * (rr / 0.0015) ** 0.5)
-        out += droplets * 0.6 * _norm(dr)
-    return dsp.highpass(dsp.lowpass(out, 11000.0, sr), 50.0, sr)
+        # the wash: dense small bubbles and churn, rate and level decaying over ~1 s
+        t = np.arange(n) / sr
+        # it swells as the thrown-up water lands (peak near t_peak) and dies away after it
+        tr = np.maximum(t - at, 0)
+        decay = (0.4 * np.exp(-tr / 0.12) + 0.6 * (tr / t_peak) ** 1.5 * np.exp(1.5 * (1 - tr / t_peak))
+                 * np.where(tr > t_peak, np.exp(-(tr - t_peak) / 0.5), 1.0)) * np.clip(tr / 0.03, 0, 1) * (t >= at)
+        churn = dsp.lowpass(dsp.highpass(rng.standard_normal(n), 250.0, sr), 4500.0, sr) * decay
+        cloud = np.zeros(n)
+        for j in dsp.poisson_times(rng, 900.0 * decay, sr):
+            rr = rng.uniform(0.001, 0.004)
+            gb = bubble_grain(sr, rr, 0.12)
+            dsp.place(cloud, gb[: int(0.01 * sr)], j, rng.uniform(0.2, 1.0))
+        wash = 0.6 * _norm(churn) + 0.5 * _norm(cloud)
+        out += droplets * (0.3 * _norm(dr) + 0.35 * _norm(wash))
+    return dsp.highpass(dsp.lowpass(out, 14000.0, sr), 40.0, sr)

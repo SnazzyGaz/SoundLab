@@ -13,7 +13,7 @@
     "object": "sword",
     "velocity": 3.0,
     "scrape_s": 0.25,
-    "scrape": 0.4,
+    "scrape": 0.2,
     "damping": 1.0,
     "size": 1.0,
     "second": 0.7,

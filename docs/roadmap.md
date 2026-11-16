@@ -34,9 +34,8 @@ recipe sound and at least two listeners who did not tune the recipes.
 
 - **Gunshot**: pistol, rifle and shotgun sound too alike. The `calibre` choice should change the character
   (crack, body, length of the tail), not only small numbers.
-- **Splash**: the water part is a bit fast; slow the crown/sheet and spray down.
-- **Creature growl**: still reads as an object pushed along a floor rather than a living voice. Needs breath
-  noise, irregular pulses, and throat and mouth shape changing over time.
+- **Creature growl**: growls range from purr-like rumbles to bright, open snarls; the recipe sits at the deep
+  end. A snarl preset (raised formants, more breath, less chest) would cover the bright end.
 - **Rain**: a bit static. Add slow variation (gusts of heavier drops, occasional near drops).
 
 ## Known gaps
@@ -48,6 +47,10 @@ recipe sound and at least two listeners who did not tune the recipes.
 - The sword clash and bullet impacts follow the CC0 refs' bright balance; check them for tinny tops.
 - The pipe clang rings long (a free pipe does) and is very tonal.
 - Door creaks vary hugely in real life (CC0 refs from ~26 Hz ticking to a ~1.1 kHz squeal); ours sits at 260 Hz.
+- Wind recorded on a bare microphone is mostly sub-60 Hz buffeting; ours only gets that from the `rumble`
+  control, which stays low by default.
+- The `room` block's early reflections colour close, broadband sounds slightly (comb lines); close foley
+  recipes keep its level low.
 - Stereo/binaural output and per-layer propagation.
 
 ## Later, if the checkpoint says so

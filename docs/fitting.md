@@ -198,3 +198,55 @@ slam 13.6/15.8 dB (heavier than both refs, on purpose), growl 4-5 dB to the big-
 The gunshot and growl are not fitted. Five CC0 firearm recordings (gunshot_1/2, gun_shotgun_2/3) gave the
 gunshot's attack, first-5 ms brightness and tail ratios; four growls and one tiger growl gave the trill rate
 (18-22 Hz). Listening decides over the metrics.
+
+## Seven sounds against their references (v0.14)
+
+Cloth rustle, creature growl, glass break, splash, sword clash, wind and wind through a gap were compared with
+their CC0 references, with both sides prepared exactly like blind-pack clips (onset trim, 4 s cap, tail
+trim, loudness match): spectrograms, envelopes, octave bands, attack and decay times, onset density,
+envelope modulation and how much the brightness moves. Each change fixes a cause in the model; one reference
+per sound was held out and not looked at while tuning. "Fit" is `fit.compare_signals` (lower is better,
+mean over three variations); "bands" is the mean octave-band difference 125 Hz-16 kHz in dB.
+
+| sound | fit (tuning refs) | bands dB | hold-out: fit | hold-out: bands dB |
+|---|---|---|---|---|
+| cloth_rustle | 1.279 -> 0.868 | 5.3 -> 2.7 | cloth_2: 1.382 -> 0.901 | 5.6 -> 1.9 |
+| creature_growl | 0.809 -> 0.678 | 15.3 -> 13.0 | growl_2: 0.920 -> 0.720 | 11.2 -> 16.0 |
+| glass_break | 0.676 -> 0.489 | 4.2 -> 4.0 | glass_smash_2: 0.542 -> 0.535 | 4.0 -> 3.7 |
+| splash | 0.716 -> 0.631 | 6.5 -> 5.3 | splash_l1: 0.968 -> 0.845 | 12.8 -> 10.5 |
+| sword_clash | 1.069 -> 0.618 | 11.2 -> 6.0 | clash_2: 0.689 -> 0.338 | 10.5 -> 2.2 |
+| wind | 0.749 -> 0.784 | 9.4 -> 11.9 | wind_trees_1: 0.566 -> 0.423 | 8.6 -> 3.1 |
+| wind_gap | 0.650 -> 0.557 | 9.3 -> 8.1 | wind_whistle_2: 0.543 -> 0.401 | 7.0 -> 3.4 |
+
+- **Sword clash**: energy sat at 300 Hz-3 kHz (refs: 4-12 kHz) and the ring held for 0.3 s to -20 dB (refs
+  0.12 s). Cause: every bending mode of the blade radiated equally. A 4.5 mm blade radiates poorly below its
+  coincidence frequency (~2.8 kHz), the grip and the other blade choke the ring, and the edge-on-edge contact
+  is itself a bright burst. Added the coincidence high-pass, more grip damping, the contact burst and a
+  faint body knock, and a lighter scrape. Centroid 2.7 -> 7.1 kHz. Pipe, plate and pan are unchanged.
+- **Glass break**: the shards all fell from one height, so after the crack there was a silent gap, then the
+  loudest moment came when they landed (attack 75 ms vs 20 ms), and late tinkles stood alone after more
+  silence; the top stopped at 13 kHz. Now the fracture is a cascade of crack clicks (30-120 ms), pieces fall
+  from all over the pane so impacts follow the break at once, tinkles thin out without a gap, big pieces
+  land choked and the band reaches 18 kHz. Attack 28 ms.
+- **Splash**: over too fast (-40 dB after 0.5 s vs 1.4 s), the late tail fell apart into lone ticks with
+  silence between, and the impact had no low end (63-125 Hz ~15 dB under the refs). Added the low plunk
+  (water mass and opening cavity), a fall-back timed from the throw-up speed (2 v / g), and a continuous wash
+  of churn and small bubbles that swells as the water lands. -40 dB now after ~0.9 s, peak at the impact.
+- **Cloth rustle**: a 1.6 kHz band-pass (centroid 1.9 kHz vs 3.5 kHz, 8-16 kHz 10-12 dB short) in short,
+  separate pushes that dropped to silence. Now a broadband friction hiss with fibre micro-crackle, strokes
+  that swell and fade over 0.25-0.6 s and overlap, a floor while the hand keeps moving, and a closer, drier
+  room (the small room's reflections drew comb lines through the hiss).
+- **Wind**: a dark rumble (corner ~600 Hz; the refs are flat to 1 kHz and fall slowly) with little movement in
+  level and brightness. The corner now sits at ~3.5 kHz and moves with the gust speed (v^1.5), gusts carry
+  faster flurries, eddies make the level waver irregularly, and the howl resonances are broad (narrow ones
+  beat into grain). Better against the trees and gusty-midrange refs; further from a recording that is
+  mostly wind buffeting a microphone.
+- **Wind gap**: the whistle's pitch followed every gust (refs: a thin, steady line) and the wind behind it was
+  bright. The edge tone now locks to the gap's resonance (pitch steady within ~2 %, level flickering with
+  the flow), and a new `indoors` control low-passes the wind noise as heard through a wall or window.
+- **Creature growl**: steady, narrow tract resonances, hard glottal closures and 6-9 % cycle jitter gave a
+  buzzing, scraping texture with energy up to 2-4 kHz (refs fall off from ~500 Hz) and a symmetric swell.
+  Now softer closures (longer open and return phases), moderate jitter (harmonics show again), formants
+  that move with the jaw, a stronger chest band, a growl that builds and sags like one breath, a lower
+  pitch (55 Hz) and a longer default (2.6 s). The bright `growl_2` reference is further away on bands: the
+  recipe sits at the deep end (see the roadmap).

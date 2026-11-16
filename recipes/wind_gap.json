@@ -14,10 +14,11 @@
     "gustiness": 0.45,
     "gust_hz": 0.2,
     "howl": 0.2,
-    "whistle": 0.7,
+    "whistle": 0.35,
     "gap_mm": 6.0,
     "trees": 0.0,
-    "rumble": 0.1
+    "rumble": 0.1,
+    "indoors": 0.85
    }
   }
  ],

@@ -3,21 +3,21 @@
  "name": "Creature growl: rough low pulses through a large vocal tract",
  "category": "creature",
  "sample_rate": 48000,
- "duration": 2.0,
+ "duration": 3.0,
  "seed": 23,
  "layers": [
   {
    "name": "main",
    "model": "growl",
    "params": {
-    "f0": 70.0,
+    "f0": 55.0,
     "size": 1.1,
     "roughness": 0.6,
     "flutter_hz": 24.0,
     "trill": 0.6,
     "wet": 0.5,
     "snarl": 0.3,
-    "length_s": 1.6,
+    "length_s": 2.6,
     "rise": 0.4,
     "at": 0.05
    }

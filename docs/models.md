@@ -609,6 +609,7 @@ Wind: turbulence noise whose level and brightness follow a gusting wind speed (a
 | `gap_mm` | `6.0` | mm | 1 .. 40 | gap size (whistle pitch = 0.2 v / gap) |
 | `trees` | `0.4` |  | 0 .. 1 | level of leaf rustle (trees, bushes) |
 | `rumble` | `0.15` |  | 0 .. 1 | low buffeting (wind on a mic or a building); keep low |
+| `indoors` | `0.0` |  | 0 .. 1 | heard from inside through a window or wall: the wind noise is low-passed (mass law), the whistle made at the gap itself is not |
 
 Sources: Farnell 2010, Designing Sound (wind); Wikipedia: Aeolian sound; Strouhal number; Lighthill / Curle (dipole sound power ~ U^6)
 

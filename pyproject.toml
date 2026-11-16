@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "soundlab"
-version = "0.13.0"
+version = "0.14.0"
 description = "Physical-modelling sound engine: excitation -> resonator -> radiation -> propagation -> room, JSON recipes, CLI, analysis-by-synthesis."
 readme = "README.md"
 requires-python = ">=3.10"
