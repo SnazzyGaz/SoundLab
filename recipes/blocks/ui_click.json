@@ -1,0 +1,75 @@
+{
+ "soundlab": 1,
+ "name": "UI click: tiny pitched tick + noise snap (generic blocks only)",
+ "category": "ui",
+ "duration": 0.12,
+ "layers": [
+  {
+   "name": "tick",
+   "chain": [
+    {
+     "model": "osc",
+     "params": {
+      "wave": "sine",
+      "freq": [
+       [
+        0,
+        2600
+       ],
+       [
+        0.012,
+        1300
+       ]
+      ]
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "attack": 0.0004,
+      "decay": 0.018,
+      "sustain": 0,
+      "release": 0.01,
+      "gate_s": 0.05
+     }
+    }
+   ]
+  },
+  {
+   "name": "snap",
+   "gain_db": -8,
+   "chain": [
+    {
+     "model": "noisegen",
+     "params": {
+      "color": "white"
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "bp",
+      "cutoff": 5000,
+      "resonance": 1.5
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "attack": 0.0002,
+      "decay": 0.004,
+      "sustain": 0,
+      "release": 0.003,
+      "gate_s": 0.01
+     }
+    }
+   ]
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.005
+ },
+ "sample_rate": 48000,
+ "seed": 1
+}

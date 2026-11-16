@@ -50,3 +50,7 @@ render/analyse, and the MCP tools exposed through AIDAW's server.
 Pure Python + NumPy/SciPy, offline. Most blocks are vectorised or run as IIR filters through `scipy.signal.lfilter`.
 Per-sample loops remain in `friction` (stick-slip) and the time-varying state-variable filter; the shipped recipes
 took 0.02-0.5 s on the box for 1.5-9 s of audio (faster than real time, but offline). A real-time streaming engine comes with the compiled core (roadmap step 9).
+
+## 0.6.0: generic synth blocks
+
+`soundlab/models/synth.py` holds the generic toolkit (stages `synth` and `fx`). Written from published descriptions: PolyBLEP (Valimaki & Huovilainen 2007), TPT SVF (Zavalishin 2012), FM (Chowning 1973), Freeverb structure (Jezar, public domain, as described in J.O. Smith, *Physical Audio Signal Processing*). No code copied.

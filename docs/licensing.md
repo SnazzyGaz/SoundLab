@@ -35,3 +35,5 @@ published descriptions:
 
 Runtime dependencies: NumPy (BSD-3), SciPy (BSD-3); optional matplotlib (PSF-based, BSD-compatible) and the
 ffmpeg executable (called as an external program for MP3).
+
+- Freeverb (Jezar at Dreampoint) is public domain; `reverb` reimplements its structure and tunings from the published description (0.6.0).

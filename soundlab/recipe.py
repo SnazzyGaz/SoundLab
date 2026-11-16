@@ -91,7 +91,7 @@ def validate(recipe: dict) -> list[str]:
     for j, b in enumerate(recipe.get("post", [])):
         name = b.get("model")
         if name not in REGISTRY or not REGISTRY[name].needs_input:
-            errs.append(f"post {j}: {name!r} must be a processing block (resonator/radiation/propagation/room)")
+            errs.append(f"post {j}: {name!r} must be a processing block (resonator/radiation/propagation/room/fx)")
         else:
             try:
                 REGISTRY[name].resolve(b.get("params"))

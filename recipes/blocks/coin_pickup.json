@@ -1,0 +1,89 @@
+{
+ "soundlab": 1,
+ "name": "Coin pickup: retro square blip B5 -> E6 (generic blocks only)",
+ "category": "pickup",
+ "duration": 0.6,
+ "layers": [
+  {
+   "name": "coin",
+   "chain": [
+    {
+     "model": "osc",
+     "params": {
+      "wave": "pulse",
+      "pulse_width": 0.5,
+      "freq": [
+       [
+        0,
+        987.8
+       ],
+       [
+        0.065,
+        987.8
+       ],
+       [
+        0.0655,
+        1318.5
+       ]
+      ]
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "lp",
+      "cutoff": 9000,
+      "resonance": 0.6
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "points": [
+       [
+        0,
+        0
+       ],
+       [
+        0.003,
+        0.8
+       ],
+       [
+        0.063,
+        0.75
+       ],
+       [
+        0.068,
+        1.0
+       ],
+       [
+        0.12,
+        0.8
+       ],
+       [
+        0.5,
+        0.0001
+       ]
+      ],
+      "curve": "exp"
+     }
+    },
+    {
+     "model": "delay",
+     "params": {
+      "time_ms": 90,
+      "feedback": 0.25,
+      "damp": 0.5,
+      "mix": 0.15
+     }
+    }
+   ]
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.03
+ },
+ "sample_rate": 48000,
+ "seed": 1
+}

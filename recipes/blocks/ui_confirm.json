@@ -1,0 +1,107 @@
+{
+ "soundlab": 1,
+ "name": "UI confirm: two rising soft blips (generic blocks only)",
+ "category": "ui",
+ "duration": 0.45,
+ "layers": [
+  {
+   "name": "blip1",
+   "chain": [
+    {
+     "model": "osc",
+     "params": {
+      "wave": "triangle",
+      "freq": 880
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "lp",
+      "cutoff": 5000,
+      "resonance": 0.7
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "attack": 0.002,
+      "decay": 0.05,
+      "sustain": 0.3,
+      "release": 0.06,
+      "gate_s": 0.06
+     }
+    }
+   ]
+  },
+  {
+   "name": "blip2",
+   "start": 0.075,
+   "chain": [
+    {
+     "model": "osc",
+     "params": {
+      "wave": "triangle",
+      "freq": 1318.5
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "lp",
+      "cutoff": 6000,
+      "resonance": 0.7
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "attack": 0.002,
+      "decay": 0.08,
+      "sustain": 0.35,
+      "release": 0.18,
+      "gate_s": 0.09
+     }
+    },
+    {
+     "model": "reverb",
+     "params": {
+      "size": 0.35,
+      "damp": 0.5,
+      "mix": 0.18
+     }
+    }
+   ]
+  },
+  {
+   "name": "sparkle",
+   "start": 0.075,
+   "gain_db": -14,
+   "chain": [
+    {
+     "model": "osc",
+     "params": {
+      "wave": "sine",
+      "freq": 2637
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "attack": 0.001,
+      "decay": 0.05,
+      "sustain": 0,
+      "release": 0.05,
+      "gate_s": 0.06
+     }
+    }
+   ]
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.03
+ },
+ "sample_rate": 48000,
+ "seed": 1
+}

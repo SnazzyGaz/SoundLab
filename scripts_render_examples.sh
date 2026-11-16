@@ -9,3 +9,9 @@ for r in duck engine engine_blips foghorn foghorn_pattern explosion match matchb
   .venv/bin/soundlab analyze "$OUT/$r.wav" -o "$OUT/analysis/$r" > "$OUT/analysis/$r.summary.json"
   echo "$r done"
 done
+for f in recipes/blocks/*.json; do
+  b=$(basename "$f" .json)
+  mkdir -p "$OUT/blocks"
+  .venv/bin/soundlab render "$f" -o "$OUT/blocks/$b.wav" --mp3 >/dev/null
+  echo "blocks/$b done"
+done

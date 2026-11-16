@@ -16,6 +16,28 @@ Writes `fits/duck/`:
 - `comparison.png`: long-term spectrum and onset-aligned envelope, reference vs before vs after.
 - `fitted_preview.wav`: the fitted render at 24 kHz.
 
+## Rules (0.6.0)
+
+1. **Pitch first** (default). The reference's fundamental is measured; every pitch control in the fit set
+   (`f0`, `tone_hz`, `freq`) is set to it, checked on a render (within 5 cents) and **locked**, then the other
+   controls are fitted. Spectral losses alone tend to trade pitch for brightness. If the reference has no
+   confident pitch, pitch controls are fitted with the rest and the report says so. `--no-pitch-first`
+   restores the old behaviour (pitch initialised from the reference, then optimised).
+2. **Hold-out check.** Matching one clip is not the same as sounding right. Give a second recording of the
+   same sound with `--holdout AUDIO[:START[:END]]` (repeatable): the report scores the recipe before and after
+   on it and flags a fit that got worse there as likely overfitted. Without one, the report says
+   **Missing** in bold and the fit should not be adopted. Every fit also writes `ear/fitted.wav`,
+   `ear/low.wav` and `ear/high.wav` (all fitted controls moved 25 % of their range down / up) for listening;
+   once macro sliders exist these become renders at a few macro positions.
+3. **Reference audio stays private.** Reference clips and anything derived from them (stems, crops,
+   previews, fit output folders) live outside the repo. `tests/test_no_reference_audio.py` fails if any audio
+   file is in the repo tree or tracked by git. Point `-o` outside the repo.
+
+```bash
+soundlab match refs/foghorn.wav --recipe recipes/fit/foghorn_fitted.json -p 0.tone_hz -p 0.brightness \
+    --holdout refs/foghorn_other.wav --budget 120 -o ../fits/foghorn
+```
+
 ## Choosing controls
 
 - `-p L.name` fits control `name` of layer `L` (first block of a chain). `-p L.B.name` picks block `B` of a

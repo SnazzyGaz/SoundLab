@@ -1,0 +1,2 @@
+# Audio files allowed inside the repo (one path per line, relative to the repo root).
+# Intentionally empty: reference clips and stems derived from them must never be shipped.

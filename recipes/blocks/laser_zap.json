@@ -1,0 +1,139 @@
+{
+ "soundlab": 1,
+ "name": "Laser zap: falling FM/saw sweep, driven (generic blocks only)",
+ "category": "scifi",
+ "duration": 0.5,
+ "layers": [
+  {
+   "name": "beam",
+   "chain": [
+    {
+     "model": "fm",
+     "params": {
+      "freq": [
+       [
+        0,
+        2400
+       ],
+       [
+        0.22,
+        140
+       ]
+      ],
+      "ratio": 1.41,
+      "index": [
+       [
+        0,
+        6
+       ],
+       [
+        0.25,
+        0.5
+       ]
+      ]
+     }
+    },
+    {
+     "model": "shaper",
+     "params": {
+      "mode": "tanh",
+      "drive": 2.5
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "lp",
+      "cutoff": [
+       [
+        0,
+        12000
+       ],
+       [
+        0.25,
+        1500
+       ]
+      ],
+      "resonance": 1.2
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "attack": 0.001,
+      "decay": 0.12,
+      "sustain": 0.25,
+      "release": 0.12,
+      "gate_s": 0.2
+     }
+    }
+   ]
+  },
+  {
+   "name": "body",
+   "gain_db": -6,
+   "chain": [
+    {
+     "model": "osc",
+     "params": {
+      "wave": "saw",
+      "freq": [
+       [
+        0,
+        1800
+       ],
+       [
+        0.2,
+        90
+       ]
+      ]
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "bp",
+      "cutoff": [
+       [
+        0,
+        3000
+       ],
+       [
+        0.2,
+        400
+       ]
+      ],
+      "resonance": 3
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "attack": 0.001,
+      "decay": 0.1,
+      "sustain": 0.1,
+      "release": 0.08,
+      "gate_s": 0.18
+     }
+    }
+   ]
+  }
+ ],
+ "post": [
+  {
+   "model": "delay",
+   "params": {
+    "time_ms": 60,
+    "feedback": 0.3,
+    "damp": 0.5,
+    "mix": 0.12
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.04
+ },
+ "sample_rate": 48000,
+ "seed": 1
+}

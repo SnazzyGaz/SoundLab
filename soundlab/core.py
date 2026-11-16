@@ -92,7 +92,7 @@ def scalar(value: Any) -> float:
 @dataclass
 class Model:
     name: str
-    stage: str  # excitation | resonator | radiation | propagation | room | sound
+    stage: str  # excitation | resonator | radiation | propagation | room | sound | synth | fx
     fn: Callable[..., np.ndarray]
     doc: str
     params: list[Param] = field(default_factory=list)
@@ -127,7 +127,7 @@ class Model:
 
 
 REGISTRY: dict[str, Model] = {}
-STAGES = ("excitation", "resonator", "radiation", "propagation", "room", "sound")
+STAGES = ("excitation", "resonator", "radiation", "propagation", "room", "sound", "synth", "fx")
 
 
 def model(name: str, stage: str, doc: str, params: list[Param], sources: list[str] | None = None,
@@ -137,7 +137,7 @@ def model(name: str, stage: str, doc: str, params: list[Param], sources: list[st
         raise ValueError(stage)
 
     def deco(fn):
-        ni = needs_input if needs_input is not None else stage in ("resonator", "radiation", "propagation", "room")
+        ni = needs_input if needs_input is not None else stage in ("resonator", "radiation", "propagation", "room", "fx")
         REGISTRY[name] = Model(name, stage, fn, doc, params, sources or [], ni)
         return fn
 

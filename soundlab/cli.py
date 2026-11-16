@@ -58,6 +58,11 @@ def main(argv=None) -> int:
     mm.add_argument("--weights", default="", help="loss weights, e.g. spectral=1,stft=1,envelope=0.7,texture=0.7")
     mm.add_argument("--duration", type=float, help="render length while fitting (default: reference length)")
     mm.add_argument("-o", "--out", help="output folder (default: <recipe>_fit)")
+    mm.add_argument("--no-pitch-first", action="store_true",
+                    help="fit pitch controls together with the rest (default: measure + lock pitch first)")
+    mm.add_argument("--holdout", action="append", default=[], metavar="AUDIO[:START[:END]]",
+                    help="second recording of the same sound to score the fit on (repeatable; strongly advised)")
+    mm.add_argument("--no-ear", action="store_true", help="skip the listening renders")
 
     c = sub.add_parser("compare", help="distance between a reference and one or more renders")
     c.add_argument("ref")
@@ -85,7 +90,7 @@ def main(argv=None) -> int:
         elif args.cmd == "models":
             ms = soundlab.list_models(args.stage)
             if not _print(ms, args.json):
-                for st in ("sound", "excitation", "resonator", "radiation", "propagation", "room"):
+                for st in ("sound", "excitation", "resonator", "radiation", "propagation", "room", "synth", "fx"):
                     rows = [x for x in ms if x["stage"] == st]
                     if rows:
                         print(f"\n[{st}]")
@@ -129,10 +134,24 @@ def main(argv=None) -> int:
             rec["duration"] = float(args.duration or (b - a))
             w = {k: float(v) for k, v in (kv.split("=") for kv in args.weights.split(",") if kv)}
             res = F.fit(rec, ref, rsr, args.param or None, args.start, args.end, args.method, args.budget, w,
-                        log=lambda m: print(m, file=sys.stderr))
+                        log=lambda m: print(m, file=sys.stderr), pitch_first=not args.no_pitch_first)
             out = args.out or str(Path(args.recipe).with_suffix("")) + "_fit"
+            res["holdouts"] = []
+            for h in args.holdout:
+                hp, *ab = h.split(":")
+                hx, hsr = read_audio(hp)
+                hs = float(ab[0]) if len(ab) > 0 and ab[0] else None
+                he = float(ab[1]) if len(ab) > 1 and ab[1] else None
+                res["holdouts"].append(F.holdout(res, hx, hsr, hs, he, w, name=Path(h).name))
+            if not args.holdout:
+                print("warning: no --holdout recording; the fit is unchecked on a second recording", file=sys.stderr)
+            if not args.no_ear:
+                res["ear"] = F.ear_renders(res, out)
             F.report(res, ref, out, Path(args.ref).name, Path(args.recipe).name)
             print(json.dumps({"out": out, "before": res["before"], "after": res["after"],
+                              "locked": res.get("locked", []),
+                              "holdouts": [{"name": h["name"], "before": h["before"]["total"],
+                                            "after": h["after"]["total"]} for h in res["holdouts"]],
                               "params": [{k: p[k] for k in ("key", "before", "after")} for p in res["params"]]},
                              indent=1, default=float))
         elif args.cmd == "compare":

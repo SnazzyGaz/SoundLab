@@ -90,3 +90,43 @@ def test_match_and_compare_cli(tmp_path):
                          str(out / "fitted_preview.wav"), "--json"], capture_output=True, text=True, cwd=ROOT)
     assert r2.returncode == 0, r2.stderr
     assert "total" in list(json.loads(r2.stdout).values())[0]
+
+
+def _tone_recipe(freq, cutoff=3000.0):
+    return {"soundlab": 1, "sample_rate": 24000, "duration": 1.0, "seed": 1,
+            "layers": [{"chain": [{"model": "osc", "params": {"wave": "saw", "freq": freq}},
+                                  {"model": "svf", "params": {"mode": "lp", "cutoff": cutoff}},
+                                  {"model": "env", "params": {"attack": 0.01, "decay": 0.2, "sustain": 0.7,
+                                                              "release": 0.2, "gate_s": 0.7}}]}],
+            "master": {"normalize_db": -1.0}}
+
+
+def test_pitch_first_locks_pitch_before_fitting():
+    # v0.6 rule: measure and lock the fundamental first, then fit the rest
+    ref, sr = soundlab.render(_tone_recipe(233.0, 1500.0), 24000)
+    res = F.fit(_tone_recipe(150.0, 3000.0), ref, sr, ["0.freq", "0.1.cutoff:200:10000"], budget=30, log=lambda m: None)
+    assert res["locked"] and res["locked"][0]["key"] == "0.freq"
+    assert abs(1200 * np.log2(res["locked"][0]["value"] / 233.0)) < 10
+    assert [p["key"] for p in res["params"]] == ["0.1.cutoff"]  # pitch not in the optimiser any more
+    assert res["recipe"]["layers"][0]["chain"][0]["params"]["freq"] == res["locked"][0]["value"]
+
+
+def test_holdout_and_ear_renders(tmp_path):
+    ref, sr = soundlab.render(_tone_recipe(233.0, 1500.0), 24000)
+    res = F.fit(_tone_recipe(233.0, 4000.0), ref, sr, ["0.1.cutoff:200:10000"], budget=20, log=lambda m: None)
+    second, _ = soundlab.render(dict(_tone_recipe(233.0, 1500.0), seed=7), 24000)
+    h = F.holdout(res, second, sr, name="second")
+    assert h["after"]["total"] <= h["before"]["total"] + 1e-9 and h["improved"]
+    res["holdouts"] = [h]
+    res["ear"] = F.ear_renders(res, tmp_path, sr=24000)
+    assert len(res["ear"]) == 3 and all(Path(f).exists() for f in res["ear"])
+    F.report(res, ref, tmp_path, "ref", "tone")
+    md = (tmp_path / "report.md").read_text()
+    assert "Hold-out check" in md and "second" in md
+
+
+def test_report_flags_missing_holdout(tmp_path):
+    ref, sr = soundlab.render(_tone_recipe(233.0, 1500.0), 24000)
+    res = F.fit(_tone_recipe(233.0, 4000.0), ref, sr, ["0.1.cutoff:200:10000"], budget=10, log=lambda m: None)
+    F.report(res, ref, tmp_path, "ref", "tone")
+    assert "**Missing.**" in (tmp_path / "report.md").read_text()

@@ -285,7 +285,7 @@ def default_params(recipe) -> list[FitParam]:
     out = []
     for li, bi, b in _blocks(recipe):
         m = REGISTRY[b["model"]]
-        if m.stage not in ("sound", "excitation", "resonator", "radiation"):
+        if m.stage not in ("sound", "excitation", "resonator", "radiation", "synth", "fx"):
             continue
         cur = m.resolve(b.get("params"))
         for p in m.params:
@@ -400,12 +400,55 @@ def nelder_mead(f, x0, budget=200, callback=None):
 
 
 # ----------------------------------------------------------------------------- driver
-PITCH_NAMES = {"f0", "tone_hz"}
+PITCH_NAMES = {"f0", "tone_hz", "freq"}
+PITCH_TOL_CENTS = 5.0
+
+
+def lock_pitch(work, fps, r, log=print, iterations=4):
+    """Pitch-first rule (v0.6): measure the reference's fundamental, set every pitch control in the fit set to
+    it, correct by re-rendering and measuring until within PITCH_TOL_CENTS, then take those controls OUT of the
+    optimisation. Spectral losses get stuck trading pitch for brightness; fixing pitch first avoids that.
+    Returns (work_with_locked_pitch, remaining_fps, locked list, notes)."""
+    notes = []
+    pfs = [fp for fp in fps if fp.name in PITCH_NAMES]
+    if not pfs:
+        return work, fps, [], notes
+    info = analysis.f0_estimate(r, FIT_SR, return_info=True)
+    f_ref = info["f0_hz"]
+    if not f_ref:
+        notes.append("pitch-first: reference has no confident pitch; pitch controls are fitted with the rest")
+        return work, fps, [], notes
+    fixed_seed = int(work.get("seed", 0))
+    vals = [current_value(work, fp) for fp in pfs]
+    # first guess: move the main (first) pitch control to the reference f0, keep the others' intervals
+    ratio = f_ref / float(vals[0])
+    cents = None
+    for it in range(iterations):
+        vals = [min(max(float(v) * ratio, fp.lo), fp.hi) for fp, v in zip(pfs, vals)]
+        w = apply(work, pfs, vals)
+        y, _ = render_recipe(w, FIT_SR, fixed_seed)
+        f_c = analysis.f0_estimate(y, FIT_SR, return_info=True)["f0_hz"]
+        if not f_c:
+            notes.append("pitch-first: the render has no measurable pitch; used the reference f0 directly")
+            break
+        cents = 1200 * math.log2(f_ref / f_c)
+        if abs(cents) <= PITCH_TOL_CENTS:
+            break
+        ratio = f_ref / f_c
+    work = apply(work, pfs, vals)
+    locked = [{"key": fp.key, "value": round(float(v), 3)} for fp, v in zip(pfs, vals)]
+    notes.append(f"pitch-first: reference f0 {f_ref:.1f} Hz; locked " + ", ".join(f"{d['key']}={d['value']}" for d in locked)
+                 + (f" (render within {abs(cents):.1f} cents)" if cents is not None else ""))
+    log(notes[-1])
+    return work, [fp for fp in fps if fp.name not in PITCH_NAMES], locked, notes
 
 
 def fit(recipe, ref, ref_sr, params=None, ref_start=None, ref_end=None, method="cmaes", budget=150, weights=None,
-        seed=None, init_from_analysis=True, log=print):
-    """Fit `recipe` controls to a reference. Returns dict with fitted recipe, losses and history."""
+        seed=None, init_from_analysis=True, log=print, pitch_first=True):
+    """Fit `recipe` controls to a reference. Returns dict with fitted recipe, losses and history.
+
+    pitch_first (default): pitch controls (f0, tone_hz, freq) are measured from the reference, set, verified on
+    a render and locked before anything else is fitted (see lock_pitch)."""
     from . import models  # noqa: F401
 
     base = copy.deepcopy(recipe)
@@ -417,9 +460,21 @@ def fit(recipe, ref, ref_sr, params=None, ref_start=None, ref_end=None, method="
     fps = [parse_param(p, work) if isinstance(p, str) else p for p in params] if params else default_params(work)
     if not fps:
         raise ValueError("no controls to fit; pass params like ['0.f0', '0.rasp']")
-    x0 = [fp.to_unit(current_value(work, fp)) for fp in fps]
     notes = []
-    if init_from_analysis:
+    locked = []
+    if pitch_first:
+        work, fps, locked, pn = lock_pitch(work, fps, r, log)
+        notes += pn
+        if locked:
+            base = apply(base, [parse_param(d["key"], base) for d in locked], [d["value"] for d in locked])
+    if not fps:
+        y0, _ = render_recipe(work, FIT_SR, int(work.get("seed", 0) if seed is None else seed))
+        d0 = distance(target, y0, FIT_SR, weights)
+        return {"recipe": base, "params": [], "locked": locked, "before": d0, "after": d0, "evaluations": 0,
+                "method": method, "history": [], "notes": notes + ["only pitch controls were requested; nothing else fitted"],
+                "ref_duration_s": round(dur_ref, 3), "target": target, "base_recipe": work}
+    x0 = [fp.to_unit(current_value(work, fp)) for fp in fps]
+    if init_from_analysis and not pitch_first:
         info = analysis.f0_estimate(r, FIT_SR, return_info=True)
         for i, fp in enumerate(fps):
             if fp.name in PITCH_NAMES and info["f0_hz"] and fp.lo <= info["f0_hz"] <= fp.hi:
@@ -470,9 +525,47 @@ def fit(recipe, ref, ref_sr, params=None, ref_start=None, ref_end=None, method="
         "params": [{"key": fp.key, "lo": fp.lo, "hi": fp.hi, "log": fp.log,
                     "before": current_value(work, fp), "start": s, "after": v}
                    for fp, s, v in zip(fps, start_vals, vals)],
+        "locked": locked,
         "before": before, "after": after, "evaluations": ne, "method": method, "history": history,
         "notes": notes, "ref_duration_s": round(dur_ref, 3), "target": target, "base_recipe": work,
     }
+
+
+def holdout(result, ref, ref_sr, ref_start=None, ref_end=None, weights=None, name="holdout"):
+    """Hold-out rule (v0.6): score the recipe before and after fitting on a SECOND recording of the same sound
+    that the fit never saw. A fit that only helps on its own clip is overfitting that clip."""
+    r = prepare(ref, ref_sr, ref_start, ref_end)
+    tgt = Target.from_signal(r, FIT_SR)
+    seed = int(result["base_recipe"].get("seed", 0))
+    rb = copy.deepcopy(result["base_recipe"])
+    rf = copy.deepcopy(result["recipe"])
+    out = {"name": name}
+    for k, rec in (("before", rb), ("after", rf)):
+        rec = copy.deepcopy(rec)
+        rec["duration"] = len(r) / FIT_SR
+        y, _ = render_recipe(rec, FIT_SR, seed)
+        out[k] = distance(tgt, y, FIT_SR, weights)
+    out["improved"] = out["after"]["total"] <= out["before"]["total"]
+    return out
+
+
+def ear_renders(result, out_dir, shift=0.25, sr=48000):
+    """Listening renders (v0.6): the fitted recipe, plus every fitted control moved `shift` of its range
+    toward its low and its high end. Listen for settings that only work at one point. (Once macro sliders
+    exist, these become renders at a few macro positions.)"""
+    from .audio_io import write_wav
+    od = Path(out_dir) / "ear"
+    od.mkdir(parents=True, exist_ok=True)
+    rec = result["recipe"]
+    fps = [parse_param(p["key"] + f":{p['lo']}:{p['hi']}", rec) for p in result["params"]]
+    files = []
+    for tag, d in (("fitted", 0.0), ("low", -shift), ("high", shift)):
+        vals = [fp.from_unit(fp.to_unit(current_value(rec, fp)) + d) for fp in fps]
+        y, _ = render_recipe(apply(rec, fps, vals) if fps else rec, sr)
+        p = od / f"{tag}.wav"
+        write_wav(p, y / (np.max(np.abs(y)) + 1e-12) * 0.9, sr)
+        files.append(str(p))
+    return files
 
 
 FEATURE_KEYS = ["f0_hz", "voiced_fraction", "spectral_centroid_hz", "rolloff85_hz", "spectral_flatness",
@@ -523,6 +616,21 @@ def report(result, ref_x, out_dir, ref_name="reference", recipe_name="recipe"):
     L += ["", "## Features", "", "| feature | reference | before | after |", "|---|---|---|---|"]
     for k in FEATURE_KEYS:
         L.append(f"| {k} | {fr.get(k)} | {fb.get(k)} | {fa.get(k)} |")
+    if result.get("locked"):
+        L += ["", "## Locked first (pitch-first rule)", ""] + [f"- {d['key']} = {d['value']}" for d in result["locked"]]
+    hos = result.get("holdouts") or []
+    L += ["", "## Hold-out check (second recording, not used for fitting)", ""]
+    if hos:
+        L += ["| recording | before | after | verdict |", "|---|---|---|---|"]
+        for h in hos:
+            L.append(f"| {h['name']} | {h['before']['total']} | {h['after']['total']} | "
+                     f"{'ok' if h['improved'] else 'WORSE: likely overfitted to the fit clip'} |")
+    else:
+        L.append("**Missing.** No hold-out recording was given (`--holdout`). Do not adopt this fit until it has "
+                 "been scored on a second recording of the same sound and checked by ear.")
+    if result.get("ear"):
+        L += ["", "Listening renders: " + ", ".join(Path(f).name for f in result["ear"]) +
+              " (fitted, and all fitted controls 25 % of their range lower / higher)."]
     if result["notes"]:
         L += ["", "## Notes", ""] + [f"- {n}" for n in result["notes"]]
     (od / "report.md").write_text("\n".join(L) + "\n")

@@ -36,3 +36,7 @@ Rules:
 - Output is mono float, peak-normalised by `master.normalize_db` (set it to `null` to keep raw level).
 
 The CLI can override a single-model layer's parameter: `--set 0.rpm=3000` (layer index, parameter).
+
+## Generic synth blocks (0.6.0)
+
+Besides the five physical stages there are two generic stages: `synth` blocks (osc, fm, noisegen, grains) are sources and start a chain; `fx` blocks (svf, env, shaper, delay, chorus, reverb, gain) process a chain or run in `post`. Extra top-level keys such as `category` are ignored by the renderer (reserved for batch naming). See [synth-blocks.md](synth-blocks.md).

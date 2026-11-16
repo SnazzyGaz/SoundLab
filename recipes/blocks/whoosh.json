@@ -1,0 +1,140 @@
+{
+ "soundlab": 1,
+ "name": "Whoosh: band-pass swept pink noise with a swell (generic blocks only)",
+ "category": "whoosh",
+ "duration": 1.3,
+ "layers": [
+  {
+   "name": "air",
+   "chain": [
+    {
+     "model": "noisegen",
+     "params": {
+      "color": "pink"
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "bp",
+      "cutoff": [
+       [
+        0,
+        250
+       ],
+       [
+        0.55,
+        1800
+       ],
+       [
+        1.2,
+        350
+       ]
+      ],
+      "resonance": [
+       [
+        0,
+        1.2
+       ],
+       [
+        0.55,
+        2.2
+       ],
+       [
+        1.2,
+        1.2
+       ]
+      ]
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "points": [
+       [
+        0,
+        0.0001
+       ],
+       [
+        0.5,
+        1.0
+       ],
+       [
+        0.62,
+        0.9
+       ],
+       [
+        1.2,
+        0.0001
+       ]
+      ],
+      "curve": "exp"
+     }
+    }
+   ]
+  },
+  {
+   "name": "edge",
+   "gain_db": -10,
+   "chain": [
+    {
+     "model": "noisegen",
+     "params": {
+      "color": "white"
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "bp",
+      "cutoff": [
+       [
+        0,
+        1500
+       ],
+       [
+        0.55,
+        6000
+       ],
+       [
+        1.2,
+        1800
+       ]
+      ],
+      "resonance": 3
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "points": [
+       [
+        0,
+        0.0001
+       ],
+       [
+        0.52,
+        1.0
+       ],
+       [
+        0.6,
+        0.6
+       ],
+       [
+        1.0,
+        0.0001
+       ]
+      ],
+      "curve": "exp"
+     }
+    }
+   ]
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "sample_rate": 48000,
+ "seed": 1
+}

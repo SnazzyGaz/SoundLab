@@ -1,0 +1,201 @@
+{
+ "soundlab": 1,
+ "name": "Power-up: rising PWM arpeggio over a filter-swept supersaw (generic blocks only)",
+ "category": "powerup",
+ "duration": 1.4,
+ "layers": [
+  {
+   "name": "arp",
+   "chain": [
+    {
+     "model": "osc",
+     "params": {
+      "wave": "pulse",
+      "pulse_width": [
+       [
+        0,
+        0.5
+       ],
+       [
+        0.9,
+        0.15
+       ]
+      ],
+      "freq": [
+       [
+        0,
+        392
+       ],
+       [
+        0.07,
+        392
+       ],
+       [
+        0.071,
+        493.9
+       ],
+       [
+        0.14,
+        493.9
+       ],
+       [
+        0.141,
+        587.3
+       ],
+       [
+        0.21,
+        587.3
+       ],
+       [
+        0.211,
+        784
+       ],
+       [
+        0.28,
+        784
+       ],
+       [
+        0.281,
+        987.8
+       ],
+       [
+        0.35,
+        987.8
+       ],
+       [
+        0.351,
+        1174.7
+       ],
+       [
+        0.42,
+        1174.7
+       ],
+       [
+        0.421,
+        1568
+       ],
+       [
+        1.4,
+        1568
+       ]
+      ],
+      "vibrato_hz": 7,
+      "vibrato_cents": [
+       [
+        0,
+        0
+       ],
+       [
+        0.45,
+        0
+       ],
+       [
+        0.8,
+        35
+       ]
+      ]
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "lp",
+      "cutoff": 7000,
+      "resonance": 0.8
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "attack": 0.003,
+      "decay": 0.2,
+      "sustain": 0.7,
+      "release": 0.5,
+      "gate_s": 0.8
+     }
+    }
+   ]
+  },
+  {
+   "name": "swell",
+   "gain_db": -7,
+   "chain": [
+    {
+     "model": "osc",
+     "params": {
+      "wave": "saw",
+      "voices": 5,
+      "detune_cents": 18,
+      "freq": [
+       [
+        0,
+        196
+       ],
+       [
+        0.9,
+        784
+       ]
+      ]
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "lp",
+      "cutoff": [
+       [
+        0,
+        300
+       ],
+       [
+        0.9,
+        6000
+       ],
+       [
+        1.4,
+        2500
+       ]
+      ],
+      "resonance": 4
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "attack": 0.25,
+      "decay": 0.3,
+      "sustain": 0.6,
+      "release": 0.45,
+      "gate_s": 0.85
+     }
+    }
+   ]
+  }
+ ],
+ "post": [
+  {
+   "model": "chorus",
+   "params": {
+    "rate_hz": 0.7,
+    "depth_ms": 2.5,
+    "base_ms": 12,
+    "voices": 3,
+    "mix": 0.35
+   }
+  },
+  {
+   "model": "reverb",
+   "params": {
+    "size": 0.55,
+    "damp": 0.4,
+    "mix": 0.22
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.08
+ },
+ "sample_rate": 48000,
+ "seed": 1
+}

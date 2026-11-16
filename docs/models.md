@@ -539,3 +539,161 @@ Object struck by a hammer: impact -> modal resonator -> radiation.
 | `at` | `0.02` | s | 0 .. None |  |
 
 Sources: van den Doel et al. 2001; Klatzky et al. 2000
+
+## Stage: synth
+
+### `osc`
+
+Band-limited oscillator (PolyBLEP): sine, saw, square, pulse (variable width) or triangle, with optional unison voices (detuned, for a fat 'supersaw') and vibrato. Automate `freq` for pitch sweeps, glides and arpeggios (it is interpolated in log-frequency, so sweeps sound even).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `wave` | `sine` |  | sine, saw, square, pulse, triangle |  |
+| `freq` | `440.0` | Hz | 10 .. 20000 | pitch (automatable: [[t, Hz], ...] for sweeps/steps) (automatable) |
+| `pulse_width` | `0.5` |  | 0.02 .. 0.98 | duty cycle of `pulse` (automatable: PWM) (automatable) |
+| `voices` | `1` | count | 1 .. 9 | unison voices |
+| `detune_cents` | `12.0` | cents | 0 .. 100 | spread of the unison voices |
+| `vibrato_hz` | `0.0` | Hz | 0 .. 30 | vibrato rate |
+| `vibrato_cents` | `0.0` | cents | 0 .. 1200 | vibrato depth (automatable) (automatable) |
+| `level` | `1.0` |  | 0 .. 4 | output level (automatable) (automatable) |
+
+Sources: Valimaki & Huovilainen 2007, Antialiasing oscillators in subtractive synthesis, IEEE SPM 24(2)
+
+### `fm`
+
+Two-operator FM (phase modulation, Chowning 1973): a sine carrier whose phase is pushed by a sine modulator at `ratio` x the carrier. `index` sets brightness (automate it for bell/zap decays); non-integer ratios give clangorous, metallic tones. Optional modulator self-feedback for noisy grit. Rendered at 2x and decimated to keep high indices from folding back.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `freq` | `440.0` | Hz | 10 .. 12000 | carrier pitch (automatable) (automatable) |
+| `ratio` | `2.0` |  | 0.01 .. 32 | modulator / carrier frequency ratio |
+| `index` | `2.0` | rad | 0 .. 50 | modulation index (automatable) (automatable) |
+| `feedback` | `0.0` |  | 0 .. 1.5 | modulator self-feedback (grit) |
+| `level` | `1.0` |  | 0 .. 4 | output level (automatable) (automatable) |
+
+Sources: Chowning 1973, The synthesis of complex audio spectra by means of frequency modulation, JAES 21(7)
+
+### `noisegen`
+
+Noise source in five colours (white flat, pink -3 dB/oct, brown -6, blue +3, violet +6) with an optional sample-and-hold rate for retro, pitched 'chip' noise (like an NES noise channel).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `color` | `white` |  | white, pink, brown, blue, violet |  |
+| `hold_hz` | `0.0` | Hz | 0 .. 48000 | sample-and-hold rate; 0 = off (automatable) (automatable) |
+| `level` | `1.0` |  | 0 .. 4 | output level (automatable) (automatable) |
+
+Sources: Wikipedia: Colors of noise
+
+### `grains`
+
+Random grains (granular cloud, 'Dust'-style timing): short windowed sine, noise or saw grains at a random rate around `rate`, pitched randomly within `spread_oct` around `freq`. Sparkles, shimmers, bubbling magic, sci-fi computer chatter, crackles.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `rate` | `30.0` | grains/s | 0 .. 5000 | average grain rate (automatable) (automatable) |
+| `grain_ms` | `30.0` | ms | 0.5 .. 500 | grain length |
+| `freq` | `2000.0` | Hz | 20 .. 18000 | centre pitch (automatable) (automatable) |
+| `spread_oct` | `1.0` | oct | 0 .. 6 | random pitch spread (total width, octaves) |
+| `source` | `sine` |  | sine, noise, saw |  |
+| `quantize` | `0` | steps/oct | 0 .. 24 | snap grain pitches to a scale grid (12 = semitones, 0 = off) |
+| `amp_spread_db` | `12.0` | dB | 0 .. 40 | random grain level spread |
+| `decay` | `0.5` |  | 0 .. 1 | grain window: 0 = symmetric (Hann), 1 = percussive (fast attack, decay) |
+| `level` | `1.0` |  | 0 .. 4 | output level (automatable) (automatable) |
+
+Sources: Roads 2001, Microsound (MIT Press); Farnell 2010, Designing Sound (Dust)
+
+## Stage: fx
+
+### `svf`
+
+Resonant state-variable filter: low-pass, high-pass, band-pass, notch or peak. `cutoff` and `resonance` are automatable, which is how filter sweeps (wah, whoosh, laser) are written. Resonance is the Q: 0.5 smooth, 0.707 flat, 5-20 a singing peak.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `mode` | `lp` |  | lp, hp, bp, notch, peak |  |
+| `cutoff` | `1000.0` | Hz | 20 .. 20000 | cutoff/centre (automatable, log-interpolated) (automatable) |
+| `resonance` | `0.707` | Q | 0.1 .. 30 | resonance (automatable) (automatable) |
+
+Sources: Zavalishin 2012, The Art of VA Filter Design (TPT SVF)
+
+### `env`
+
+Amplitude envelope. ADSR (attack, decay, sustain level, release after `gate_s`) or, if `points` is given, a breakpoint list [[t, level], ...]. `curve` exp makes decays and releases exponential (natural), linear makes them straight lines (synthy).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `attack` | `0.005` | s | 0 .. 10 | attack time |
+| `decay` | `0.1` | s | 0 .. 10 | decay time to the sustain level |
+| `sustain` | `0.6` |  | 0 .. 1 | sustain level |
+| `release` | `0.2` | s | 0 .. 20 | release time (exp: time to -60 dB) |
+| `gate_s` | `0.3` | s | 0 .. None | note length: release starts here (after `at`) |
+| `at` | `0.0` | s | 0 .. None | envelope start (silence before it) |
+| `points` | `[]` |  |  | breakpoints [[t, level], ...] overriding ADSR |
+| `curve` | `exp` |  | exp, linear |  |
+
+Sources: Wikipedia: Envelope (music)
+
+### `shaper`
+
+Distortion and lo-fi: tanh saturation, hard clip, wavefolder, asymmetric (tube-like, adds even harmonics), bit-depth crusher, or sample-rate reducer. The smooth shapers run at 4x oversampling; the crushers alias on purpose (retro).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `mode` | `tanh` |  | tanh, hardclip, fold, asym, bitcrush, downsample |  |
+| `drive` | `2.0` |  | 0.1 .. 50 | input gain into the shaper (automatable) (automatable) |
+| `bits` | `8` | bits | 1 .. 16 | bitcrush depth |
+| `rate_hz` | `8000.0` | Hz | 100 .. 48000 | downsample target rate |
+| `mix` | `1.0` |  | 0 .. 1 | wet/dry |
+
+Sources: Wikipedia: Distortion (music); Bitcrusher
+
+### `delay`
+
+Echo: feedback delay with a darkening filter in the loop (each repeat duller, like tape/analogue).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `time_ms` | `250.0` | ms | 1 .. 4000 | delay time |
+| `feedback` | `0.35` |  | 0 .. 0.97 | repeat level |
+| `damp` | `0.3` |  | 0 .. 0.99 | darkening per repeat |
+| `mix` | `0.3` |  | 0 .. 1 | wet level |
+
+Sources: Wikipedia: Delay (audio effect)
+
+### `chorus`
+
+Chorus/flanger: copies of the signal through short delays swept by slow LFOs. 1-5 ms + feedback-free = flanger-ish; 10-25 ms with several voices = chorus (thick, shimmering).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `rate_hz` | `0.8` | Hz | 0.01 .. 20 | LFO rate |
+| `depth_ms` | `3.0` | ms | 0 .. 20 | LFO depth |
+| `base_ms` | `15.0` | ms | 0.5 .. 50 | centre delay |
+| `voices` | `3` | count | 1 .. 8 | number of delayed copies |
+| `mix` | `0.5` |  | 0 .. 1 | wet level |
+
+Sources: Wikipedia: Chorus effect
+
+### `reverb`
+
+Algorithmic reverb (mono Freeverb: 8 damped parallel combs + 4 series allpasses). For stylised sounds and quick space; for physically scaled rooms use `room` / `outdoor`.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `size` | `0.6` |  | 0 .. 1 | room size / decay length |
+| `damp` | `0.4` |  | 0 .. 1 | high-frequency damping in the tail |
+| `predelay_ms` | `10.0` | ms | 0 .. 200 | gap before the tail |
+| `mix` | `0.3` |  | 0 .. 1 | wet level |
+
+Sources: Freeverb by Jezar at Dreampoint (public domain), described in J.O. Smith, Physical Audio Signal Processing (CCRMA): Freeverb
+
+### `gain`
+
+Level change with optional tremolo (automatable gain in dB). Use it to duck or shape a layer in a chain.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `gain_db` | `0.0` | dB | -80 .. 24 | gain (automatable) (automatable) |
+| `tremolo_hz` | `0.0` | Hz | 0 .. 40 | tremolo rate (0 = off) |
+| `tremolo_depth` | `0.0` |  | 0 .. 1 | tremolo depth |
