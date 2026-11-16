@@ -183,9 +183,11 @@ RAIN_SURFACES = {
            Param("brightness", 0.5, "", 0, 1, "top end of the hiss (0 = far/indoors, 1 = close, outdoors)"),
            Param("texture", 0.0, "", 0, 1, "v0.15 texture statistics: slow independent band swells, air up to "
                  "16 kHz and a few close, loud drops (0 = the v0.14 steady wash)"),
+           Param("patter", 0.0, "", 0, 1, "v0.16 mid-distance patter: hundreds of separately audible bright drop "
+                 "taps per second over a steadier wash and a lighter low end (0 = v0.15)"),
        ], ["McDermott & Simoncelli 2011 (sound texture statistics)", "Marshall & Palmer 1948 (drop size distribution)", "Prosperetti & Oguz 1993 (rain bubbles)",
            "Wikipedia: Minnaert resonance", "van den Doel 2005 (liquid sounds)"])
-def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness, texture=0.0):
+def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness, texture=0.0, patter=0.0):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     su = RAIN_SURFACES[surface]
     R = rate_mm_h
@@ -193,7 +195,7 @@ def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness, textu
     # v0.15 (texture > 0): recordings swell and ease by several dB over seconds (gusts carry the rain, the
     # nearest gutter or leaf takes over), band by band; the steady v0.14 wash measured 5x too little slow
     # envelope modulation against hold-out rain recordings.
-    swell = np.exp((0.05 + 0.2 * texture) * smooth_random(rng, n, sr, 0.1 + 0.3 * texture))
+    swell = np.exp((0.05 + 0.2 * texture * (1 - 0.5 * patter)) * smooth_random(rng, n, sr, 0.1 + 0.3 * texture))
     out = np.zeros(n)
     if near > 0:
         rate = 25.0 * R ** 0.8 * swell                    # near drops heard individually (est.)
@@ -254,11 +256,32 @@ def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness, textu
             micro += np.convolve(part, _hann(w), "same")
         h = dsp.lowpass(dsp.highpass(micro, 400.0, sr), min(top, 0.45 * sr), sr)
         if texture > 0:
-            h = band_modulate(h, sr, rng, depth=0.5 * texture, rates=(0.3, 1.5), corr=0.4, f_lo=400.0)
+            h = band_modulate(h, sr, rng, depth=0.5 * texture * (1 - 0.4 * patter), rates=(0.3, 1.5), corr=0.4,
+                              f_lo=400.0)
         out += hiss * (0.45 + 0.6 * min(R / 20.0, 1.0)) * _norm(h)
         # the low wash of distant splashes and run-off: stationary
         wash = dsp.lowpass(dsp.highpass(dsp.pink(rng, n), 70.0, sr), 450.0, sr)
-        out += hiss * (0.12 + 0.45 * min(R / 16.0, 1.0)) * _norm(wash)
+        out += hiss * (0.12 + 0.45 * min(R / 16.0, 1.0)) * (1 - 0.6 * patter) * _norm(wash)
+    if patter > 0:
+        # v0.16: between the few near drops and the far hiss sit the drops a metre or few away - hundreds a second,
+        # each still heard as its own bright tap (a 0.5-3 ms decaying burst, brightness set by size and what it
+        # hits). Hold-out rain is spiky above 2 kHz (band kurtosis 2-5) and modulated at 4-30 Hz; the v0.15 model
+        # had a third of that mid-rate modulation and smooth top bands that swelled slowly instead.
+        prate = (400.0 + 100.0 * R) * swell * np.exp(0.9 * smooth_random(rng, n, sr, 6.0))
+        idx = dsp.poisson_times(rng, prate, sr)
+        amp = np.minimum(rng.pareto(2.0, len(idx)) + 0.1, 20.0)
+        tap = np.zeros(n)
+        fam = rng.integers(0, 3, len(idx))
+        for k, (w_ms, hp) in enumerate(((0.6, 4000.0), (1.5, 2500.0), (3.0, 1500.0))):
+            imp = np.zeros(n)
+            sel = fam == k
+            np.add.at(imp, idx[sel], amp[sel] * rng.choice([-1.0, 1.0], int(sel.sum())))
+            L = max(4, int(w_ms * 1e-3 * sr))
+            g = rng.standard_normal(L) * np.exp(-np.arange(L) / (0.3 * L))
+            tap += dsp.highpass(np.convolve(imp, g, "same"), hp, sr)
+        tap = dsp.lowpass(tap, 7000.0, sr)                # the air above stays the steady hiss
+        out += patter * 0.5 * np.std(out) / (np.std(tap) + 1e-12) * tap
+    return dsp.highpass(dsp.lowpass(out, min(12000.0 + 5000.0 * texture, 0.45 * sr), sr), 60.0, sr)
     return dsp.highpass(dsp.lowpass(out, min(12000.0 + 5000.0 * texture, 0.45 * sr), sr), 60.0, sr)
 
 
@@ -1001,7 +1024,10 @@ def rustle(ctx: Ctx, x, material, moves, length_s, intensity, at):
     g = gesture(rng, n, sr, moves, length_s, at)
     g = g / (g.max() + 1e-12)
     out = np.zeros(n)
-    if material in ("paper", "plastic", "leaves"):
+    if material == "paper":
+        out = _paper_crumple(rng, n, sr, moves, length_s, intensity, at)
+        return dsp.highpass(dsp.lowpass(out, 16000.0, sr), 50.0, sr)
+    if material in ("plastic", "leaves"):
         spec = {"paper": (2500, 0.7, 1500), "plastic": (4000, 0.9, 2500), "leaves": (3200, 0.8, 1800)}[material]
         rate = (300 + 2500 * intensity) * g ** 1.5
         idx = dsp.poisson_times(rng, rate, sr)
@@ -1063,6 +1089,52 @@ def rustle(ctx: Ctx, x, material, moves, length_s, intensity, at):
     return dsp.highpass(dsp.lowpass(out, 13000.0, sr), 150.0, sr)
 
 
+def _paper_crumple(rng, n, sr, moves, length_s, intensity, at):
+    """Paper crumpled or handled (v0.16). A sheet under the hands releases stress in avalanches: crackling
+    noise whose events have power-law sizes and come in clusters (Houle & Sethna 1996, Kramer & Lobkovsky
+    1996). Each crease snap is a broadband click a fraction of a millisecond to a few ms long with its own
+    brightness; large ones also flex the sheet and give a soft low crunch. Recordings (CC0/PD hold-outs):
+    continuous for seconds, spiky band envelopes (high-band kurtosis ~2-3), modulation spread over
+    4-128 Hz, bands only partly correlated (c4 ~0.63), and energy down to 100-500 Hz. The v0.14 model was a
+    few smooth, separated hand gestures over a band-passed bed: slow, correlated and dropping to silence."""
+    tt = np.arange(n) / sr
+    span = max(length_s, 0.3)
+    held = ((tt >= at) & (tt < at + span)).astype(float)
+    held = np.convolve(held, _hann(int(0.08 * sr)) / (0.04 * sr), "same")
+    # the hands keep working the sheet: overlapping pushes over a floor, never a full stop
+    g = gesture(rng, n, sr, moves, span * 0.9, at)
+    g = g / (g.max() + 1e-12)
+    g = np.maximum(g, 0.25) * held
+    # avalanches: the event rate bursts and dies on a 50-300 ms scale, independently of the hand speed
+    burst = np.exp(1.3 * smooth_random(rng, n, sr, 9.0) + 0.6 * smooth_random(rng, n, sr, 2.5))
+    rate = (900.0 + 2500.0 * intensity) * g ** 1.2 * burst / np.mean(burst)
+    idx = dsp.poisson_times(rng, rate, sr)
+    sizes = np.minimum(rng.pareto(1.4, len(idx)) + 0.05, 60.0) * (0.3 + g[idx])
+    out = np.zeros(n)
+    low = np.zeros(n)
+    # three click families of different length and brightness, so no click is cloned
+    fam = rng.integers(0, 3, len(idx))
+    for k, (w_ms, lp) in enumerate(((0.15, 14000.0), (0.6, 8000.0), (2.0, 4500.0))):
+        imp = np.zeros(n)
+        sel = fam == k
+        np.add.at(imp, idx[sel], sizes[sel] * rng.choice([-1.0, 1.0], int(sel.sum())))
+        L = max(4, int(w_ms * 1e-3 * sr))
+        grain = rng.standard_normal(L) * np.exp(-np.arange(L) / (0.3 * L))
+        part = dsp.lowpass(np.convolve(imp, grain, "same"), lp * rng.uniform(0.8, 1.2), sr)
+        out += part * (1.0, 0.6, 0.35)[k]
+    big = sizes > np.percentile(sizes, 92) if len(sizes) else np.zeros(0, bool)
+    for i, a in zip(idx[big], sizes[big]):
+        L = int(rng.uniform(0.008, 0.03) * sr)
+        dsp.place(low, rng.standard_normal(L) * _hann(L), i, a)
+    low = dsp.bandpass(low, rng.uniform(250, 450), sr, 0.7)
+    # the rustle between snaps: sheet surfaces sliding, band by band (not one envelope on everything)
+    bed = band_modulate(dsp.pink(rng, n), sr, rng, depth=0.6, rates=(3.0, 12.0), corr=0.3, f_lo=150.0) * g
+    bed = dsp.highpass(bed, 300.0, sr)
+    out = _norm(out) + 0.5 * np.std(_norm(out)) / (np.std(low) + 1e-12) * low \
+        + 0.6 * np.std(_norm(out)) / (np.std(bed) + 1e-12) * bed
+    return out
+
+
 # =================================================================== splash
 @model("splash", "sound",
        "An object dropping into water. In order: "
@@ -1079,9 +1151,11 @@ def rustle(ctx: Ctx, x, material, moves, length_s, intensity, at):
            Param("bloop", 0.5, "", 0, 1, "level of the cavity-collapse bubble"),
            Param("droplets", 0.8, "", 0, 1, "level of the falling-back spray"),
            Param("at", 0.03, "s", 0, None),
+           Param("slosh", 0.0, "", 0, 1, "v0.16: the churn, bubble cloud and foam each slosh on their own fast, "
+                 "irregular envelope over a longer plateau (0 = v0.15: one shared, smoothly decaying envelope)"),
        ], ["Minnaert 1933", "Prosperetti & Oguz 1993", "van den Doel 2005", "Phillips et al. 2018",
            "Franz 1959 (splashes as sources of sound in liquids)"])
-def splash(ctx: Ctx, x, size, speed, bloop, droplets, at):
+def splash(ctx: Ctx, x, size, speed, bloop, droplets, at, slosh=0.0):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     i0 = int(at * sr)
     out = np.zeros(n)
@@ -1159,22 +1233,33 @@ def splash(ctx: Ctx, x, size, speed, bloop, droplets, at):
         # it swells as the thrown-up water lands (peak near t_peak) and dies away after it
         tr = np.maximum(t - at, 0)
         decay = (0.4 * np.exp(-tr / 0.12) + 0.6 * (tr / t_peak) ** 1.5 * np.exp(1.5 * (1 - tr / t_peak))
-                 * np.where(tr > t_peak, np.exp(-(tr - t_peak) / 0.4), 1.0)) * np.clip(tr / 0.03, 0, 1) * (t >= at)
+                 * np.where(tr > t_peak, np.exp(-(tr - t_peak) / (0.4 + 0.3 * slosh)), 1.0)) \
+            * np.clip(tr / 0.03, 0, 1) * (t >= at)
         # the churn does not die smoothly: the water sloshes back and forth (irregular 2-10 Hz swells)
         decay = decay * np.exp(0.5 * smooth_random(rng, n, sr, 5.0))
-        churn = dsp.lowpass(dsp.highpass(rng.standard_normal(n), 250.0, sr), 4500.0, sr) * decay \
-            + 0.5 * dsp.lowpass(dsp.highpass(rng.standard_normal(n), 60.0, sr), 300.0, sr) * decay   # the mass of water moving
+
+        def own(env):
+            # v0.16: hold-out splashes have only partly correlated bands (c4 ~0.65 vs 0.83) and flutter at
+            # 4-30 Hz in the lowest and top bands; one shared envelope made every band rise and fall together
+            if slosh <= 0:
+                return env
+            m = np.exp(slosh * (0.7 * smooth_random(rng, n, sr, 9.0) + 0.5 * smooth_random(rng, n, sr, 25.0)))
+            return env * m / np.mean(m)
+        churn = dsp.lowpass(dsp.highpass(rng.standard_normal(n), 250.0, sr), 4500.0, sr) * own(decay) \
+            + 0.5 * dsp.lowpass(dsp.highpass(rng.standard_normal(n), 60.0, sr), 300.0, sr) * own(decay)   # the mass of water moving
         cloud = np.zeros(n)
-        for j in dsp.poisson_times(rng, 900.0 * decay, sr):
+        dc = own(decay)
+        for j in dsp.poisson_times(rng, 900.0 * dc, sr):
             rr = rng.uniform(0.001, 0.004)
             gb = bubble_grain(sr, rr, 0.12)
-            dsp.place(cloud, gb[: int(0.01 * sr)], j, rng.uniform(0.2, 1.0) * min(1.0, decay[j] / 0.3))   # late bubbles are small
+            dsp.place(cloud, gb[: int(0.01 * sr)], j, rng.uniform(0.2, 1.0) * min(1.0, dc[j] / 0.3))   # late bubbles are small
         # fizz: the bursting film of the foam - air above 6 kHz chopped fast (hold-out splashes flutter at
         # 16-128 Hz up there; the v0.14 top was nearly empty)
         fz = np.zeros(n)
-        for j in dsp.poisson_times(rng, 1500.0 * decay, sr):
+        df = own(decay)
+        for j in dsp.poisson_times(rng, 1500.0 * df, sr):
             Lf = int(rng.uniform(0.0003, 0.002) * sr) + 2
-            dsp.place(fz, rng.standard_normal(Lf) * _hann(Lf), j, (min(rng.pareto(2.0), 6.0) + 0.2) * min(1.0, decay[j] / 0.3))
+            dsp.place(fz, rng.standard_normal(Lf) * _hann(Lf), j, (min(rng.pareto(2.0), 6.0) + 0.2) * min(1.0, df[j] / 0.3))
         fz = dsp.highpass(fz, 6000.0, sr)
         wash = 0.6 * _norm(churn) + 0.5 * _norm(cloud) + 0.8 * _norm(fz)
         out += droplets * (0.3 * _norm(dr) + 0.35 * _norm(wash))

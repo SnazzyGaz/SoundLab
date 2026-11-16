@@ -124,7 +124,11 @@ def main(argv=None) -> int:
     btb.add_argument("--exempt", nargs="*", default=[], help="sounds outside the pass mark (stylised)")
     bts = btsub.add_parser("score", help="score the answers saved in a pack")
     bts.add_argument("pack", nargs="?", help="pack folder (default ~/SoundLab/blindtest)")
-    bts.add_argument("--pass-mark", type=float, default=0.60)
+    bts.add_argument("--pass-mark", type=float, default=0.60,
+                     help="upper end of the balanced-accuracy interval for a clear pass (default 0.60)")
+    bts.add_argument("--codes", action="append", default=[],
+                     help="text file with answer codes (SL1.…) from the static web page, or - for stdin; "
+                          "they are saved into <pack>/answers before scoring (repeatable)")
     bts.add_argument("--json", action="store_true")
     v = sub.add_parser("validate", help="check a recipe")
     v.add_argument("recipe")
@@ -298,6 +302,10 @@ def main(argv=None) -> int:
                 print(f"run it: soundlab gui --pack \"{out}\"   then open http://127.0.0.1:8766/blindtest")
             else:
                 pack = Path(args.pack) if args.pack else default_out_dir() / "blindtest"
+                if args.codes:
+                    from .checkpoint import import_codes
+                    text = " ".join(sys.stdin.read() if c == "-" else Path(c).read_text() for c in args.codes)
+                    import_codes(pack, text, log=lambda m: print(m, file=sys.stderr))
                 res = score_pack(pack, args.pass_mark)
                 print(json.dumps(res, indent=1, default=str) if args.json else report_pack(res))
     except soundlab.RecipeError as e:

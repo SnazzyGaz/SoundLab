@@ -1,7 +1,10 @@
 # Blind test (roadmap step 5)
 
 The stop-and-judge test: can a listener tell SoundLab renders from real recordings
-of the same sound? Pass mark for **physical sounds: under 60 % correctly identified** (50 % = pure guessing).
+of the same sound? For the browser test the measure is **balanced accuracy** (50 % = cannot tell them apart,
+whatever the listener's leaning); physical sounds pass when real and engine clips are not told apart
+reliably (details in "Read the result"). The A/B kit asks which of two clips is the engine, which has no
+answer bias: pass = under 60 % correct.
 
 There are two ways to run it. The **browser test** is the easy one: listeners hear one clip at a time and
 answer "real or synthesised?". The **A/B kit** (further down) plays pairs and asks which one is the engine.
@@ -66,11 +69,51 @@ run SoundLab themselves, then copy their `answers/<name>.json` back into your pa
 ### 4. Read the result
 
 Open http://127.0.0.1:8766/blindtest#results, or run `soundlab blindtest score` (add the pack folder if it is
-not the default). Per sound and pooled: how many synthesised clips were spotted as synthesised, a 95 % range,
-the verdict (pass = spotted under 60 %), how often real clips were called synthesised (someone who answers
-"synthesised" to everything shows up here), and overall accuracy; then one line per listener.
-`--json` for machine use. The same reading-it-honestly rules as below apply: one sound's result from a few
-clips is only a hint, the pooled figure is the verdict.
+not the default; `--json` for machine use).
+
+**Why not "share of engine clips spotted"?** In a single-clip test the answer depends on two things: how well
+a listener hears the difference, and how readily they say "synthesised". Someone who calls most clips
+synthesised spots most engine clips while hearing no difference at all (they call the real ones synthesised
+too). Up to 0.15 the pass mark was "under 60 % of engine clips spotted", which such a listener fails and a
+listener leaning towards "real" passes. From 0.16 the score separates the two, as in signal detection theory:
+
+- **Hit rate** H: engine clips called synthesised. **False-alarm rate** F: real clips called synthesised.
+- **Balanced accuracy** = (H + (1 - F)) / 2, the mean of the two correct-answer rates. Guessing gives 50 %
+  whether the listener leans one way or not; 100 % = every clip right. This is the primary figure.
+- **d'** = z(H) - z(F) and **bias c** = -(z(H) + z(F)) / 2, with the log-linear correction (0.5 added to
+  each count and 1 to each total) so 0 % and 100 % stay finite. d' = 0 means no discrimination; c < 0 means
+  a leaning towards "synthesised", c > 0 towards "real". Reported per listener.
+- **Interval**: a 95 % percentile bootstrap (4000 draws, fixed seed) that resamples listeners and, separately
+  among engine and real clips, the clips themselves, so the interval reflects both who listened and which
+  clips were in the pack.
+
+**Verdict** (pooled physical sounds, and per sound as a hint):
+
+| verdict | rule | meaning |
+|---|---|---|
+| FAIL | whole interval above 50 % | real and engine clips are told apart reliably |
+| pass? | interval includes 50 %, upper end at or above the mark (60 %) | no reliable difference, but not enough answers to rule out a modest one |
+| PASS | whole interval under the mark (60 %) | any ability to tell them apart is small |
+
+Both "pass?" and PASS count as a pass; PASS is the goal. `--pass-mark` sets the upper bound (default 0.60).
+The report also lists, for information, the share of engine clips spotted (the pre-0.16 figure), the share
+of real clips called synthesised and overall accuracy, per sound and per listener. A sound's row rests on a
+handful of clips (2 engine + 2 real per listener by default), so its interval can be degenerate (e.g.
+100 %-100 % from four answers): read it as a hint and decide on the pooled figure.
+
+### Answers from the static web page
+
+A pack can also be served as a static web page (one clip at a time, shuffled per visitor, no answer key in
+the page). At the end the page shows an answer code (`SL1.` + base64url: version, pack number, clip count,
+two bits per clip in clip-number order, a checksum, the optional handle). Collect the codes in a text file
+(whole messages are fine; codes are found anywhere in the text) and score:
+
+```bat
+soundlab blindtest score <pack> --codes codes.txt
+```
+
+Each new code is saved as `<pack>/answers/<handle>.json` before scoring; codes already imported are
+skipped, and codes made for a pack with a different number of clips are rejected.
 
 ### A starter pack from CC0 recordings
 

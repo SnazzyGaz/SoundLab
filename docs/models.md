@@ -626,6 +626,7 @@ Rain: individual near drops (impact click through the surface's response, and on
 | `drop_mm` | `1.8` | mm | 0.5 .. 5 | median drop diameter (grows with rain rate) |
 | `brightness` | `0.5` |  | 0 .. 1 | top end of the hiss (0 = far/indoors, 1 = close, outdoors) |
 | `texture` | `0.0` |  | 0 .. 1 | v0.15 texture statistics: slow independent band swells, air up to 16 kHz and a few close, loud drops (0 = the v0.14 steady wash) |
+| `patter` | `0.0` |  | 0 .. 1 | v0.16 mid-distance patter: hundreds of separately audible bright drop taps per second over a steadier wash and a lighter low end (0 = v0.15) |
 
 Sources: McDermott & Simoncelli 2011 (sound texture statistics); Marshall & Palmer 1948 (drop size distribution); Prosperetti & Oguz 1993 (rain bubbles); Wikipedia: Minnaert resonance; van den Doel 2005 (liquid sounds)
 
@@ -802,6 +803,7 @@ An object dropping into water. In order: (1) the impact: the object slaps the su
 | `bloop` | `0.5` |  | 0 .. 1 | level of the cavity-collapse bubble |
 | `droplets` | `0.8` |  | 0 .. 1 | level of the falling-back spray |
 | `at` | `0.03` | s | 0 .. None |  |
+| `slosh` | `0.0` |  | 0 .. 1 | v0.16: the churn, bubble cloud and foam each slosh on their own fast, irregular envelope over a longer plateau (0 = v0.15: one shared, smoothly decaying envelope) |
 
 Sources: Minnaert 1933; Prosperetti & Oguz 1993; van den Doel 2005; Phillips et al. 2018; Franz 1959 (splashes as sources of sound in liquids)
 

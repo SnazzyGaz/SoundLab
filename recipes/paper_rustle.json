@@ -3,7 +3,7 @@
  "name": "Paper rustle/crumple (material: paper/plastic/leaves/cloth)",
  "category": "foley",
  "sample_rate": 48000,
- "duration": 2.0,
+ "duration": 4.0,
  "seed": 24,
  "layers": [
   {
@@ -11,8 +11,8 @@
    "model": "rustle",
    "params": {
     "material": "paper",
-    "moves": 5,
-    "length_s": 1.5,
+    "moves": 8,
+    "length_s": 3.7,
     "intensity": 0.6,
     "at": 0.03
    }
@@ -23,8 +23,8 @@
    "model": "room",
    "params": {
     "volume": 30,
-    "absorption": 0.35,
-    "source_distance": 0.8
+    "absorption": 0.7,
+    "source_distance": 0.5
    }
   }
  ],

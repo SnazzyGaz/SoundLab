@@ -21,12 +21,14 @@ recipe sound and at least two listeners who did not tune the recipes.
    Headphones or decent speakers, same playback chain for all items.
 3. **Procedure.** Random order per listener. For each clip: "real or synthesised?", optionally what gave it
    away. No replay limit, no time pressure.
-4. **Score.** Per listener and pooled: the share of SoundLab clips identified as synthesised, separately for
+4. **Score.** Per listener and pooled: balanced accuracy (the mean of the share of SoundLab clips called
+   synthesised and the share of real clips called real; 50 % = cannot tell them apart), separately for
    **physical sounds** (impacts, engines, fire, water, explosions, footsteps, foghorn, duck, match, ...) and
-   stylised ones (UI, magic, sci-fi, retro), where "sounds synthesised" is fine.
-5. **Pass mark.** Physical sounds pass if **under 60 %** of SoundLab clips are identified as synthesised
-   (pooled; 50 % = indistinguishable). A physical sound spotted by every listener is a failure to fix before
-   any deeper physics work.
+   stylised ones (UI, magic, sci-fi, retro), where "sounds synthesised" is fine. See
+   [checkpoint.md](checkpoint.md#4-read-the-result).
+5. **Pass mark.** Physical sounds pass if the 95 % interval of pooled balanced accuracy includes 50 % (no
+   reliable difference); a clear pass when the whole interval is under 60 %. A physical sound told apart by
+   every listener is a failure to fix before any deeper physics work.
 6. **Record.** Item list, answers and "what gave it away" notes in `docs/checkpoint-results.md` (results only;
    audio stays outside the repo).
 
@@ -36,8 +38,10 @@ recipe sound and at least two listeners who did not tune the recipes.
   (crack, body, length of the tail), not only small numbers.
 - **Creature growl**: growls range from purr-like rumbles to bright, open snarls; the recipe sits at the deep
   end. A snarl preset (raised formants, more breath, less chest) would cover the bright end.
-- **Splash**: v0.15 sub-splashes and fizz brought the texture statistics closer, but the onset-aligned
-  envelope distance to hold-out splashes rose (0.68 -> 0.73); the plateau of continuous splashing is not modelled.
+- **Splash**: v0.16 `slosh` brought the texture statistics closer (hold-out 0.82 -> 0.66), but the
+  onset-aligned fit stays ~0.72 (0.68 in v0.14); the plateau of continuous splashing is not modelled.
+- **Paper rustle**: v0.16 crackling-noise model; the earlier short reference (a single 0.4 s crumple) still
+  fits worse (1.03) than the hold-outs (0.82). Plastic and leaves still use the older branch.
 - **Glass break**: still furthest from its hold-out recordings (fit 0.87); those are brighter at 4-8 kHz with
   less 0.5-1 kHz than the engine.
 

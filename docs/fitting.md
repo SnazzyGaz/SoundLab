@@ -305,3 +305,38 @@ log-normal level fluctuation, partly shared (`corr`). The other 30 recipes rende
 - **Rain**: no air above 7 kHz (12 kHz low-pass, dull hiss), five times too little slow modulation, and a
   uniform fine texture. A new `texture` control (default 0, so other uses are unchanged) adds slow band-by-band
   swells, air up to 14-16 kHz, a few drops right by the microphone and a tiny spray crackle on each near drop.
+
+## Rain, splash and paper against hold-out recordings (v0.16)
+
+In the third blind pack all engine clips of rain, splash and paper rustle were identified (per-sound balanced
+accuracy at or near 100 %). Each was compared again with the v0.15 texture statistics, now with more
+public-domain / CC hold-out recordings (four more rain recordings, three more paper recordings), weighted over
+the references used before. Same measures as above, three variations each (lower is better).
+
+| sound | texture, hold-out | fit, hold-out | texture, earlier refs | fit, earlier refs |
+|---|---|---|---|---|
+| paper_rustle | 1.91 -> 0.53 | 1.212 -> 0.816 | 1.45 -> 0.69 | 1.161 -> 1.032 |
+| rain | 0.64 -> 0.49 | 0.542 -> 0.480 | 0.66 -> 0.50 | 0.374 -> 0.386 |
+| splash | 0.82 -> 0.66 | 0.730 -> 0.724 | 0.84 -> 0.68 | 0.763 -> 0.765 |
+
+The other 34 recipes render bit-identically. Glass break is unchanged (texture 0.73, fit 0.870 on hold-outs).
+
+- **Paper rustle**: a few short, smooth hand gestures with silence between them over a band-passed bed: slow
+  modulation dominated (0.88 vs 0.39 in the lowest bands), fast modulation was missing, the bands moved
+  together (band four apart 0.92 vs 0.66) and the high-band envelopes were smooth where recordings are spiky
+  (kurtosis +2 to +3). Paper now has its own branch (plastic and leaves are unchanged): crumpling is crackling
+  noise, so crease snaps have power-law sizes and come in avalanches (the event rate bursts on a 50-300 ms
+  scale); each snap is a broadband click 0.15-2 ms long from one of three families of different brightness;
+  the biggest also flex the sheet (a soft 250-450 Hz crunch); the sliding hiss goes through `band_modulate`;
+  and the hands keep working the sheet over a floor, never to silence. The recipe is a 4 s crumple (3.7 s of
+  handling) in a drier, closer room.
+- **Rain**: the top bands only swelled slowly (slow modulation 0.38 vs 0.15) and lacked the 4-30 Hz
+  modulation and spikiness (kurtosis 2-5 above 2 kHz) that separately heard drops give. A new `patter`
+  control (default 0) adds the drops a metre or a few away: hundreds per second, clustered, each a short
+  bright tap (0.6-3 ms) below 7 kHz, with gentler band swells and a lighter low wash. The recipe uses
+  `patter` 1.
+- **Splash**: the churn, bubble cloud and foam all followed one envelope, so the bands rose and fell together
+  (band four apart 0.83 vs 0.65) with too little fast flutter. A new `slosh` control (default 0) gives each
+  its own irregular 9 and 25 Hz envelope and a slightly longer tail; the recipe uses 0.5. The onset-aligned
+  fit is about unchanged; the plateau of continuous splashing is still not modelled.
+
