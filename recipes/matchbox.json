@@ -9,14 +9,16 @@
    "name": "shake",
    "model": "shaker",
    "params": {
-    "rate_hz": 7.8,
+    "rate_hz": 3.36515,
     "shake_s": 0.7,
-    "items": 18,
-    "intensity": 0.54,
-    "spread_ms": 38,
-    "item_hz": 2350,
-    "knock": 0.0,
-    "start": 0.15
+    "items": 60,
+    "intensity": 0.80639,
+    "spread_ms": 62.21546,
+    "item_hz": 2111.33138,
+    "knock": 0.05707,
+    "start": 0.15,
+    "handling": 0.90335,
+    "slide": 0.1
    }
   },
   {
@@ -25,25 +27,27 @@
    "params": {
     "rate_hz": 3.0,
     "strokes": 4,
-    "items": 14,
-    "intensity": 0.45,
-    "spread_ms": 30,
-    "item_hz": 2350,
-    "knock": 0.0,
-    "start": 1.35
+    "items": 60,
+    "intensity": 0.645,
+    "spread_ms": 62.21546,
+    "item_hz": 2111.33138,
+    "knock": 0.05707,
+    "start": 1.35,
+    "handling": 0.90335,
+    "slide": 0.1
    }
   },
   {
    "name": "match",
    "model": "match",
    "params": {
-    "strike_s": 0.045,
+    "strike_s": 0.03777,
     "strike_speed": 0.9,
     "strike_force": 3.0,
-    "flare_s": 0.36129,
+    "flare_s": 0.27913,
     "flame_s": 2.0,
-    "flame_size": 0.66673,
-    "flame_db": -37.39867,
+    "flame_size": 0.89618,
+    "flame_db": -37.87887,
     "brightness": 0.6,
     "start": 2.2
    }

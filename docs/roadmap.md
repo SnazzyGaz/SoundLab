@@ -1,6 +1,6 @@
 # Roadmap (build order from the knowledge base)
 
-Status as of 0.3.0 (16 Nov 2026). 0.3.0 fixed the synthesis artefacts behind the v2 listening notes (see [artefacts.md](artefacts.md)), fitted all five sounds to the reference recordings and added the `shaker` model.
+Status as of 0.4.0 (16 Nov 2026). 0.4.0 fixed the matchbox fry, the foghorn noise tail and the engine buzz from the v3 listening notes. 0.3.0 fixed the synthesis artefacts behind the v2 listening notes (see [artefacts.md](artefacts.md)), fitted all five sounds to the reference recordings and added the `shaker` model.
 
 | step | content | status |
 |---|---|---|

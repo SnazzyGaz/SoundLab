@@ -9,14 +9,16 @@
    "name": "shake",
    "model": "shaker",
    "params": {
-    "rate_hz": 7.81363,
+    "rate_hz": 3.36515,
     "shake_s": 0.7,
-    "items": 18,
-    "intensity": 0.5378,
-    "spread_ms": 38.16457,
-    "item_hz": 2353.73616,
-    "knock": 0.0,
-    "start": 0.15
+    "items": 100,
+    "intensity": 0.80639,
+    "spread_ms": 62.21546,
+    "item_hz": 2111.33138,
+    "knock": 0.05707,
+    "start": 0.15,
+    "handling": 0.90335,
+    "slide": 0.34815
    }
   },
   {
@@ -25,9 +27,9 @@
    "params": {
     "rate_hz": 3.0,
     "strokes": 4,
-    "items": 25,
-    "intensity": 0.5,
-    "spread_ms": 30,
+    "items": 40,
+    "intensity": 0.6,
+    "spread_ms": 60,
     "item_hz": 1800,
     "knock": 0.2,
     "start": 1.35

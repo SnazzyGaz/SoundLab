@@ -475,16 +475,18 @@ Things rattling in a shaken box (matchbox by default). Physics: the hand moves t
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
-| `rate_hz` | `5.0` | Hz | 0.5 .. 15 | shake strokes per second (each back-and-forth = 2 reversals) |
+| `rate_hz` | `3.0` | Hz | 0.5 .. 15 | shake strokes per second (each back-and-forth = 2 reversals; the reference clip ~3) |
 | `shake_s` | `0.8` | s | 0.05 .. 30 | how long the shaking lasts |
 | `strokes` | `0` | count | 0 .. 200 | explicit number of reversals (0 = from rate_hz x shake_s) |
 | `items` | `40` | count | 1 .. 300 | number of loose items (matches in a full box: ~40) |
 | `intensity` | `0.7` |  | 0 .. 1 | how hard it is shaken (more and louder impacts, more box knock) |
-| `spread_ms` | `18.0` | ms | 1 .. 100 | how long a reversal's cluster of collisions lasts |
+| `spread_ms` | `50.0` | ms | 1 .. 150 | how long a reversal's cluster of collisions lasts (the reference clip: bursts of ~50-100 ms) |
 | `item_hz` | `4500.0` | Hz | 500 .. 15000 | centre of the item click spectrum (thin wood sticks) |
 | `box_size` | `0.05` | m | 0.01 .. 0.5 | box length (sets the body knock and plate modes) |
 | `fill` | `0.8` |  | 0 .. 1 | how full the box is (fuller = more, duller hits, less free flight) |
 | `knock` | `0.5` |  | 0 .. 2 | level of the box body knock |
+| `handling` | `0.3` |  | 0 .. 2 | low rumble of the hand moving the box near the mic (the reference clip has it below ~100 Hz) |
+| `slide` | `0.15` |  | 0 .. 1 | level of the soft sliding between strokes |
 | `start` | `0.05` | s | 0 .. None | start time |
 
 Sources: Cook 1997, Physically Informed Sonic Modeling (PhISM shakers), Computer Music Journal 21(3); Farnell 2010 (rattles); matchbox shake reference (analysis only)

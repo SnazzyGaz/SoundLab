@@ -105,6 +105,10 @@ bursts tied to the firing, and the high end is a short broadband **crack at each
 `exhaust_crack` 0.5, `jitter` 0.06. `engine_blips.json` follows the shape of that video. The `ground` block
 now has `ground_hz` (porous ground reflects less treble: asphalt ~8000, grass ~800) and `turbulence`.
 
+v4 (after "a buzzing on top"): each firing's crack now has its own random strength (some almost silent) and the
+valve ticks have random timing, so the top is no longer a pulse train at the firing rate. Recipes use
+`exhaust_crack` 0.55; above ~0.8 the top gets busy again.
+
 ## Foghorn (`foghorn`)
 
 Physics: a diaphone. Compressed air is chopped by a reciprocating slotted piston into a long conical trumpet.
@@ -145,6 +149,10 @@ asymmetric puffs (38 % open, so all harmonics are present, unlike a square wave)
 `roughness`, `chop`) but are off by default: they were what made it sound synthetic. Fitted: `tone_hz` 109,
 `blast_s` 3.1, `throat_hz` ~330, `wobble` 0.85, `release_s` 0.3; scene uses `brightness` 0.3 and a 0.9 m
 mouth so the fundamental is not thinned.
+
+v4 (after "a weird sustained bit at the end, like ocean waves"): that was the scene, not the horn: a steady
+"sea" noise layer and far, diffused echoes. The scene now has one near reflector and a short tail. If you
+want sea ambience, add it as its own quiet layer and fade it with the horn.
 
 ## Explosion (`explosion`)
 
@@ -233,6 +241,11 @@ knock). Between strokes the contents slide.
 | `knock` | box body knock | 0-0.5 |
 
 `recipes/matchbox.json` = shake (0.15-0.85 s) + four taps + strike at 2.2 s + flame, like the reference video.
+
+v4 (after "a crackle like bacon frying"): contacts are soft (0.1-0.35 ms sin^2 pulses, not needle clicks),
+collisions come in groups per stroke, the box knock is a 2-4 ms push instead of a 1-sample click, the box body
+adds little below 500 Hz, and `handling` (hand rumble) and `slide` were added. Keep `rate_hz` around 3-4: a
+fast shake with many `items` turns into a fizz. The match's ignition crackle is now a short spray of sparks.
 
 ## Fitting a sound to a recording
 

@@ -9,13 +9,13 @@
    "name": "match",
    "model": "match",
    "params": {
-    "strike_s": 0.045,
-    "flare_s": 0.36129,
+    "strike_s": 0.03777,
+    "flare_s": 0.27913,
     "flame_s": 2.2,
-    "flame_size": 0.66673,
-    "flame_db": -37.39867,
-    "brightness": 0.94078,
-    "start": 0.01159
+    "flame_size": 0.89618,
+    "flame_db": -37.87887,
+    "brightness": 0.9689,
+    "start": 0.02015
    }
   }
  ],

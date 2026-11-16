@@ -53,3 +53,11 @@ Tests for every fix are in `tests/test_artefacts.py`.
   for little audible gain.
 - Plain `standard_normal` noise outside the oversampled blocks still depends on the sample rate. Renders are
   48 kHz by default, so this only matters if you change `sample_rate`.
+
+## v4 (0.4.0): after the v3 notes
+
+| note | cause found | measurement (v3 -> v4) | fix |
+|---|---|---|---|
+| matchbox "crackle like bacon frying on high heat, at first" | (1) the shake: needle-sharp 0.05-0.25 ms clicks, a 1-sample "knock" impulse per stroke (a broadband click), and 7.8 strokes/s, so the top was a continuous spiky spray; (2) the ignition: crackle at up to 500 grains/s for about half a second | shake: median 50 ms kurtosis of the >2 kHz band 20.5 -> 8.0 (the reference clip 7.4); ignition: 5.6 -> 1.4 (clip 0.8) | soft sin^2 contacts, 2-4 ms knocks, grouped collisions per stroke, two damped stick resonances, box body highpassed at 500 Hz, hand-handling rumble, ~3.4 strokes/s; ignition crackle 160 grains/s peak, gone within ~0.5 s |
+| foghorn "weird sustained bit at the end, like ocean waves or long distance" | the scene recipe had a constant pink-noise "sea" layer (-30 dB for 7 s) plus far reflectors (900, 1600 m) smeared by `diffusion` 0.7 into noise washes | level 3 s after the blast stopped: -36 dB -> below -45 dB within 1 s | no sea layer; one 350 m reflector with low diffusion; 1.5 s tail at 0.12 |
+| engine "buzzing on top" | every firing got an identical exhaust crack and the valve ticks were metronomic, so the top was a pulse train at the firing rate (60 Hz at idle) | high-band envelope periodicity at idle 0.75 -> 0.38; the high-band level matches the reference V8 at idle (-25.5 vs -25.8 dB) | random strength per crack (a third nearly silent), pink 0.9-5 kHz noise instead of white to 7 kHz, ticks with random timing/strength/dropouts at half the level |

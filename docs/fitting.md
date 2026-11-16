@@ -91,3 +91,7 @@ blast; match: strike + flame; shaker: the box shake). Fit reports are in the res
 | explosion | 0.758 | 0.381 |
 | match | 0.548 | 0.444 (the flame model changed between the two passes) |
 | shaker | 0.670 | 0.603 |
+
+v4 refits (new shaker and match models): shaker 0.761 -> 0.656 (dry, one fit pass), match 0.437 -> 0.423. The
+`matchbox` scene deliberately uses fewer items (60) and less slide than the fit asked for: the distance
+prefers a dense high-frequency fizz, which is the "frying" sound.

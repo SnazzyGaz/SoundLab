@@ -115,3 +115,73 @@ def ss_peaks(e):
     import scipy.signal as ss
     p, _ = ss.find_peaks(e, height=0.15 * e.max(), distance=int(0.06 * SR))
     return len(p)
+
+
+# ---------------------------------------------------------------- v4 (the v3 notes)
+from pathlib import Path
+
+RECIPES = Path(__file__).resolve().parent.parent / "recipes"
+
+
+def _hf_periodicity(y, lo=2000, hi=10000):
+    """Autocorrelation peak (lag 2.5-50 ms) of the high-band envelope: 1 = the top is a strict pulse train."""
+    import scipy.signal as ss
+    hf = ss.sosfilt(ss.butter(4, [lo, hi], "band", fs=SR, output="sos"), y)
+    e = ss.sosfilt(ss.butter(2, 800, fs=SR, output="sos"), np.abs(ss.hilbert(hf)))
+    e = ss.resample_poly(e, 1, 24)
+    e = e - e.mean()
+    ac = np.correlate(e, e, "full")[len(e) - 1:]
+    ac /= ac[0] + 1e-20
+    return float(np.max(ac[5:100]))
+
+
+def test_engine_top_is_not_a_buzz():
+    """v3: identical cracks + metronomic valve ticks on every firing made the top a pulse train at the firing
+    rate ('a buzzing on top'; periodicity 0.75 at idle). v4 varies each crack and tick."""
+    y = run("engine", 2.0, rpm=900, load=0.35, cylinders=8, firing="crossplane_v8", mechanical=0.8,
+            exhaust_crack=0.8, pops=0)
+    assert _hf_periodicity(y[SR // 4:]) < 0.55
+
+
+def _hf(y):
+    import scipy.signal as ss
+    return ss.sosfilt(ss.butter(4, 2000, "high", fs=SR, output="sos"), y)
+
+
+def test_match_ignition_is_not_a_fry():
+    """v3's ignition crackle ran at up to 500 grains/s: 'bacon frying on high heat'. v4 is a short spray of
+    sparks. Measure: kurtosis of the >2 kHz signal in 50 ms frames during the flare (spiky = high), averaged
+    over seeds (v3: ~4, v4: ~1.1)."""
+    import scipy.stats as st
+    def fk(x, w=0.05):
+        n = int(w * SR)
+        return np.median([st.kurtosis(x[i:i + n]) for i in range(0, len(x) - n, n)])
+    ks = [fk(_hf(run("match", 1.5, seed=sd, flare_s=0.28, flame_s=1.0, start=0.05)[int(0.1 * SR):int(0.45 * SR)]))
+          for sd in range(1, 7)]
+    assert np.mean(ks) < 2.0
+
+
+def test_shaker_is_grouped_rattle_not_spray():
+    """v3: needle-sharp 0.05-0.25 ms clicks plus 1-sample knocks, so the top was a continuous spiky spray
+    (busy 41 % of the time, kurtosis ~2300). v4: soft contacts grouped per stroke."""
+    import scipy.signal as ss
+    import scipy.stats as st
+    y = run("shaker", 2.0, rate_hz=3.0, shake_s=1.5, start=0.1)[int(0.1 * SR):int(1.6 * SR)]
+    h = _hf(y)
+    e = ss.sosfilt(ss.butter(2, 200, fs=SR, output="sos"), np.abs(ss.hilbert(h)))
+    busy = np.mean(e > np.percentile(e, 99) * 10 ** (-10 / 20))
+    assert busy < 0.2
+    assert st.kurtosis(h) < 600
+
+
+def test_foghorn_scene_tail_is_short():
+    """v3's scene had a constant 'sea' noise layer and far, diffused echoes: a wash that lasted seconds after
+    the horn stopped ('like ocean waves'). v4: the tail is a short echo of the tone."""
+    import soundlab
+    from soundlab.analysis import envelope
+    y, sr = soundlab.render(RECIPES / "foghorn.json")
+    e = envelope(y, sr, 20.0)
+    db = 20 * np.log10(e / e.max() + 1e-9)
+    stop = np.nonzero(db > -6)[0][-1]
+    i = stop + int(1.5 * sr)
+    assert i >= len(db) or db[i] < -40

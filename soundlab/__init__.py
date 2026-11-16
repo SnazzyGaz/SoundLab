@@ -19,7 +19,7 @@ from .core import REGISTRY, RecipeError
 from .recipe import load as load_recipe
 from .recipe import render, validate
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __all__ = ["render", "render_to_file", "list_models", "describe", "validate", "load_recipe", "analyze",
            "analyze_file", "materials", "RecipeError", "__version__", "match", "compare"]
 

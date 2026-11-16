@@ -182,8 +182,11 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
             gate += shape ** 3 * a_cyc[cyc]
             # valve-opening crack: the first ~3 % of the cycle
             uc = (p - cyc) / 0.03
-            crack_gate += np.where(uc < 1, np.exp(-3 * np.clip(uc, 0, 1)) * (1 - np.clip(uc, 0, 1)), 0.0) * np.abs(a_cyc[cyc]) \
-                * (1.0 - 0.3 * bi)
+            # v4: each firing's crack is different (random strength, about a third almost silent). Identical
+            # cracks on every firing are a pulse train at the firing rate (60-300 Hz): a buzz on top.
+            c_amp = np.exp(0.7 * rng.standard_normal(ncyc)) * (rng.random(ncyc) > 0.35)
+            crack_gate += np.where(uc < 1, np.exp(-3 * np.clip(uc, 0, 1)) * (1 - np.clip(uc, 0, 1)), 0.0) \
+                * c_amp[cyc] * (1.0 - 0.3 * bi)
         src = pulses * (0.3 + 0.7 * Ld)
         src = src + pink * gate * exhaust_noise * (0.8 + 1.6 * Ld) * flow
         src = dsp.highpass(src, 20.0, sr)
@@ -210,17 +213,22 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
     blk *= 0.2 + 0.8 * gl / (gl.max() + 1e-9)
     # plus a low floor that follows the firing activity (the refs never drop to silence between cracks)
     crack_gate = crack_gate + 1.2 * dsp.lowpass(crack_gate, 15.0, sr)
-    crk = dsp.lowpass(dsp.highpass(rng.standard_normal(n), 400.0, sr, 0.5), 7000.0, sr, 0.5) * crack_gate
-    crk *= exhaust_crack * 0.3 * (0.4 + 0.6 * Ld) * np.sqrt(loud)
+    cn = dsp.lowpass(dsp.highpass(dsp.pink(rng, n), 900.0, sr, 0.5), 5000.0, sr, 0.5)
+    crk = cn / (np.std(cn) + 1e-12) * crack_gate
+    crk *= exhaust_crack * 0.12 * (0.4 + 0.6 * Ld) * np.sqrt(loud)
     ticks = np.zeros(n)
     if mechanical > 0:
         cam = np.cumsum(cyc_rate * 2 * cylinders) / sr
         idx = np.nonzero(np.diff(np.floor(cam)) > 0)[0]
         # v3: broadband clicks (was a 3.2 kHz sine burst + Q 2 bandpass: a tonal 'tink' line in the spectrum)
+        # v4: valves do not tick like a metronome: random timing (+-0.6 ms), strength, and some missing
         for i in idx:
-            m = int(rng.uniform(0.2, 0.6) * 1e-3 * sr) + 2
-            dsp.place(ticks, rng.standard_normal(m) * np.hanning(m), i, rng.uniform(0.5, 1.0))
-        ticks = dsp.bandpass(ticks, 3000.0, sr, 0.6) * mechanical * 0.05
+            if rng.random() < 0.4:
+                continue
+            m = int(rng.uniform(0.3, 0.8) * 1e-3 * sr) + 2
+            j = int(i + rng.normal(0, 0.6e-3 * sr))
+            dsp.place(ticks, rng.standard_normal(m) * np.hanning(m), max(j, 0), np.exp(0.5 * rng.standard_normal()) * 0.6)
+        ticks = dsp.bandpass(ticks, 2200.0, sr, 0.6) * mechanical * 0.03
     wph = 2 * np.pi * np.cumsum(R / 60.0 * whine_order) / sr
     whine_sig = (np.sin(wph) + 0.3 * np.sin(2 * wph)) * whine * 0.03 * Ld * (R / 3000.0)
     pop_sig = np.zeros(n)
@@ -475,8 +483,11 @@ def match(ctx: Ctx, x, strike_s, strike_speed, strike_force, ignite, flare_s, fl
         burst = dsp.highpass(rng.standard_normal(m), 700.0, sr)
         burst = dsp.biquad(burst, "highshelf", 5000.0, 0.7, sr, -9 + 12 * brightness) * burst_env
         burst *= 1 + 0.6 * np.abs(dsp.lowpass(rng.standard_normal(m), 150.0, sr)) / 0.05
-        crk = call("crackle", ctx.child(m), rate=[[0, 500], [flare_s * 0.5, 150], [flare_s, 20], [flare_s + 0.3, 6], [flare_s + 0.6, 0]],
-                   grain_ms=1.0, f_lo=1500, f_hi=12000, q=0.7, size_exponent=2.4, level=1.0)
+        # v4: the head's sputter is a short spray of sparks (refs: ~0.1 s), not 500 grains/s for half a second,
+        # which read as "bacon frying on high heat"
+        crk = call("crackle", ctx.child(m), rate=[[0, 160], [flare_s * 0.4, 50], [flare_s, 8], [flare_s + 0.3, 2],
+                                                   [flare_s + 0.5, 0]],
+                   grain_ms=1.2, f_lo=1200, f_hi=8000, q=0.7, size_exponent=2.6, level=1.0)
         flame_env = np.clip((tt - 0.02) / 0.08, 0, 1) * np.clip((flame_s + 0.05 - tt) / 0.05, 0, 1)
         # v3: flame flutter has slow (~5 Hz, flicker) and fast (~30 Hz, turbulence) parts; the hiss is pink-ish
         # with a soft top instead of flat white noise (white hiss above 5 kHz read as 'tinny')
@@ -496,8 +507,8 @@ def match(ctx: Ctx, x, strike_s, strike_speed, strike_force, ignite, flare_s, fl
         g = 10 ** (flame_db / 20)
         # hand/box thump as the head catches and the hand jerks back (refs: energy below 100 Hz)
         thump = dsp.lowpass(friedlander(m, sr, 0.006), 120.0, sr, 0.5)
-        burn = 0.4 * norm(pop) + norm(burst) + 0.5 * crk + g * (hiss + woof) * 2.5 + 0.25 * sparse \
-            + 0.25 * norm(thump)
+        burn = 0.4 * norm(pop) + norm(burst) + 0.35 * crk + g * (hiss + woof) * 2.5 + 0.2 * sparse \
+            + 0.1 * norm(thump)
         out[ni:] += burn
     return dsp.highpass(out, 25.0, sr, 0.7)  # v3: no infrasound from the pop/thump pulses
 
@@ -510,27 +521,32 @@ def match(ctx: Ctx, x, strike_s, strike_speed, strike_force, ignite, flare_s, fl
        "ms long, and the bigger hits excite the box itself (a small, very lossy cardboard plate, plus a dull "
        "body knock). Between strokes the contents slide (soft noise). After Cook's PhISM shakers.",
        [
-           Param("rate_hz", 5.0, "Hz", 0.5, 15, "shake strokes per second (each back-and-forth = 2 reversals)"),
+           Param("rate_hz", 3.0, "Hz", 0.5, 15, "shake strokes per second (each back-and-forth = 2 reversals; "
+                 "the reference clip ~3)"),
            Param("shake_s", 0.8, "s", 0.05, 30, "how long the shaking lasts"),
            Param("strokes", 0, "count", 0, 200, "explicit number of reversals (0 = from rate_hz x shake_s)"),
            Param("items", 40, "count", 1, 300, "number of loose items (matches in a full box: ~40)"),
            Param("intensity", 0.7, "", 0, 1, "how hard it is shaken (more and louder impacts, more box knock)"),
-           Param("spread_ms", 18.0, "ms", 1, 100, "how long a reversal's cluster of collisions lasts"),
+           Param("spread_ms", 50.0, "ms", 1, 150, "how long a reversal's cluster of collisions lasts (the reference clip: "
+                 "bursts of ~50-100 ms)"),
            Param("item_hz", 4500.0, "Hz", 500, 15000, "centre of the item click spectrum (thin wood sticks)"),
            Param("box_size", 0.05, "m", 0.01, 0.5, "box length (sets the body knock and plate modes)"),
            Param("fill", 0.8, "", 0, 1, "how full the box is (fuller = more, duller hits, less free flight)"),
            Param("knock", 0.5, "", 0, 2, "level of the box body knock"),
+           Param("handling", 0.3, "", 0, 2, "low rumble of the hand moving the box near the mic (the reference clip has it "
+                 "below ~100 Hz)"),
+           Param("slide", 0.15, "", 0, 1, "level of the soft sliding between strokes"),
            Param("start", 0.05, "s", 0, None, "start time"),
        ], ["Cook 1997, Physically Informed Sonic Modeling (PhISM shakers), Computer Music Journal 21(3)",
            "Farnell 2010 (rattles)", "matchbox shake reference (analysis only)"])
 def shaker(ctx: Ctx, x, rate_hz, shake_s, strokes, items, intensity, spread_ms, item_hz, box_size, fill, knock,
-           start):
+           handling, slide, start):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     nrev = int(strokes) if strokes > 0 else max(1, int(round(2 * rate_hz * shake_s)))
     half = 1.0 / (2 * rate_hz)
     clicks = np.zeros(n)
     knocks = np.zeros(n)
-    slide = np.zeros(n)
+    slide_env = np.zeros(n)
     t = start
     for r in range(nrev):
         if r:
@@ -540,28 +556,39 @@ def shaker(ctx: Ctx, x, rate_hz, shake_s, strokes, items, intensity, spread_ms, 
             break
         force = intensity * (0.6 + 0.4 * rng.random()) * (1.0 if r % 2 == 0 else 0.8)
         # the bulk of the contents slams into the wall: one knock per reversal
-        dsp.place(knocks, np.array([1.0]), i0 + int(rng.uniform(0, 3e-3) * sr), force)
+        # v4: a soft ~2-4 ms push of the whole bundle (v3 used a 1-sample impulse: a broadband click)
+        mk = int(rng.uniform(2e-3, 4e-3) * sr)
+        dsp.place(knocks, np.sin(np.pi * np.arange(mk) / mk) ** 2 / (mk / 2), i0 + int(rng.uniform(0, 3e-3) * sr), force)
         # the cluster of item collisions
-        k = rng.poisson(max(1.0, items * (0.25 + 0.5 * intensity) * (1.2 - 0.5 * fill)))
-        dt = rng.exponential(spread_ms * 1e-3 / 2.5, k)
-        amps = force * (rng.pareto(2.2, k) + 0.2)
+        # v4: only part of the contents hit per reversal and they arrive as a smeared group: most of the box
+        # moves as one mass (a dense, packed box), so a few clear knocks plus a soft cluster, not a spray
+        k = rng.poisson(max(1.0, items * (0.08 + 0.2 * intensity) * (1.2 - 0.5 * fill)))
+        dt = np.abs(rng.gamma(2.0, spread_ms * 1e-3 / 5.0, k))
+        amps = force * np.minimum(rng.pareto(3.0, k) + 0.3, 3.0)
         for d, a in zip(dt, amps):
             j = i0 + int(d * sr)
-            m = max(2, int(rng.uniform(0.05, 0.25) * 1e-3 * sr))
-            dsp.place(clicks, np.sin(np.pi * np.arange(m) / m) * rng.choice([-1, 1]), j, a)
+            # wood on wood / wood on card: smooth (sin^2) contacts of 0.15-0.5 ms (v3: 0.05-0.25 ms half-sines:
+            # needle-sharp clicks with a hard spectral edge)
+            m = max(4, int(rng.uniform(0.1, 0.35) * 1e-3 * sr))
+            dsp.place(clicks, np.sin(np.pi * np.arange(m) / m) ** 2 * rng.choice([-1, 1]), j, a)
         L = int(half * 0.7 * sr)
         if L > 8:
-            dsp.place(slide, np.sin(np.pi * np.arange(L) / L) ** 2 * force * 0.3, i0 + int(0.15 * half * sr))
-    # item clicks: wood on wood, bright and short (broad band, no ringing)
-    it = dsp.bandpass(clicks, item_hz, sr, 0.8) + 0.3 * dsp.highpass(clicks, 2000.0, sr)
+            dsp.place(slide_env, np.sin(np.pi * np.arange(L) / L) ** 2 * force * 0.3, i0 + int(0.15 * half * sr))
+    # item clicks: two damped stick/box resonances (refs: peaks ~1.5 and ~3.5 kHz), no bare high-pass part
+    it = dsp.bandpass(clicks, item_hz * 0.65, sr, 1.2) + 0.7 * dsp.bandpass(clicks, item_hz * 1.5, sr, 1.0)
+    it = dsp.lowpass(it, 10000.0, sr, 0.5)
     # box: lossy cardboard plate + a damped body knock
-    box = call("modal", ctx.child(), clicks * 0.3 + knocks, material="cardboard", shape="plate",
+    box = call("modal", ctx.child(), clicks * 0.3 + 0.3 * knocks, material="cardboard", shape="plate",
                length=box_size, width=box_size * 0.7, thickness=0.001, n_modes=16, extra_damping=250, strike_pos=0.3)
     body_hz = 9.0 / max(box_size, 0.01)  # ~180 Hz for a 5 cm box (estimate)
-    kn = dsp.lowpass(dsp.lowpass(knocks, body_hz * 2, sr, 0.5), body_hz * 3, sr, 0.5)
-    sl = dsp.bandpass(dsp.pink(rng, n), 2500.0, sr, 0.5) * dsp.lowpass(slide, 30.0, sr)
-    return 0.9 * norm(it) + 0.35 * norm(box) * (0.5 + 0.5 * intensity) + knock * norm(kn) * intensity \
-        + 0.06 * norm(sl)
+    kn = dsp.bandpass(knocks, body_hz * 2, sr, 0.7)
+    mot = dsp.lowpass(slide_env, 30.0, sr)
+    sl = dsp.bandpass(dsp.pink(rng, n), 2500.0, sr, 0.4) * mot
+    hand = dsp.lowpass(dsp.lowpass(dsp.brown(rng, n), 100.0, sr, 0.5), 150.0, sr, 0.5)
+    hand = dsp.highpass(hand, 25.0, sr, 0.7) * dsp.lowpass(slide_env, 8.0, sr)
+    # a matchbox is small: its body adds little below ~500 Hz (the refs dip at 300-600 Hz)
+    body = dsp.highpass(0.35 * norm(box) * (0.5 + 0.5 * intensity) + knock * norm(kn) * intensity, 500.0, sr, 0.6)
+    return 0.9 * norm(it) + body + slide * norm(sl) + handling * norm(hand)
 
 
 # =================================================================== fire
