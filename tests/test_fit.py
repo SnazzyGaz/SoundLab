@@ -1,4 +1,5 @@
 """Parameter fitting (analysis-by-synthesis) and the match/compare CLI."""
+import importlib.util
 import json
 import subprocess
 import sys
@@ -83,7 +84,10 @@ def test_match_and_compare_cli(tmp_path):
     assert r.returncode == 0, r.stderr
     info = json.loads(r.stdout)
     assert info["after"]["total"] <= info["before"]["total"]
-    for f in ("fitted.json", "report.md", "report.json", "comparison.png", "fitted_preview.wav"):
+    files = ["fitted.json", "report.md", "report.json", "fitted_preview.wav"]
+    if importlib.util.find_spec("matplotlib"):          # the plot is optional (pip install -e .[plot])
+        files.append("comparison.png")
+    for f in files:
         assert (out / f).exists()
     assert soundlab.validate(json.loads((out / "fitted.json").read_text())) == []
     r2 = subprocess.run([sys.executable, "-m", "soundlab", "compare", str(tmp_path / "ref.wav"),
