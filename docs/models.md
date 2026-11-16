@@ -399,7 +399,9 @@ Combustion engine. v2: per-cylinder exhaust blowdown pressure pulses (not differ
 | `body` | `0.6` |  | 0 .. 1 | low-end weight: muffler chamber resonance + low shelf (our estimate) |
 | `exhaust_noise` | `0.5` |  | 0 .. 1 | broadband blowdown noise (rasp) relative to the tonal pulses |
 | `pipe_ring` | `0.3` |  | 0 .. 0.9 | exhaust pipe resonance feedback; high values ring/whistle |
-| `exhaust_crack` | `0.4` |  | 0 .. 1 | v3: short broadband crack at the start of each blowdown (the exhaust valve opening). Refs show HF energy as clicks locked to the firing, not as steady hiss |
+| `edge` | `0.8` |  | 0 .. 1 | v5: steepness of the blowdown pressure rise. 0 = slow smooth bump (dark, v2-v4), 1 = sharp valve-opening front (bright, clear exhaust note) |
+| `rasp` | `0.3` |  | 0 .. 1.5 | v5: smooth broadband exhaust/flow turbulence (0.7-9 kHz), softly following the firing. the reference V8 has a flat, smooth top above 400 Hz (frame kurtosis ~0); without it the engine sounds muffled, and with spiky cracks instead it sounds crackly |
+| `exhaust_crack` | `0.0` |  | 0 .. 1 | v3: short broadband crack at the start of each blowdown (the exhaust valve opening). Off by default since v5: it read as crackling on top; use `edge` for brightness instead |
 
 Sources: Baldan et al., SIVE 2015; Farnell 2010 practical 22; Borla: engine sound and drone physics; Wikipedia: Firing order; Heywood 1988, Internal Combustion Engine Fundamentals (blowdown); refs/SOURCES.md (Rover V8, start-idle-rev recordings)
 
@@ -485,7 +487,8 @@ Things rattling in a shaken box (matchbox by default). Physics: the hand moves t
 | `box_size` | `0.05` | m | 0.01 .. 0.5 | box length (sets the body knock and plate modes) |
 | `fill` | `0.8` |  | 0 .. 1 | how full the box is (fuller = more, duller hits, less free flight) |
 | `knock` | `0.5` |  | 0 .. 2 | level of the box body knock |
-| `handling` | `0.3` |  | 0 .. 2 | low rumble of the hand moving the box near the mic (the reference clip has it below ~100 Hz) |
+| `handling` | `0.05` |  | 0 .. 2 | low rumble of the hand moving the box near the mic (the reference clip has a little below ~100 Hz). v5: default 0.05; at 0.3-0.9 it made the box sound heavy, like a dog pawing at a door |
+| `card_mm` | `0.5` | mm | 0.2 .. 3 | v5: box wall thickness. A matchbox is thin card (~0.5 mm): its modes sit high and die in a few ms |
 | `slide` | `0.15` |  | 0 .. 1 | level of the soft sliding between strokes |
 | `start` | `0.05` | s | 0 .. None | start time |
 

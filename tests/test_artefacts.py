@@ -185,3 +185,30 @@ def test_foghorn_scene_tail_is_short():
     stop = np.nonzero(db > -6)[0][-1]
     i = stop + int(1.5 * sr)
     assert i >= len(db) or db[i] < -40
+
+
+def _band_db(y, lo, hi):
+    Y = np.abs(np.fft.rfft(y * np.hanning(len(y)))) ** 2
+    f = np.fft.rfftfreq(len(y), 1 / SR)
+    return 10 * np.log10(Y[(f >= lo) & (f < hi)].sum() / (Y[f >= 20].sum() + 1e-30) + 1e-30)
+
+
+def test_shaker_is_light_not_heavy():
+    # v5: the v4 matchbox sounded like 'heavy wood, a dog pawing at a door': most energy sat below 100 Hz and
+    # the 3.2-6.4 kHz octave was ~23 dB down. Light sticks + thin card: top octave strong, little low end
+    y = run("shaker", 2.0, rate_hz=3.0, shake_s=1.5, start=0.1)
+    assert _band_db(y, 20, 200) < -10
+    assert _band_db(y, 3200, 6400) > -10
+
+
+def test_engine_top_is_open_and_smooth():
+    # v5: 'very muffled and still crackling on top'. With the default sharp-edge settings the top octaves
+    # must be present (v4: 3.2-6.4 kHz ~ -35 dB) and smooth (v4: median 50 ms frame kurtosis ~25 above 2 kHz)
+    import scipy.signal as ss
+    import scipy.stats as st
+    y = run("engine", 3.0, rpm=1800, load=0.6, cylinders=8, firing="crossplane_v8", edge=1.0, rasp=0.6,
+            muffler=0.4, mechanical=0.25)[SR // 2:]
+    assert _band_db(y, 3200, 6400) > -32
+    h = ss.sosfilt(ss.butter(4, 2000, "high", fs=SR, output="sos"), y)
+    n = int(0.05 * SR)
+    assert np.median([st.kurtosis(h[i:i + n]) for i in range(0, len(h) - n, n)]) < 3

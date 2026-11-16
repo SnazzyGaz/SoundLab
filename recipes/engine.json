@@ -72,16 +72,18 @@
      ]
     ],
     "exhaust_length": 1.32,
-    "muffler": 0.14,
+    "muffler": 0.42,
     "jitter": 0.062,
-    "intake": 0.08,
-    "mechanical": 0.8,
+    "intake": 0.363,
+    "mechanical": 0.25,
     "whine": 0.04,
     "pops": 0.4,
-    "body": 0.52,
-    "exhaust_noise": 0.7,
-    "pipe_ring": 0.14,
-    "exhaust_crack": 0.55
+    "body": 1.0,
+    "exhaust_noise": 0.184,
+    "pipe_ring": 0.377,
+    "exhaust_crack": 0.0,
+    "edge": 1.0,
+    "rasp": 0.6
    }
   }
  ],

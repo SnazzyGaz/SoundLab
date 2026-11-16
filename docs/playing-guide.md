@@ -109,6 +109,13 @@ v4 (after "a buzzing on top"): each firing's crack now has its own random streng
 valve ticks have random timing, so the top is no longer a pulse train at the firing rate. Recipes use
 `exhaust_crack` 0.55; above ~0.8 the top gets busy again.
 
+v5 (after "very muffled and still crackling on top"): new `edge` (0-1, default 0.8) makes each blowdown a
+sharp valve-opening front, which gives the open, clear note; new `rasp` (0-1.5, default 0.3) is the smooth
+turbulent top of a real exhaust. `exhaust_crack` is now 0 by default and in the recipes. Fitted to the V8
+clip: `edge` 1, `rasp` 0.6 (0.74 fitted; kept lower so it does not turn into hiss), `muffler` 0.42, `body`
+1.0, `exhaust_noise` 0.18, `intake` 0.36, `pipe_ring` 0.38, `mechanical` 0.25. If it hisses, lower `rasp`
+first; if it is dull, raise `edge`.
+
 ## Foghorn (`foghorn`)
 
 Physics: a diaphone. Compressed air is chopped by a reciprocating slotted piston into a long conical trumpet.
@@ -237,8 +244,10 @@ knock). Between strokes the contents slide.
 | `items`, `fill` | how many matches; fuller = more, duller hits | 15-50 |
 | `intensity` | how hard | 0.4-0.8 |
 | `spread_ms` | length of one collision cluster | 20-50 ms |
-| `item_hz` | brightness of the clicks | 1.5-5 kHz (the reference fit: 2350) |
-| `knock` | box body knock | 0-0.5 |
+| `item_hz` | first stick mode (matchstick ~4.8 kHz) | 3-7 kHz; lower = bigger, heavier sticks |
+| `knock` | box body knock | 0-0.3 |
+| `card_mm` | box wall thickness | 0.4-1 mm (matchbox ~0.5) |
+| `handling` | hand rumble below 150 Hz | 0-0.1; more sounds heavy |
 
 `recipes/matchbox.json` = shake (0.15-0.85 s) + four taps + strike at 2.2 s + flame, like the reference video.
 
@@ -246,6 +255,10 @@ v4 (after "a crackle like bacon frying"): contacts are soft (0.1-0.35 ms sin^2 p
 collisions come in groups per stroke, the box knock is a 2-4 ms push instead of a 1-sample click, the box body
 adds little below 500 Hz, and `handling` (hand rumble) and `slide` were added. Keep `rate_hz` around 3-4: a
 fast shake with many `items` turns into a fizz. The match's ignition crackle is now a short spray of sparks.
+
+v5 (after "the wood sounds way heavy, like a dog pawing at a wooden door"): light sticks and thin card. Contacts
+are 0.05-0.15 ms, the stick resonance is at 4.8 kHz, knocks are 0.6-1.5 ms, the card body starts at 800 Hz and
+the hand rumble is nearly gone.
 
 ## Fitting a sound to a recording
 

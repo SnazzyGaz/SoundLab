@@ -11,14 +11,15 @@
    "params": {
     "rate_hz": 3.36515,
     "shake_s": 0.7,
-    "items": 60,
-    "intensity": 0.80639,
-    "spread_ms": 62.21546,
-    "item_hz": 2111.33138,
-    "knock": 0.05707,
+    "items": 86,
+    "intensity": 0.904,
+    "spread_ms": 47.7,
+    "item_hz": 4800,
+    "knock": 0.15,
     "start": 0.15,
-    "handling": 0.90335,
-    "slide": 0.1
+    "handling": 0.077,
+    "slide": 0.1,
+    "card_mm": 0.89
    }
   },
   {
@@ -27,14 +28,15 @@
    "params": {
     "rate_hz": 3.0,
     "strokes": 4,
-    "items": 60,
+    "items": 86,
     "intensity": 0.645,
-    "spread_ms": 62.21546,
-    "item_hz": 2111.33138,
-    "knock": 0.05707,
+    "spread_ms": 47.7,
+    "item_hz": 4800,
+    "knock": 0.15,
     "start": 1.35,
-    "handling": 0.90335,
-    "slide": 0.1
+    "handling": 0.077,
+    "slide": 0.1,
+    "card_mm": 0.89
    }
   },
   {

@@ -3,7 +3,7 @@
  "name": "Fit target: matchbox shake (vs matchbox ref 0-2.15 s) [fitted values]",
  "sample_rate": 48000,
  "duration": 2.15,
- "seed": 1,
+ "seed": 11,
  "layers": [
   {
    "name": "shake",
@@ -11,14 +11,15 @@
    "params": {
     "rate_hz": 3.36515,
     "shake_s": 0.7,
-    "items": 100,
-    "intensity": 0.80639,
-    "spread_ms": 62.21546,
-    "item_hz": 2111.33138,
-    "knock": 0.05707,
+    "items": 86,
+    "intensity": 0.904,
+    "spread_ms": 47.7,
+    "item_hz": 4800,
+    "knock": 0.15,
     "start": 0.15,
-    "handling": 0.90335,
-    "slide": 0.34815
+    "handling": 0.077,
+    "slide": 0.1,
+    "card_mm": 0.89
    }
   },
   {
@@ -27,12 +28,15 @@
    "params": {
     "rate_hz": 3.0,
     "strokes": 4,
-    "items": 40,
-    "intensity": 0.6,
-    "spread_ms": 60,
-    "item_hz": 1800,
-    "knock": 0.2,
-    "start": 1.35
+    "items": 86,
+    "intensity": 0.645,
+    "spread_ms": 47.7,
+    "item_hz": 4800,
+    "knock": 0.15,
+    "start": 1.35,
+    "handling": 0.077,
+    "slide": 0.1,
+    "card_mm": 0.89
    }
   }
  ],

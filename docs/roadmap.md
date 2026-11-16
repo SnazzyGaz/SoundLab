@@ -1,6 +1,6 @@
 # Roadmap (build order from the knowledge base)
 
-Status as of 0.4.0 (16 Nov 2026). 0.4.0 fixed the matchbox fry, the foghorn noise tail and the engine buzz from the v3 listening notes. 0.3.0 fixed the synthesis artefacts behind the v2 listening notes (see [artefacts.md](artefacts.md)), fitted all five sounds to the reference recordings and added the `shaker` model.
+Status as of 0.5.0 (16 Nov 2026). 0.5.0 opened up the muffled engine (sharp valve front + smooth `rasp`, no top cracks) and made the matchbox light (thin card, light sticks). 0.4.0 fixed the matchbox fry, the foghorn noise tail and the engine buzz from the v3 listening notes. 0.3.0 fixed the synthesis artefacts behind the v2 listening notes (see [artefacts.md](artefacts.md)), fitted all five sounds to the reference recordings and added the `shaker` model.
 
 | step | content | status |
 |---|---|---|
@@ -15,6 +15,11 @@ Status as of 0.4.0 (16 Nov 2026). 0.4.0 fixed the matchbox fry, the foghorn nois
 | 9 | AIDAW plugin, MCP server, compiled real-time core, recipe library | later |
 
 ## Next concrete tasks
+
+- Measure the simple Python versions of the five sounds (the files never reached the build machine)
+  against ours and his refs, and check the v5 lessons hold.
+- Engine: the 200-400 Hz octave is still ~6 dB hot against the V8 clip, and the long `engine.json` rev to 4500 rpm
+  has no reference at that speed.
 
 - Oversample `rough_pulses` (or use a smoother pulse) to take it from -43 dB to below -60 dB inharmonic energy.
 - Make every noise source sample-rate invariant (only the oversampled blocks are now).

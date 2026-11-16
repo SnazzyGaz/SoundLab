@@ -132,14 +132,20 @@ FIRING = {
            Param("body", 0.6, "", 0, 1, "low-end weight: muffler chamber resonance + low shelf (our estimate)"),
            Param("exhaust_noise", 0.5, "", 0, 1, "broadband blowdown noise (rasp) relative to the tonal pulses"),
            Param("pipe_ring", 0.3, "", 0, 0.9, "exhaust pipe resonance feedback; high values ring/whistle"),
-           Param("exhaust_crack", 0.4, "", 0, 1, "v3: short broadband crack at the start of each blowdown (the "
-                 "exhaust valve opening). Refs show HF energy as clicks locked to the firing, not as steady hiss"),
+           Param("edge", 0.8, "", 0, 1, "v5: steepness of the blowdown pressure rise. 0 = slow smooth bump (dark, "
+                 "v2-v4), 1 = sharp valve-opening front (bright, clear exhaust note)"),
+           Param("rasp", 0.3, "", 0, 1.5, "v5: smooth broadband exhaust/flow turbulence (0.7-9 kHz), softly following the "
+                 "firing. the reference V8 has a flat, smooth top above 400 Hz (frame kurtosis ~0); without it the engine sounds "
+                 "muffled, and with spiky cracks instead it sounds crackly"),
+           Param("exhaust_crack", 0.0, "", 0, 1, "v3: short broadband crack at the start of each blowdown (the "
+                 "exhaust valve opening). Off by default since v5: it read as crackling on top; use `edge` for "
+                 "brightness instead"),
        ],
        ["Baldan et al., SIVE 2015", "Farnell 2010 practical 22", "Borla: engine sound and drone physics",
         "Wikipedia: Firing order", "Heywood 1988, Internal Combustion Engine Fundamentals (blowdown)",
         "refs/SOURCES.md (Rover V8, start-idle-rev recordings)"])
 def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, jitter, intake, mechanical, whine,
-           whine_order, pops, body, exhaust_noise, pipe_ring, exhaust_crack):
+           whine_order, pops, body, exhaust_noise, pipe_ring, edge, rasp, exhaust_crack):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     R = ctrl(ctx, rpm, "exp")
     Ld = np.clip(ctrl(ctx, load), 0, 1)
@@ -159,6 +165,13 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
             offs = [(o + r / reps) % 1 for r in range(reps) for o in offs][: int(cylinders)]
         banks = [offs]
     width = 0.16 - 0.04 * Ld  # blowdown lasts ~100-120 crank degrees of the 720 cycle (estimate after Heywood)
+    # v5: at the tailpipe the pulse has steepened and shortened (nonlinear wave steepening in the pipe;
+    # estimate): a sharper `edge` also means a shorter pulse
+    width = width * (1 - 0.6 * float(np.clip(edge, 0, 1)))
+    # rise time of the blowdown front: ~6 ms (edge 0, a slow bump) down to ~0.25 ms (edge 1, valve snapping
+    # open); as a fraction of the pulse it depends on rpm (estimate after Heywood blowdown traces)
+    rise_s = 0.25e-3 + 6e-3 * (1 - float(np.clip(edge, 0, 1))) ** 2
+    r_edge = np.clip(rise_s * cyc_rate / width, 0.01, 0.5)
     flow = (R / 3000.0) ** 0.5
     pink = dsp.lowpass(dsp.pink(rng, n), 1800.0, sr)
     pink /= np.std(pink) + 1e-12
@@ -175,7 +188,15 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
             ncyc = cyc.max() + 2
             a_cyc = 1 + jitter * 3 * rng.standard_normal(ncyc)
             a_cyc *= 1 + 0.06 * rng.standard_normal()
-            shape = np.where(u < 1, np.sin(np.pi * np.clip(u, 0, 1)) ** 2 * np.exp(-1.5 * u), 0.0)
+            # v5: blowdown rise time set by `edge`. A real blowdown starts with a steep pressure rise when the
+            # valve cracks open, then decays; that steep front is what gives a clear, bright exhaust note
+            # (harmonics into the kHz range) without any noise layer. v2-v4 used a slow symmetric bump
+            # (edge 0), which needed noise/cracks on top to not sound muffled.
+            uc_ = np.clip(u, 0, 1)
+            rise = np.sin(0.5 * np.pi * np.clip(uc_ / r_edge, 0, 1)) ** 2
+            fall = np.cos(0.5 * np.pi * np.clip((uc_ - r_edge) / (1 - r_edge), 0, 1)) ** 2 \
+                * np.exp(-1.5 * np.clip(uc_ - r_edge, 0, 1))
+            shape = np.where(u < 1, np.where(uc_ < r_edge, rise, fall), 0.0)
             pulses += shape * a_cyc[cyc]
             # v3: the blowdown noise follows a much sharper burst (shape^3: the first, fastest ~30 % of the
             # blowdown). With 8 cylinders x 0.16 cycle the old gate overlapped into a constant: stationary hiss.
@@ -196,7 +217,9 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
         gate_all += gate
     # muffler: chamber lowpass, low Helmholtz chamber peak, body shelf
     cutoff = 2800.0 * (1 - muffler) + 700.0 * muffler
-    y = dsp.lowpass(y, cutoff, sr, 0.6)
+    # v5: a muffler's attenuation grows only gradually with frequency (expansion chambers + packing), so use
+    # one gentle 2-pole at Q 0.5 plus an absorptive tilt, not a resonant-ish cut that made v4 sound muffled
+    y = dsp.lowpass(y, cutoff * (1 + 2 * (1 - muffler)), sr, 0.5)
     y = dsp.biquad(y, "peak", 70.0 + 40 * (1 - muffler), 1.2, sr, 3.0 + 3.0 * body)
     y = dsp.biquad(y, "lowshelf", 180.0, 0.7, sr, 7.0 * body)
     y = dsp.biquad(y, "highshelf", 1500.0, 0.7, sr, -4.0 * body)
@@ -216,6 +239,13 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
     cn = dsp.lowpass(dsp.highpass(dsp.pink(rng, n), 900.0, sr, 0.5), 5000.0, sr, 0.5)
     crk = cn / (np.std(cn) + 1e-12) * crack_gate
     crk *= exhaust_crack * 0.12 * (0.4 + 0.6 * Ld) * np.sqrt(loud)
+    # v5 rasp: turbulent jet noise from the tailpipe plus flow noise, continuous but swelling with each firing
+    # (envelope smoothed to ~40 Hz so it never becomes a crackle). Measured target: the V8 ref's 0.8-12.8 kHz
+    # bands sit 20-28 dB under the total and are smooth (frame kurtosis 0.1)
+    re_ = dsp.lowpass(gate_all, 40.0, sr)
+    re_ = 0.45 + 0.55 * re_ / (np.percentile(re_, 99) + 1e-9)
+    rn = dsp.lowpass(dsp.highpass(dsp.pink(rng, n), 700.0, sr, 0.5), 9000.0, sr, 0.5)
+    rasp_sig = rn / (np.std(rn) + 1e-12) * re_ * rasp * 0.06 * (0.5 + Ld) * np.sqrt(loud)
     ticks = np.zeros(n)
     if mechanical > 0:
         cam = np.cumsum(cyc_rate * 2 * cylinders) / sr
@@ -228,7 +258,7 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
             m = int(rng.uniform(0.3, 0.8) * 1e-3 * sr) + 2
             j = int(i + rng.normal(0, 0.6e-3 * sr))
             dsp.place(ticks, rng.standard_normal(m) * np.hanning(m), max(j, 0), np.exp(0.5 * rng.standard_normal()) * 0.6)
-        ticks = dsp.bandpass(ticks, 2200.0, sr, 0.6) * mechanical * 0.03
+        ticks = dsp.bandpass(ticks, 2200.0, sr, 0.6) * mechanical * 0.012  # v5: quieter (top crackle)
     wph = 2 * np.pi * np.cumsum(R / 60.0 * whine_order) / sr
     whine_sig = (np.sin(wph) + 0.3 * np.sin(2 * wph)) * whine * 0.03 * Ld * (R / 3000.0)
     pop_sig = np.zeros(n)
@@ -241,7 +271,7 @@ def engine(ctx: Ctx, x, rpm, load, cylinders, firing, exhaust_length, muffler, j
             pp = friedlander(L, sr, 0.003 + 0.005 * rng.random()) + 0.3 * rng.standard_normal(L) * np.exp(-np.arange(L) / (0.006 * sr))
             dsp.place(pop_sig, pp, i, rng.uniform(0.3, 1.0) * 1.5)
         pop_sig = dsp.lowpass(dsp.comb_waveguide(pop_sig, 2 * exhaust_length / ctx.c * sr, 0.3, sr, 2000.0, -1.0), 3000.0, sr)
-    return y + roar + blk + crk + ticks + whine_sig + pop_sig * 0.5
+    return y + roar + blk + crk + rasp_sig + ticks + whine_sig + pop_sig * 0.5
 
 
 # =================================================================== foghorn
@@ -533,14 +563,17 @@ def match(ctx: Ctx, x, strike_s, strike_speed, strike_force, ignite, flare_s, fl
            Param("box_size", 0.05, "m", 0.01, 0.5, "box length (sets the body knock and plate modes)"),
            Param("fill", 0.8, "", 0, 1, "how full the box is (fuller = more, duller hits, less free flight)"),
            Param("knock", 0.5, "", 0, 2, "level of the box body knock"),
-           Param("handling", 0.3, "", 0, 2, "low rumble of the hand moving the box near the mic (the reference clip has it "
-                 "below ~100 Hz)"),
+           Param("handling", 0.05, "", 0, 2, "low rumble of the hand moving the box near the mic (the reference clip has a "
+                 "little below ~100 Hz). v5: default 0.05; at 0.3-0.9 it made the box sound heavy, like a dog pawing at "
+                 "a door"),
+           Param("card_mm", 0.5, "mm", 0.2, 3, "v5: box wall thickness. A matchbox is thin card (~0.5 mm): its "
+                 "modes sit high and die in a few ms"),
            Param("slide", 0.15, "", 0, 1, "level of the soft sliding between strokes"),
            Param("start", 0.05, "s", 0, None, "start time"),
        ], ["Cook 1997, Physically Informed Sonic Modeling (PhISM shakers), Computer Music Journal 21(3)",
            "Farnell 2010 (rattles)", "matchbox shake reference (analysis only)"])
 def shaker(ctx: Ctx, x, rate_hz, shake_s, strokes, items, intensity, spread_ms, item_hz, box_size, fill, knock,
-           handling, slide, start):
+           handling, card_mm, slide, start):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     nrev = int(strokes) if strokes > 0 else max(1, int(round(2 * rate_hz * shake_s)))
     half = 1.0 / (2 * rate_hz)
@@ -557,7 +590,8 @@ def shaker(ctx: Ctx, x, rate_hz, shake_s, strokes, items, intensity, spread_ms, 
         force = intensity * (0.6 + 0.4 * rng.random()) * (1.0 if r % 2 == 0 else 0.8)
         # the bulk of the contents slams into the wall: one knock per reversal
         # v4: a soft ~2-4 ms push of the whole bundle (v3 used a 1-sample impulse: a broadband click)
-        mk = int(rng.uniform(2e-3, 4e-3) * sr)
+        # v5: the bundle of matches weighs ~4 g: a light, short push (0.6-1.5 ms), not v4's 2-4 ms thud
+        mk = max(4, int(rng.uniform(0.6e-3, 1.5e-3) * sr))
         dsp.place(knocks, np.sin(np.pi * np.arange(mk) / mk) ** 2 / (mk / 2), i0 + int(rng.uniform(0, 3e-3) * sr), force)
         # the cluster of item collisions
         # v4: only part of the contents hit per reversal and they arrive as a smeared group: most of the box
@@ -569,17 +603,24 @@ def shaker(ctx: Ctx, x, rate_hz, shake_s, strokes, items, intensity, spread_ms, 
             j = i0 + int(d * sr)
             # wood on wood / wood on card: smooth (sin^2) contacts of 0.15-0.5 ms (v3: 0.05-0.25 ms half-sines:
             # needle-sharp clicks with a hard spectral edge)
-            m = max(4, int(rng.uniform(0.1, 0.35) * 1e-3 * sr))
+            # v5: a matchstick weighs ~0.1 g, so its contact time is tiny (Hertz contact, ~0.05-0.15 ms);
+            # v4's 0.1-0.35 ms contacts cut everything above ~3 kHz and made the sticks sound heavy
+            m = max(3, int(rng.uniform(0.05, 0.15) * 1e-3 * sr))
             dsp.place(clicks, np.sin(np.pi * np.arange(m) / m) ** 2 * rng.choice([-1, 1]), j, a)
         L = int(half * 0.7 * sr)
         if L > 8:
             dsp.place(slide_env, np.sin(np.pi * np.arange(L) / L) ** 2 * force * 0.3, i0 + int(0.15 * half * sr))
     # item clicks: two damped stick/box resonances (refs: peaks ~1.5 and ~3.5 kHz), no bare high-pass part
-    it = dsp.bandpass(clicks, item_hz * 0.65, sr, 1.2) + 0.7 * dsp.bandpass(clicks, item_hz * 1.5, sr, 1.0)
-    it = dsp.lowpass(it, 10000.0, sr, 0.5)
+    # v5: a fir stick 45 x 2 mm has its first free-free bending mode near f1 = 1.03 c t / L^2 ~ 4.8 kHz
+    # (c ~ 4700 m/s along the grain); the 2nd sits at 2.76 f1 (very damped). The card wall adds 1-3 kHz.
+    # the reference is roughly flat from 800 Hz to 6.4 kHz (octave bands within ~2 dB)
+    it = dsp.bandpass(clicks, item_hz, sr, 1.4) + 0.3 * dsp.bandpass(clicks, item_hz * 2.76, sr, 1.5) \
+        + 0.45 * dsp.bandpass(clicks, item_hz * 0.4, sr, 0.9)
+    it = dsp.lowpass(it, 11000.0, sr, 0.5)
     # box: lossy cardboard plate + a damped body knock
     box = call("modal", ctx.child(), clicks * 0.3 + 0.3 * knocks, material="cardboard", shape="plate",
-               length=box_size, width=box_size * 0.7, thickness=0.001, n_modes=16, extra_damping=250, strike_pos=0.3)
+               length=box_size, width=box_size * 0.7, thickness=card_mm * 1e-3, n_modes=16, extra_damping=400,
+               strike_pos=0.3)
     body_hz = 9.0 / max(box_size, 0.01)  # ~180 Hz for a 5 cm box (estimate)
     kn = dsp.bandpass(knocks, body_hz * 2, sr, 0.7)
     mot = dsp.lowpass(slide_env, 30.0, sr)
@@ -587,7 +628,8 @@ def shaker(ctx: Ctx, x, rate_hz, shake_s, strokes, items, intensity, spread_ms, 
     hand = dsp.lowpass(dsp.lowpass(dsp.brown(rng, n), 100.0, sr, 0.5), 150.0, sr, 0.5)
     hand = dsp.highpass(hand, 25.0, sr, 0.7) * dsp.lowpass(slide_env, 8.0, sr)
     # a matchbox is small: its body adds little below ~500 Hz (the refs dip at 300-600 Hz)
-    body = dsp.highpass(0.35 * norm(box) * (0.5 + 0.5 * intensity) + knock * norm(kn) * intensity, 500.0, sr, 0.6)
+    # v5: thin card cannot hold low-mid energy: body high-passed at 800 Hz (v4: 500 Hz, which read as wood)
+    body = dsp.highpass(0.35 * norm(box) * (0.5 + 0.5 * intensity) + knock * norm(kn) * intensity, 800.0, sr, 0.6)
     return 0.9 * norm(it) + body + slide * norm(sl) + handling * norm(hand)
 
 

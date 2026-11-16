@@ -61,3 +61,31 @@ Tests for every fix are in `tests/test_artefacts.py`.
 | matchbox "crackle like bacon frying on high heat, at first" | (1) the shake: needle-sharp 0.05-0.25 ms clicks, a 1-sample "knock" impulse per stroke (a broadband click), and 7.8 strokes/s, so the top was a continuous spiky spray; (2) the ignition: crackle at up to 500 grains/s for about half a second | shake: median 50 ms kurtosis of the >2 kHz band 20.5 -> 8.0 (the reference clip 7.4); ignition: 5.6 -> 1.4 (clip 0.8) | soft sin^2 contacts, 2-4 ms knocks, grouped collisions per stroke, two damped stick resonances, box body highpassed at 500 Hz, hand-handling rumble, ~3.4 strokes/s; ignition crackle 160 grains/s peak, gone within ~0.5 s |
 | foghorn "weird sustained bit at the end, like ocean waves or long distance" | the scene recipe had a constant pink-noise "sea" layer (-30 dB for 7 s) plus far reflectors (900, 1600 m) smeared by `diffusion` 0.7 into noise washes | level 3 s after the blast stopped: -36 dB -> below -45 dB within 1 s | no sea layer; one 350 m reflector with low diffusion; 1.5 s tail at 0.12 |
 | engine "buzzing on top" | every firing got an identical exhaust crack and the valve ticks were metronomic, so the top was a pulse train at the firing rate (60 Hz at idle) | high-band envelope periodicity at idle 0.75 -> 0.38; the high-band level matches the reference V8 at idle (-25.5 vs -25.8 dB) | random strength per crack (a third nearly silent), pink 0.9-5 kHz noise instead of white to 7 kHz, ticks with random timing/strength/dropouts at half the level |
+
+## v5 (0.5.0): after the v4 notes and a comparison with simple synth sounds
+
+Another tool made the five sounds in plain Python (described as: duck = buzzy tone through a
+filter; engine = 4-cylinder pulse train following an RPM curve, louder and rougher with revs; foghorn = 110 Hz
+tone, slow swell, slight wobble, long reverb; explosion = crack, deep thump, rumble that dulls as it fades,
+debris crackle; match = two scratchy strikes, hissing flare, soft fluttering flame). Verdict: its duck is
+bad, the other four are decent. Those WAV files did not reach our build machine, so we could not measure them;
+the lessons below come from the description, the verdict and our own measurements against the references.
+
+What makes simple versions sound "decent":
+- **A clear, open spectrum beats physical detail that ends up hidden.** A plain pulse train has its harmonics
+  right up the spectrum, so it sounds open. Our v2-v4 engine shaped each exhaust pulse as a slow, smooth bump and
+  then put it through a resonant muffler low-pass, so everything above about 400 Hz sat 3-8 dB under the reference V8,
+  and the top had to come from added cracks. Those cracks were what read as crackling.
+- **Smooth noise, not spiky noise, for "air".** In the reference V8 recording, the top (0.8-12.8 kHz) is flat and
+  smooth: the median 50 ms kurtosis is 0.1. Ours was 24-26: it was made of clicks.
+- **Weight belongs only where the object is heavy.** The v4 matchbox put most of its energy below 100 Hz
+  (hand-handling rumble, 2-4 ms knocks) and lost 15-20 dB in the 1.6-6.4 kHz octaves. It sounded like heavy wood, like
+  "a dog pawing at a door".
+- The simple explosion, match and foghorn all have the same layers as ours (crack + thump + darkening rumble +
+  debris; strike + flare hiss + flame; tone + swell + wobble + tail). With nothing noted as wrong with
+  ours, and without the files, we did not change them.
+
+| note | cause found | measurement (v4 -> v5) | fix |
+|---|---|---|---|
+| engine "very muffled and still crackling on top" | (1) a slow 6 ms blowdown rise and a wide pulse; (2) a resonant muffler low-pass; (3) the top made of exhaust cracks and valve ticks (spiky) | 3.2-6.4 kHz -30.9 -> -27.3 dB, 6.4-12.8 kHz -36.1 -> -31.6 dB (V8 ref -23.4 / -28.1); >2 kHz frame kurtosis 23.7 -> 0.3 (ref 0.1); blips distance 0.509 -> 0.354 | `edge` (sharp valve-opening front, 0.25 ms rise, shorter pulse); gentler muffler (Q 0.5, higher corner); new `rasp` (smooth 0.7-9 kHz turbulence that swells softly with each firing); `exhaust_crack` off by default; ticks at 40 %. `engine_blips` rpm corrected to the clip (idle ~780, blips to 1700-2200: its strongest peak never goes above ~140 Hz) |
+| matchbox "wood is way heavy, a dog pawing at a wooden door" | handling rumble at 0.9 dominated; contacts 0.1-0.35 ms (too long for 0.1 g sticks); stick resonance fitted to 2.1 kHz; 2-4 ms knocks; card treated as 1 mm with the body down to 500 Hz | shake octave levels (re total) 20-100 Hz -2.5 -> -11.4 (ref -14.5), 1.6-3.2 kHz -16.8 -> -6.9 (ref -5.8), 3.2-6.4 kHz -21.2 -> -3.7 (ref -5.4); shake distance 0.726 -> 0.637 | 0.05-0.15 ms contacts; stick modes at `item_hz` (4.8 kHz: a 45 x 2 mm fir stick, f1 = 1.03 c t / L^2), x2.76 and a card mode at x0.4; 0.6-1.5 ms knocks; new `card_mm` (0.5-0.9 mm); body high-passed at 800 Hz; `handling` default 0.05 |
