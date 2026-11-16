@@ -8,7 +8,8 @@ physically informed stochastic models whose controls still map to real quantitie
 By Garyck Arntzen ([@_mintydoge](https://x.com/_mintydoge)). MIT licence. Standalone project; AIDAW uses it as
 a library/plugin.
 
-Status: **0.6.0**. Physical models for the five reference sounds tuned by ear and to reference clips, plus a
+Status: **0.7.0**. Every recipe has macro sliders (size, distance, intensity, material, ...), seeded
+variations, batch export with sensible names and a quick audition loop. Physical models for the five reference sounds tuned by ear and to reference clips, plus a
 generic synth toolkit (oscillators, FM, noise, grains, filters, envelopes, distortion, delay, chorus, reverb)
 for non-physical game sounds. Next: macro sliders, seeded variations and batch export. See
 [docs/roadmap.md](docs/roadmap.md).
@@ -41,6 +42,10 @@ soundlab describe engine                # controls, units, ranges, sources
 soundlab materials                      # material table (density, E, loss factor, T60 at 1 kHz)
 soundlab render recipes/engine.json -o engine.wav --mp3
 soundlab render recipes/engine.json --set 0.cylinders=6 --seed 4 -o six.wav
+soundlab describe recipes/hit.json      # a recipe's macro sliders (the main controls)
+soundlab render recipes/hit.json -m material=metal -m size=0.8 -o bar.wav
+soundlab batch recipes/blocks -o out/ --variations 5 --sweep pitch=0.2,0.8 --mp3 --zip
+soundlab audition recipes/footstep.json --watch   # quick 24 kHz preview, re-renders on save
 soundlab validate recipes/duck.json
 soundlab analyze sample.wav -o sample_stems/   # harmonic / transient / noise / sines stems + features.json + plot
 soundlab match ref.wav --recipe recipes/fit/duck_fit.json -p 0.f0:120:350 -p 0.rasp -o duck_fit/
@@ -84,7 +89,7 @@ control takes a breakpoint list `[[time_s, value], ...]`.
 ```
 
 Shipped recipes: `duck`, `engine`, `foghorn`, `explosion`, `match` (reference sounds), `matchbox` (shake +
-strike + flame), `engine_blips`, `explosion_small`, `foghorn_pattern`, `glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), `recipes/blocks/*` (generic-synth demos: UI click/confirm, coin, power-up, laser,
+strike + flame), `engine_blips`, `explosion_small`, `foghorn_pattern`, `glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), `hit` and `footstep` (material/surface macros), `water`, `recipes/blocks/*` (generic-synth demos: UI click/confirm, coin, power-up, laser,
 magic shimmer, whoosh), and `recipes/fit/*_fit.json` (dry recipes
 matched to the reference recordings, the starting points for `soundlab match`). Full format: [docs/recipe-format.md](docs/recipe-format.md).
 
@@ -97,6 +102,8 @@ matched to the reference recordings, the starting points for `soundlab match`). 
 - [docs/analysis.md](docs/analysis.md): the stem-split / feature tool and where it is going.
 - [docs/artefacts.md](docs/artefacts.md): the synthesis artefacts found in v2 (grain, hiss, tinny, digital,
   "plastic bucket"), how they were measured and fixed in 0.3.0.
+- [docs/macros-and-variations.md](docs/macros-and-variations.md): macro sliders, variations, batch export,
+  naming, audition.
 - [docs/synth-blocks.md](docs/synth-blocks.md): the generic synthesis blocks (non-physical sounds, layering).
 - [docs/fitting.md](docs/fitting.md): fitting recipes to recordings (`soundlab match`), the loss, and how to read
   a fit report.

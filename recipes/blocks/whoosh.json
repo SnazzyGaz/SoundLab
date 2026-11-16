@@ -136,5 +136,213 @@
   "fade_out": 0.05
  },
  "sample_rate": 48000,
- "seed": 1
+ "seed": 1,
+ "macros": {
+  "speed": {
+   "default": 0.5,
+   "doc": "slow sweep .. fast swish",
+   "map": [
+    {
+     "to": "0.1.cutoff",
+     "op": "stretch",
+     "points": [
+      [
+       0,
+       1.8
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.45
+      ]
+     ]
+    },
+    {
+     "to": "0.1.resonance",
+     "op": "stretch",
+     "points": [
+      [
+       0,
+       1.8
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.45
+      ]
+     ]
+    },
+    {
+     "to": "0.2.points",
+     "op": "stretch",
+     "points": [
+      [
+       0,
+       1.8
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.45
+      ]
+     ]
+    },
+    {
+     "to": "1.1.cutoff",
+     "op": "stretch",
+     "points": [
+      [
+       0,
+       1.8
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.45
+      ]
+     ]
+    },
+    {
+     "to": "1.2.points",
+     "op": "stretch",
+     "points": [
+      [
+       0,
+       1.8
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.45
+      ]
+     ]
+    },
+    {
+     "to": "duration",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       1.8
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.5
+      ]
+     ]
+    }
+   ]
+  },
+  "pitch": {
+   "default": 0.5,
+   "doc": "deep .. airy",
+   "map": [
+    {
+     "to": "0.1.cutoff",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.8
+      ]
+     ]
+    },
+    {
+     "to": "1.1.cutoff",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.8
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "soft .. sharp edge",
+   "map": [
+    {
+     "to": "1.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -10
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       6
+      ]
+     ]
+    },
+    {
+     "to": "0.1.resonance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.7
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.1.cutoff": {
+   "rel": 0.12
+  },
+  "1.gain_db": {
+   "db": 2
+  }
+ }
 }

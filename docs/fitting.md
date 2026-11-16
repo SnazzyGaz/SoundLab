@@ -26,9 +26,9 @@ Writes `fits/duck/`:
 2. **Hold-out check.** Matching one clip is not the same as sounding right. Give a second recording of the
    same sound with `--holdout AUDIO[:START[:END]]` (repeatable): the report scores the recipe before and after
    on it and flags a fit that got worse there as likely overfitted. Without one, the report says
-   **Missing** in bold and the fit should not be adopted. Every fit also writes `ear/fitted.wav`,
-   `ear/low.wav` and `ear/high.wav` (all fitted controls moved 25 % of their range down / up) for listening;
-   once macro sliders exist these become renders at a few macro positions.
+   **Missing** in bold and the fit should not be adopted. Every fit also writes listening renders in `ear/`: the fitted recipe, then
+   each numeric macro at 0.15 and 0.85 (others at default) and every non-default choice of a choice macro
+   (0.7.0). Recipes without macros fall back to all fitted controls moved 25 % of their range down / up.
 3. **Reference audio stays private.** Reference clips and anything derived from them (stems, crops,
    previews, fit output folders) live outside the repo. `tests/test_no_reference_audio.py` fails if any audio
    file is in the repo tree or tracked by git. Point `-o` outside the repo.

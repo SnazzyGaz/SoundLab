@@ -51,6 +51,7 @@ Generic blocks only (a test enforces it): `ui_click`, `ui_confirm`, `coin_pickup
   this measure. Very high notes (above ~5 kHz) with saw/square still carry some residual aliasing.
 - FM at high index x high carrier can still fold back above the 2x rate; keep `index` x `freq` x `ratio`
   under ~40 kHz.
-- The SVF is a per-sample Python loop: about 0.1-0.2 s per second of audio per filter. Fine offline; a compiled
-  core (later) would fix it.
+- The SVF: constant cutoff/Q runs as one exact `lfilter` pass; a moving cutoff runs a per-sample loop that
+  takes ~12 ms per second of audio (measured in 0.7.0; the 0.6.0 note of 0.1-0.2 s was wrong). A block-wise
+  lfilter version was tried and was slower unless the blocks were long enough to step the coefficients.
 - The reverb is mono and generic. It is good enough for stylised sounds; it is not a physical room.

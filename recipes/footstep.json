@@ -1,0 +1,419 @@
+{
+ "soundlab": 1,
+ "name": "Footstep: shoe on a wooden floor (heel, toe, scuff); surface macro wood/stone/metal",
+ "category": "footstep",
+ "sample_rate": 48000,
+ "duration": 0.6,
+ "seed": 1,
+ "layers": [
+  {
+   "name": "heel",
+   "model": "hit",
+   "params": {
+    "material": "oak",
+    "shape": "plate",
+    "length": 0.9,
+    "width": 0.2,
+    "thickness": 0.022,
+    "strike_pos": 0.31,
+    "extra_damping": 45.0,
+    "bounces": 1,
+    "velocity": 0.9,
+    "contact_ms": 2.5,
+    "at": 0.01
+   }
+  },
+  {
+   "name": "toe",
+   "start": 0.075,
+   "gain_db": -5,
+   "model": "hit",
+   "params": {
+    "material": "oak",
+    "shape": "plate",
+    "length": 0.9,
+    "width": 0.2,
+    "thickness": 0.022,
+    "strike_pos": 0.43,
+    "extra_damping": 45.0,
+    "bounces": 1,
+    "velocity": 0.6,
+    "contact_ms": 1.6,
+    "at": 0.0
+   }
+  },
+  {
+   "name": "scuff",
+   "start": 0.06,
+   "gain_db": -20,
+   "chain": [
+    {
+     "model": "noisegen",
+     "params": {
+      "color": "pink"
+     }
+    },
+    {
+     "model": "svf",
+     "params": {
+      "mode": "bp",
+      "cutoff": 2500,
+      "resonance": 0.8
+     }
+    },
+    {
+     "model": "env",
+     "params": {
+      "attack": 0.01,
+      "decay": 0.05,
+      "sustain": 0,
+      "release": 0.03,
+      "gate_s": 0.06
+     }
+    }
+   ]
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 45,
+    "absorption": 0.3,
+    "source_distance": 1.8
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.03
+ },
+ "macros": {
+  "surface": {
+   "default": "wood",
+   "doc": "floor material",
+   "choices": {
+    "wood": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "oak"
+     },
+     {
+      "to": "1.material",
+      "op": "set",
+      "value": "oak"
+     }
+    ],
+    "stone": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "concrete"
+     },
+     {
+      "to": "1.material",
+      "op": "set",
+      "value": "concrete"
+     },
+     {
+      "to": "0.thickness",
+      "op": "mul",
+      "value": 4
+     },
+     {
+      "to": "1.thickness",
+      "op": "mul",
+      "value": 4
+     },
+     {
+      "to": "scuff.gain_db",
+      "op": "add",
+      "value": 4
+     }
+    ],
+    "metal": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "steel"
+     },
+     {
+      "to": "1.material",
+      "op": "set",
+      "value": "steel"
+     },
+     {
+      "to": "0.thickness",
+      "op": "mul",
+      "value": 0.2
+     },
+     {
+      "to": "1.thickness",
+      "op": "mul",
+      "value": 0.2
+     },
+     {
+      "to": "0.extra_damping",
+      "op": "mul",
+      "value": 0.3
+     },
+     {
+      "to": "1.extra_damping",
+      "op": "mul",
+      "value": 0.3
+     }
+    ]
+   }
+  },
+  "size": {
+   "default": 0.5,
+   "doc": "light person .. heavy person (weight, softer longer contact, slower roll)",
+   "map": [
+    {
+     "to": "0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.5
+      ]
+     ]
+    },
+    {
+     "to": "1.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.5
+      ]
+     ]
+    },
+    {
+     "to": "0.contact_ms",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.7
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.5
+      ]
+     ]
+    },
+    {
+     "to": "1.start",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.02
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.03
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "sneaking .. stomping",
+   "map": [
+    {
+     "to": "0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    },
+    {
+     "to": "1.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    },
+    {
+     "to": "scuff.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -6
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       4
+      ]
+     ]
+    }
+   ]
+  },
+  "hardness": {
+   "default": 0.5,
+   "doc": "soft trainers .. hard heels",
+   "map": [
+    {
+     "to": "0.contact_ms",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       2.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    },
+    {
+     "to": "1.contact_ms",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       2.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.velocity": {
+   "rel": 0.2
+  },
+  "1.velocity": {
+   "rel": 0.25
+  },
+  "1.start": {
+   "abs": 0.015
+  },
+  "0.strike_pos": {
+   "abs": 0.08
+  },
+  "1.strike_pos": {
+   "abs": 0.08
+  },
+  "scuff.gain_db": {
+   "db": 4
+  },
+  "0.contact_ms": {
+   "rel": 0.15
+  }
+ }
+}

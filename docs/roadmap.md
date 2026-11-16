@@ -1,6 +1,6 @@
 # Roadmap
 
-Status as of 0.6.0 (16 Nov 2026). Re-ordered after a review of the plan with an outside critique: the
+Status as of 0.7.0 (16 Nov 2026): steps 1-3 done. Re-ordered after a review of the plan with an outside critique: the
 physics models stay as they are, and the next work is what makes SoundLab useful for game sound: generic
 blocks, macro sliders, variations and batch export, a recipe library, and a measured checkpoint.
 
@@ -17,8 +17,8 @@ Ground rules:
 |---|---|---|
 | done before 0.6 | Recipe format + render CLI; physical blocks (exciters, modal, strings, tubes, horns, radiation, propagation, rooms); five reference sounds tuned to listening and reference clips; analysis and `soundlab match` | done (0.1-0.5) |
 | 1 | **Generic block toolkit** alongside the physics models: band-limited oscillators (sine/saw/square/triangle/pulse, unison, FM), noise colours (+ sample-and-hold), resonant SVF (LP/HP/BP/notch/peak), envelopes (ADSR + breakpoints), distortion/waveshaping/bitcrush, pitch and filter sweeps (automation), random grains, delay/chorus/reverb, layering with offsets. Same JSON recipe format. For UI blips, magic, sci-fi, retro, power-ups. | **done in 0.6.0** (see [synth-blocks.md](synth-blocks.md)) |
-| 2 | **Macro sliders per recipe** (size, distance, intensity, material where relevant) mapping onto the underlying controls. Macros are the primary interface; the physical controls stay underneath as the reference. | next |
-| 3 | **Seeded variations** (`--variations N`: small randomisation of the controls a recipe declares as variable), **batch export**, sensible naming (`category_name_v01.wav`), fast audition loop. | |
+| 2 | **Macro sliders per recipe** (size, distance, intensity, material where relevant) mapping onto the underlying controls. Macros are the primary interface; the physical controls stay underneath as the reference. | **done in 0.7.0** ([macros-and-variations.md](macros-and-variations.md)) |
+| 3 | **Seeded variations** (`--variations N`: small randomisation of the controls a recipe declares as variable), **batch export**, sensible naming (`category_name_v01.wav`), fast audition loop. | **done in 0.7.0** |
 | 4 | **About 30 recipes** including non-physical ones (impacts, footsteps, whooshes, UI, pickups, power-ups, magic, sci-fi, fire, water, engines, creatures, explosions), tuned by listening. | |
 | 5 | **Stop-and-judge checkpoint** with a defined pass mark (below). | |
 | after 5 | Only then: deeper physics for live-steered sounds (engine following real revs, impacts that follow material and speed), real-time via a single-source generator if needed, optional ML-based analysis (stem separation, learned embeddings). | later, if the checkpoint says so |
@@ -50,8 +50,7 @@ A blind test, decided now so the checkpoint is not skipped.
   (`f0`, `tone_hz`, `freq`), checks it on a render and locks it before fitting anything else
   (`--no-pitch-first` to opt out).
 - **Hold-out check.** Every fitted recipe is scored on a second recording of the same sound it was not fitted
-  to (`--holdout`), and rendered at a few slider positions for listening (`ear/` renders; macro positions
-  once step 2 exists). A fit report without a hold-out says so in bold.
+  to (`--holdout`), and rendered at a few slider positions for listening (`ear/` renders at macro positions). A fit report without a hold-out says so in bold.
 - **Never ship reference clips or stems derived from them.** They live outside the repo
   (`soundlab-research/refs`); a test fails if any audio file is in the repo tree or tracked by git
   (`tests/test_no_reference_audio.py`, allowlist intentionally empty). Tuned settings are our own work.

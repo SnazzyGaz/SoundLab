@@ -1,4 +1,4 @@
-"""soundlab command line: render, models, describe, materials, analyze, match, compare, validate."""
+"""soundlab command line: render, batch, audition, models, describe, materials, analyze, match, compare, validate."""
 from __future__ import annotations
 
 import argparse
@@ -28,12 +28,38 @@ def main(argv=None) -> int:
     r.add_argument("--seed", type=int, help="override seed (variations)")
     r.add_argument("--set", action="append", default=[], metavar="LAYER.PARAM=VALUE",
                    help="override a parameter of a single-model layer, e.g. --set 0.rpm=3000")
+    r.add_argument("--macro", "-m", action="append", default=[], metavar="NAME=VALUE",
+                   help="set a macro slider, e.g. -m size=0.8 -m material=metal (see: soundlab describe RECIPE)")
+    r.add_argument("--variations", type=int, default=0, help="write N files: v01 as written, v02.. seeded variations")
+    r.add_argument("--variation", type=int, default=0, help="render only variation k (0 = as written)")
+
+    b = sub.add_parser("batch", help="render many recipes (folders, files, .txt lists) with variations and macro sweeps")
+    b.add_argument("inputs", nargs="+")
+    b.add_argument("-o", "--out", required=True, help="output folder")
+    b.add_argument("--variations", type=int, default=1)
+    b.add_argument("--macro", "-m", action="append", default=[], metavar="NAME=VALUE")
+    b.add_argument("--sweep", action="append", default=[], metavar="NAME=V1,V2,..",
+                   help="render every listed value of a macro (combinations multiply), e.g. --sweep size=0,0.5,1")
+    b.add_argument("--mp3", action="store_true")
+    b.add_argument("--sr", type=int)
+    b.add_argument("--recursive", action="store_true")
+    b.add_argument("--zip", action="store_true", help="also zip the output folder")
+
+    au = sub.add_parser("audition", help="quick preview: render at 24 kHz and play; --watch re-renders on save")
+    au.add_argument("recipe")
+    au.add_argument("--macro", "-m", action="append", default=[], metavar="NAME=VALUE")
+    au.add_argument("--variation", type=int, default=0)
+    au.add_argument("--sr", type=int, default=24000)
+    au.add_argument("--seconds", type=float, help="cut the preview to this length")
+    au.add_argument("--no-play", action="store_true")
+    au.add_argument("--watch", action="store_true")
+    au.add_argument("-o", "--out", default="/tmp/soundlab-audition")
 
     m = sub.add_parser("models", help="list models")
     m.add_argument("--stage")
     m.add_argument("--json", action="store_true")
 
-    d = sub.add_parser("describe", help="show a model's controls, units, ranges and sources")
+    d = sub.add_parser("describe", help="show a recipe's macros (path to .json) or a model's controls")
     d.add_argument("name")
     d.add_argument("--json", action="store_true")
 
@@ -84,9 +110,35 @@ def main(argv=None) -> int:
                 layer = rec["layers"][int(li)]
                 tgt = layer if "model" in layer else layer["chain"][0]
                 tgt.setdefault("params", {})[pname] = json.loads(val) if val[:1] in "[{-0123456789tfn\"" else val
+            from .macros import parse_macro_args
+            mv = parse_macro_args(args.macro)
             out = args.out or str(Path(args.recipe).with_suffix(".wav"))
-            info = soundlab.render_to_file(rec, out, mp3=args.mp3, sample_rate=args.sr, seed=args.seed)
-            print(json.dumps(info))
+            if args.variations and args.variations > 1:
+                o = Path(out)
+                for k in range(args.variations):
+                    info = soundlab.render_to_file(rec, o.with_name(f"{o.stem}_v{k + 1:02d}{o.suffix}"), mp3=args.mp3,
+                                                   sample_rate=args.sr, macros=mv, variation=k)
+                    print(json.dumps(info))
+            else:
+                info = soundlab.render_to_file(rec, out, mp3=args.mp3, sample_rate=args.sr, seed=args.seed,
+                                               macros=mv, variation=args.variation)
+                print(json.dumps(info))
+        elif args.cmd == "batch":
+            from .batch import batch_export, parse_sweep
+            from .macros import parse_macro_args
+            man = batch_export(args.inputs, args.out, args.variations, parse_macro_args(args.macro),
+                               parse_sweep(args.sweep), args.mp3, args.sr, args.recursive)
+            if args.zip:
+                import shutil
+                z = shutil.make_archive(str(Path(args.out).resolve()), "zip", root_dir=Path(args.out).resolve().parent,
+                                        base_dir=Path(args.out).resolve().name)
+                print(f"zip: {z}")
+            print(f"{len(man)} files in {args.out}")
+        elif args.cmd == "audition":
+            from .batch import audition
+            from .macros import parse_macro_args
+            audition(args.recipe, parse_macro_args(args.macro), args.variation, args.sr, args.seconds, args.out,
+                     not args.no_play, args.watch)
         elif args.cmd == "models":
             ms = soundlab.list_models(args.stage)
             if not _print(ms, args.json):
@@ -98,7 +150,26 @@ def main(argv=None) -> int:
                             print(f"  {x['name']:<12} {x['doc'][:100]}")
         elif args.cmd == "describe":
             dd = soundlab.describe(args.name)
-            if not _print(dd, args.json):
+            if "macros" in dd and not args.json:
+                print(f"{dd['name']}  [category: {dd['category']}, {dd['duration']} s]\n")
+                print("MACROS (primary controls; set with -m NAME=VALUE)")
+                for m in dd["macros"]:
+                    if "choices" in m:
+                        print(f"  {m['name']:<12} default={m['default']!r:<8} choices: {', '.join(m['choices'])}")
+                    else:
+                        print(f"  {m['name']:<12} default={m['default']:<8} 0..1   jitter +-{m['jitter']}")
+                    if m["doc"]:
+                        print(f"  {'':<12} {m['doc']}")
+                    for mv in m.get("moves", []):
+                        print(f"  {'':<14}-> {mv}")
+                if dd["vary"]:
+                    print("\nVARIATIONS jitter: " + ", ".join(f"{k} {v}" for k, v in dd["vary"].items()))
+                print("\nLAYERS")
+                for L in dd["layers"]:
+                    print(f"  {L['index']}: {L['name']:<10} " + " -> ".join(L["blocks"]))
+                if dd["post"]:
+                    print("  post: " + " -> ".join(dd["post"]))
+            elif not _print(dd, args.json):
                 print(f"{dd['name']} ({dd['stage']})\n  {dd['doc']}\n")
                 for p in dd["params"]:
                     rng = p.get("range")

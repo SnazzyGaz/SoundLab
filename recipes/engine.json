@@ -107,5 +107,212 @@
  "master": {
   "normalize_db": -1.0,
   "fade_out": 0.2
+ },
+ "category": "vehicle",
+ "macros": {
+  "rpm": {
+   "default": 0.5,
+   "doc": "revs: the whole rpm curve scaled (idle .. high)",
+   "map": [
+    {
+     "to": "0.rpm",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.55
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    }
+   ]
+  },
+  "load": {
+   "default": 0.5,
+   "doc": "throttle: the load curve shifted (coasting .. full load)",
+   "map": [
+    {
+     "to": "0.load",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "size": {
+   "default": 0.5,
+   "doc": "small engine .. big engine (pipe length, low-end weight)",
+   "map": [
+    {
+     "to": "0.exhaust_length",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.7
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.4
+      ]
+     ]
+    },
+    {
+     "to": "0.body",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "quiet road car .. loud and raspy (muffler, rasp)",
+   "map": [
+    {
+     "to": "0.muffler",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -0.35
+      ]
+     ]
+    },
+    {
+     "to": "0.rasp",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, air absorption, more reflections)",
+   "map": [
+    {
+     "to": "post.0.distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       10
+      ]
+     ]
+    },
+    {
+     "to": "post.1.distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       10
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.jitter": {
+   "rel": 0.2
+  },
+  "0.exhaust_length": {
+   "rel": 0.03
+  }
  }
 }

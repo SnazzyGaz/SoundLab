@@ -1,6 +1,186 @@
 {
-  "soundlab": 1, "name": "Camp fire building up", "sample_rate": 48000, "duration": 8.0, "seed": 9,
-  "layers": [{"model": "fire", "params": {"intensity": [[0, 0.2], [4, 0.8], [8, 0.7]], "crackle_rate": 12}}],
-  "post": [{"model": "outdoor", "params": {"reflectors": [[15, 0.2]], "tail_s": 0.6, "tail_level": 0.05}}],
-  "master": {"normalize_db": -1.0, "fade_out": 0.3}
+ "soundlab": 1,
+ "name": "Camp fire building up",
+ "sample_rate": 48000,
+ "duration": 8.0,
+ "seed": 9,
+ "layers": [
+  {
+   "model": "fire",
+   "params": {
+    "intensity": [
+     [
+      0,
+      0.2
+     ],
+     [
+      4,
+      0.8
+     ],
+     [
+      8,
+      0.7
+     ]
+    ],
+    "crackle_rate": 12
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "outdoor",
+   "params": {
+    "reflectors": [
+     [
+      15,
+      0.2
+     ]
+    ],
+    "tail_s": 0.6,
+    "tail_level": 0.05
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.3
+ },
+ "category": "ambience",
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "candle-ish .. bonfire",
+   "map": [
+    {
+     "to": "0.intensity",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.35
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.4
+      ]
+     ]
+    },
+    {
+     "to": "0.woof",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "calm .. crackling",
+   "map": [
+    {
+     "to": "0.crackle_rate",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    },
+    {
+     "to": "0.hiss",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.15
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.2
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, air absorption, more reflections)",
+   "map": [
+    {
+     "to": "post.0.tail_level",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.crackle_rate": {
+   "rel": 0.2
+  }
+ }
 }

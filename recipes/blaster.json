@@ -1,10 +1,123 @@
 {
-  "soundlab": 1, "name": "Struck guy-wire 'pew' (dispersive string; Burtt's blaster prop, our physics reading)",
-  "sample_rate": 48000, "duration": 1.5, "seed": 1,
-  "layers": [{"chain": [
-    {"model": "impact", "params": {"velocity": 3, "contact_ms": 0.1}},
-    {"model": "string", "params": {"f0": 12, "t60": 1.2, "brightness": 14000, "dispersion": 0.7, "dispersion_stages": 24}},
-    {"model": "filter", "params": {"kind": "highpass", "freq": 300}}
-  ]}],
-  "master": {"normalize_db": -1.0}
+ "soundlab": 1,
+ "name": "Struck guy-wire 'pew' (dispersive string; Burtt's blaster prop, our physics reading)",
+ "sample_rate": 48000,
+ "duration": 1.5,
+ "seed": 1,
+ "layers": [
+  {
+   "chain": [
+    {
+     "model": "impact",
+     "params": {
+      "velocity": 3,
+      "contact_ms": 0.1
+     }
+    },
+    {
+     "model": "string",
+     "params": {
+      "f0": 12,
+      "t60": 1.2,
+      "brightness": 14000,
+      "dispersion": 0.7,
+      "dispersion_stages": 24
+     }
+    },
+    {
+     "model": "filter",
+     "params": {
+      "kind": "highpass",
+      "freq": 300
+     }
+    }
+   ]
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0
+ },
+ "category": "scifi",
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "short thin wire .. long heavy wire (pitch of the pew)",
+   "map": [
+    {
+     "to": "0.1.f0",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       1.8
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.6
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "soft .. hard strike",
+   "map": [
+    {
+     "to": "0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    }
+   ]
+  },
+  "length": {
+   "default": 0.5,
+   "doc": "short .. long ring",
+   "map": [
+    {
+     "to": "0.1.t60",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.1.f0": {
+   "rel": 0.06
+  },
+  "0.velocity": {
+   "rel": 0.15
+  }
+ }
 }

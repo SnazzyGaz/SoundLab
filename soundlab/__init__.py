@@ -4,6 +4,8 @@ Library API (what AIDAW and other hosts use):
 
     import soundlab
     audio, sr = soundlab.render("recipes/duck.json")          # or a dict
+    audio, sr = soundlab.render("recipes/hit.json", macros={"material": "metal", "size": 0.8}, variation=3)
+    soundlab.batch(["recipes/blocks"], "out/", variations=5)
     soundlab.render_to_file(recipe, "duck.wav", mp3=True)
     soundlab.list_models(); soundlab.describe("engine")
     feats = soundlab.analyze_file("sample.wav", out_dir="stems/")
@@ -19,8 +21,9 @@ from .core import REGISTRY, RecipeError
 from .recipe import load as load_recipe
 from .recipe import render, validate
 
-__version__ = "0.6.0"
-__all__ = ["render", "render_to_file", "list_models", "describe", "validate", "load_recipe", "analyze",
+__version__ = "0.7.0"
+__all__ = ["render", "render_to_file", "list_models", "describe", "macros", "variation", "batch", "validate",
+           "load_recipe", "analyze",
            "analyze_file", "materials", "RecipeError", "__version__", "match", "compare"]
 
 
@@ -30,15 +33,40 @@ def list_models(stage: str | None = None) -> list[dict]:
 
 
 def describe(name: str) -> dict:
+    """A model's controls, or (for a recipe path/dict) the recipe's macros first, then its layers."""
+    if isinstance(name, dict) or (isinstance(name, (str, Path)) and str(name).endswith(".json")):
+        from .macros import describe_recipe
+        return describe_recipe(load_recipe(name))
     if name not in REGISTRY:
         raise RecipeError(f"unknown model {name!r}")
     return REGISTRY[name].describe()
 
 
+def macros(recipe: Any) -> dict:
+    """The recipe's macro sliders: {name: spec}."""
+    from .macros import macro_specs
+    return macro_specs(load_recipe(recipe))
+
+
+def variation(recipe: Any, k: int, macros: dict | None = None) -> dict:
+    """Concrete recipe for variation k (macros applied, seeded jitter); render it with its 'seed'."""
+    from .macros import variation as _v
+    r, vals, seed = _v(load_recipe(recipe), k, macros)
+    r["seed"] = seed
+    r["macro_values"] = vals
+    return r
+
+
+def batch(*args, **kw):
+    """Batch export (see soundlab.batch.batch_export)."""
+    from .batch import batch_export
+    return batch_export(*args, **kw)
+
+
 def render_to_file(recipe: Any, path: str | Path, mp3: bool = False, sample_rate: int | None = None,
-                   seed: int | None = None, bits: int = 24) -> dict:
+                   seed: int | None = None, bits: int = 24, macros: dict | None = None, variation: int = 0) -> dict:
     from .audio_io import write_mp3, write_wav
-    audio, sr = render(recipe, sample_rate=sample_rate, seed=seed)
+    audio, sr = render(recipe, sample_rate=sample_rate, seed=seed, macros=macros, variation=variation)
     path = Path(path)
     out = {"wav": str(write_wav(path, audio, sr, bits)), "sample_rate": sr, "seconds": len(audio) / sr}
     if mp3:

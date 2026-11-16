@@ -1,0 +1,80 @@
+# Macros, variations, batch export and audition (0.7.0)
+
+Roadmap steps 2 and 3. **Macros are the primary interface**: every recipe declares a few sliders (0-1) or
+named choices, and each one moves several underlying controls with a sensible curve. The physical controls
+stay underneath as the reference and for fitting.
+
+```bash
+soundlab describe recipes/hit.json                        # macros first, then layers
+soundlab render recipes/hit.json -m material=metal -m size=0.8 -o metal_bar.wav
+soundlab render recipes/footstep.json --variations 5 -o step.wav   # step_v01.wav .. step_v05.wav
+soundlab batch recipes/blocks recipes/hit.json -o out/ --variations 5 --mp3 --zip
+soundlab batch recipes/explosion.json -o out/ --sweep size=0,0.5,1
+soundlab audition recipes/blocks/coin_pickup.json -m pitch=0.7 --watch   # re-renders + plays on save
+```
+
+```python
+y, sr = soundlab.render("recipes/hit.json", macros={"material": "glass", "intensity": 0.8}, variation=2)
+soundlab.macros("recipes/engine.json")          # the macro specs
+soundlab.batch(["recipes/blocks"], "out/", variations=5, sweep={"pitch": [0.2, 0.8]})
+```
+
+## How macros map
+
+At its default a macro leaves the recipe **exactly as written** (a test checks every shipped recipe), so
+fitted values stay valid and macros move around them. Mappings (`mul`, `add`, `stretch`, `set`, piecewise
+`points`, `clamp`) and target paths are documented at the top of `soundlab/macros.py` and in
+[recipe-format.md](recipe-format.md). `stretch` scales breakpoint *times*, which is how "length" and
+"speed" macros lengthen sweeps and envelopes. `master.gain_db` is applied after peak normalising, so
+`distance` makes a sound quieter as well as duller/roomier (it never makes it louder than written).
+
+## Variations
+
+`--variations N` writes N files: `v01` is the recipe as written (at the chosen macros), `v02..` are
+seeded variations. Each variation (1) jitters every numeric macro by its `jitter` (default +-0.04),
+(2) applies the recipe's `vary` list (uniform `cents`, `rel`, `db` or `abs` offsets per control: e.g. hit
+velocity +-20 %, strike position +-0.06, onset +-4 ms), and (3) renders with its own seed so every random
+part (noise, grains, crackle timing) differs. Variation k of a recipe is fully determined by (seed, k):
+re-running a batch gives identical files, and asking for more variations never changes the earlier ones.
+
+## Naming
+
+`<category>_<name>[_<macro><value>...]_v<NN>.wav`, words inside a field joined by `-`:
+`impact_hit_materialmetal_v03.wav`, `pickup_coin-pickup_v01.wav`, `vehicle_engine_rpm0.85_load0.8_v01.wav`.
+`category` comes from the recipe. `batch` also writes `manifest.json` (file, recipe, macros, variation,
+render time).
+
+## Audition
+
+`soundlab audition RECIPE` renders at 24 kHz into `/tmp/soundlab-audition/` and plays it with the first
+player found (ffplay, afplay, paplay, aplay). `--watch` keeps the process alive and re-renders on every save,
+which avoids Python's ~0.7 s start-up; most recipes render in 0.01-0.2 s. `--seconds` cuts long recipes.
+
+## Shipped macros
+
+| recipe | category | macros |
+|---|---|---|
+| `blaster.json` | scifi | `size`, `intensity`, `length` |
+| `car_passby.json` | vehicle | `speed`, `distance` |
+| `drip.json` | water | `size`, `intensity`, `distance` |
+| `duck.json` | animal | `size`, `intensity`, `distance` |
+| `engine.json` | vehicle | `rpm`, `load`, `size`, `intensity`, `distance` |
+| `engine_blips.json` | vehicle | `rpm`, `load`, `size`, `intensity`, `distance` |
+| `explosion.json` | explosion | `size`, `intensity`, `debris`, `distance` |
+| `explosion_small.json` | explosion | `size`, `intensity`, `debris`, `distance` |
+| `fire.json` | ambience | `size`, `intensity`, `distance` |
+| `foghorn.json` | ambience | `size`, `intensity`, `length`, `distance` |
+| `foghorn_pattern.json` | ambience | `size`, `intensity`, `length`, `distance` |
+| `footstep.json` | footstep | `surface` (wood, stone, metal), `size`, `intensity`, `hardness`, `distance` |
+| `glass_hit_room.json` | impact | `size`, `intensity`, `distance` |
+| `hit.json` | impact | `material` (wood, metal, glass, plastic, stone, cardboard), `size`, `intensity`, `hardness`, `distance` |
+| `match.json` | foley | `size`, `intensity`, `wetness`, `distance` |
+| `matchbox.json` | foley | `intensity`, `size`, `wetness`, `distance` |
+| `water.json` | water | `size`, `intensity`, `distance` |
+| `blocks/coin_pickup.json` | pickup | `pitch`, `length`, `brightness` |
+| `blocks/laser_zap.json` | scifi | `pitch`, `length`, `intensity` |
+| `blocks/magic_shimmer.json` | magic | `pitch`, `density`, `size` |
+| `blocks/power_up.json` | powerup | `pitch`, `length`, `brightness`, `size` |
+| `blocks/ui_click.json` | ui | `pitch`, `length`, `brightness` |
+| `blocks/ui_confirm.json` | ui | `pitch`, `length`, `brightness` |
+| `blocks/whoosh.json` | whoosh | `speed`, `pitch`, `intensity` |

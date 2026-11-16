@@ -116,5 +116,120 @@
   "fade_out": 0.2
  },
  "sample_rate": 48000,
- "seed": 1
+ "seed": 1,
+ "macros": {
+  "pitch": {
+   "default": 0.5,
+   "doc": "low .. high sparkle",
+   "map": [
+    {
+     "to": "0.freq",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    },
+    {
+     "to": "1.freq",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    }
+   ]
+  },
+  "density": {
+   "default": 0.5,
+   "doc": "sparse .. dense sparkles",
+   "map": [
+    {
+     "to": "0.rate",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.25
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       3
+      ]
+     ]
+    }
+   ]
+  },
+  "size": {
+   "default": 0.5,
+   "doc": "dry .. huge space",
+   "map": [
+    {
+     "to": "post.0.size",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.1
+      ]
+     ]
+    },
+    {
+     "to": "post.0.mix",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.35
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.25
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "1.freq": {
+   "cents": 200
+  }
+ }
 }

@@ -1,0 +1,137 @@
+{
+ "soundlab": 1,
+ "name": "Water: small stream / pouring (bubble model)",
+ "category": "water",
+ "sample_rate": 48000,
+ "duration": 4.0,
+ "seed": 1,
+ "layers": [
+  {
+   "name": "stream",
+   "model": "water",
+   "params": {
+    "mode": "stream",
+    "rate": 400,
+    "radius_mm": 3.0
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 30,
+    "absorption": 0.3,
+    "source_distance": 1.0
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.2
+ },
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "trickle .. bigger stream (bubble sizes)",
+   "map": [
+    {
+     "to": "0.radius_mm",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.45
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.2
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "gentle .. gushing (bubble rate)",
+   "map": [
+    {
+     "to": "0.rate",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.2
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       4.0
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.rate": {
+   "rel": 0.2
+  },
+  "0.radius_mm": {
+   "rel": 0.1
+  }
+ }
+}

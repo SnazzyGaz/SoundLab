@@ -66,5 +66,266 @@
   "normalize_db": -1.0,
   "fade_out": 0.5,
   "highpass_hz": 25
+ },
+ "category": "explosion",
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "grenade .. cinematic blast (as written at 0.5)",
+   "map": [
+    {
+     "to": "0.size",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.6
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.05
+      ]
+     ]
+    },
+    {
+     "to": "0.fireball_s",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.15
+      ]
+     ]
+    },
+    {
+     "to": "0.boom_hz",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       1.8
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.85
+      ]
+     ]
+    },
+    {
+     "to": "0.roar",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.1
+      ]
+     ]
+    },
+    {
+     "to": "duration",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.1
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "muffled .. violent (mic overload, crack)",
+   "map": [
+    {
+     "to": "0.drive",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    },
+    {
+     "to": "0.crack",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.8
+      ]
+     ]
+    }
+   ]
+  },
+  "debris": {
+   "default": 0.5,
+   "doc": "no debris .. lots",
+   "map": [
+    {
+     "to": "0.debris",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, air absorption, more reflections)",
+   "map": [
+    {
+     "to": "post.0.distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.2
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       4
+      ]
+     ]
+    },
+    {
+     "to": "post.1.distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.2
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       4
+      ]
+     ]
+    },
+    {
+     "to": "post.2.tail_level",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.fireball_s": {
+   "rel": 0.12
+  },
+  "0.boom_hz": {
+   "rel": 0.1
+  },
+  "0.surge": {
+   "abs": 0.05
+  },
+  "0.sub_blasts": {
+   "abs": 1
+  }
  }
 }

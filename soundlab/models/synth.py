@@ -219,7 +219,10 @@ def grains(ctx: Ctx, x, rate, grain_ms, freq, spread_oct, source, quantize, amp_
 
 # ----------------------------------------------------------------------------- processors
 def svf_tv(x: np.ndarray, fc: np.ndarray, q: np.ndarray, sr: int, mode: str) -> np.ndarray:
-    """TPT state-variable filter with per-sample cutoff and Q. mode: lp|hp|bp|notch|peak."""
+    """TPT state-variable filter with per-sample cutoff and Q. mode: lp|hp|bp|notch|peak.
+    Constant cutoff and Q: one exact lfilter pass (dsp.svf_fast); moving: the per-sample loop below."""
+    if np.ptp(fc) == 0 and np.ptp(q) == 0:
+        return dsp.svf_fast(x, fc, q, sr, "bpn" if mode == "bp" else mode)
     g = np.tan(np.pi * np.clip(fc, 5.0, sr * 0.45) / sr).tolist()
     k = (1.0 / np.clip(q, 0.05, 100.0)).tolist()
     xs = np.asarray(x, float).tolist()

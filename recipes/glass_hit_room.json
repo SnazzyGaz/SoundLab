@@ -1,13 +1,159 @@
 {
-  "soundlab": 1, "name": "Glass rod tapped with a hard hammer, small room (chain example)",
-  "sample_rate": 48000, "duration": 3.0, "seed": 2,
-  "layers": [
-    {"name": "tap", "chain": [
-      {"model": "impact", "params": {"velocity": 1.2, "contact_ms": 0.2, "bounces": 3, "restitution": 0.4, "first_gap": 0.08}},
-      {"model": "modal", "params": {"material": "glass", "shape": "bar", "length": 0.25, "thickness": 0.008, "strike_pos": 0.1, "extra_damping": 1.5}},
-      {"model": "radiation", "params": {"radius": 0.01}}
-    ]}
-  ],
-  "post": [{"model": "room", "params": {"volume": 40, "absorption": 0.3, "source_distance": 1.0}}],
-  "master": {"normalize_db": -1.0}
+ "soundlab": 1,
+ "name": "Glass rod tapped with a hard hammer, small room (chain example)",
+ "sample_rate": 48000,
+ "duration": 3.0,
+ "seed": 2,
+ "layers": [
+  {
+   "name": "tap",
+   "chain": [
+    {
+     "model": "impact",
+     "params": {
+      "velocity": 1.2,
+      "contact_ms": 0.2,
+      "bounces": 3,
+      "restitution": 0.4,
+      "first_gap": 0.08
+     }
+    },
+    {
+     "model": "modal",
+     "params": {
+      "material": "glass",
+      "shape": "bar",
+      "length": 0.25,
+      "thickness": 0.008,
+      "strike_pos": 0.1,
+      "extra_damping": 1.5
+     }
+    },
+    {
+     "model": "radiation",
+     "params": {
+      "radius": 0.01
+     }
+    }
+   ]
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 40,
+    "absorption": 0.3,
+    "source_distance": 1.0
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0
+ },
+ "category": "impact",
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "small .. large glass",
+   "map": [
+    {
+     "to": "0.1.length",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "tap .. hard",
+   "map": [
+    {
+     "to": "0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.velocity": {
+   "rel": 0.2
+  },
+  "0.1.strike_pos": {
+   "abs": 0.05
+  }
+ }
 }

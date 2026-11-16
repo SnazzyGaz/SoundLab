@@ -68,6 +68,9 @@ def _block(ctx: Ctx, spec: dict, x: np.ndarray | None) -> np.ndarray:
 def validate(recipe: dict) -> list[str]:
     """Return a list of problems (empty if the recipe is valid)."""
     errs = []
+    if recipe.get("macros") or recipe.get("vary"):
+        from .macros import validate_macros
+        errs += validate_macros(recipe)
     if not isinstance(recipe.get("layers"), list) or not recipe["layers"]:
         errs.append("recipe needs a non-empty 'layers' list")
         return errs
@@ -100,11 +103,27 @@ def validate(recipe: dict) -> list[str]:
     return errs
 
 
-def render(recipe: Any, sample_rate: int | None = None, seed: int | None = None, return_layers: bool = False):
-    """Render a recipe (dict or path) to a mono float array. Deterministic for a given seed."""
+def resolve(recipe: Any, macros: dict | None = None, variation: int = 0) -> tuple[dict, int]:
+    """Apply macro values (defaults where not given) and, for variation k >= 1, the seeded jitter.
+    Returns (concrete recipe without 'macros'/'vary', seed to render with)."""
+    from . import models  # noqa: F401
+    from .macros import variation as _variation
+    r = load(recipe)
+    rr, _, seed = _variation(r, int(variation or 0), macros)
+    return rr, seed
+
+
+def render(recipe: Any, sample_rate: int | None = None, seed: int | None = None, return_layers: bool = False,
+           macros: dict | None = None, variation: int = 0):
+    """Render a recipe (dict or path) to a mono float array. Deterministic for a given seed.
+
+    macros: {name: value} for the recipe's macro sliders (defaults otherwise). variation: 0 = the recipe as
+    written; k >= 1 = seeded variation k (jittered macros/controls and its own seed)."""
     from . import models  # noqa: F401  (registers blocks)
 
-    r = load(recipe)
+    r, vseed = resolve(recipe, macros, variation)
+    if seed is None and variation:
+        seed = vseed
     errs = validate(r)
     if errs:
         raise RecipeError("; ".join(errs))
@@ -140,6 +159,8 @@ def render(recipe: Any, sample_rate: int | None = None, seed: int | None = None,
     mix = dsp.fade(mix, sr, 0.0005, float(master.get("fade_out", 0.02)))
     if master.get("normalize_db", -1.0) is not None:
         mix = dsp.normalize_peak(mix, float(master.get("normalize_db", -1.0)))
+    if master.get("gain_db"):
+        mix = mix * 10 ** (float(master["gain_db"]) / 20)  # v0.7: level after normalising (distance macros)
     if return_layers:
         return mix, sr, stems
     return mix, sr

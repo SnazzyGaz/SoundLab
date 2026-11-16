@@ -52,5 +52,188 @@
  "master": {
   "normalize_db": -1.0,
   "fade_out": 0.4
+ },
+ "category": "ambience",
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "small air horn .. big diaphone (pitch, horn length)",
+   "map": [
+    {
+     "to": "0.tone_hz",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       1.7
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.75
+      ]
+     ]
+    },
+    {
+     "to": "0.horn_length",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.3
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "soft .. full pressure (pressure, brightness)",
+   "map": [
+    {
+     "to": "0.pressure",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    },
+    {
+     "to": "0.brightness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.2
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "length": {
+   "default": 0.5,
+   "doc": "short toot .. long blast",
+   "map": [
+    {
+     "to": "0.blast_s",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.8
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, air absorption, more reflections)",
+   "map": [
+    {
+     "to": "post.0.distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.2
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       4
+      ]
+     ]
+    },
+    {
+     "to": "post.1.tail_level",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.tone_hz": {
+   "cents": 15
+  },
+  "0.wobble": {
+   "rel": 0.2
+  }
  }
 }

@@ -549,14 +549,30 @@ def holdout(result, ref, ref_sr, ref_start=None, ref_end=None, weights=None, nam
     return out
 
 
-def ear_renders(result, out_dir, shift=0.25, sr=48000):
-    """Listening renders (v0.6): the fitted recipe, plus every fitted control moved `shift` of its range
-    toward its low and its high end. Listen for settings that only work at one point. (Once macro sliders
-    exist, these become renders at a few macro positions.)"""
+def ear_renders(result, out_dir, shift=0.25, sr=48000, positions=(0.15, 0.85)):
+    """Listening renders: the fitted recipe, then the fitted recipe at a few MACRO positions (v0.7: each
+    numeric macro at 0.15 and 0.85 with the others at default, every choice of a choice macro). A fit that
+    only works at one setting shows up here. Recipes without macros fall back to every fitted control moved
+    `shift` of its range toward its low and high end (v0.6 behaviour)."""
     from .audio_io import write_wav
     od = Path(out_dir) / "ear"
     od.mkdir(parents=True, exist_ok=True)
     rec = result["recipe"]
+    specs = rec.get("macros") or {}
+    if specs:
+        files = []
+        jobs = [("fitted", {})]
+        for name, spec in specs.items():
+            if "choices" in spec:
+                jobs += [(f"{name}_{c}", {name: c}) for c in spec["choices"] if c != spec.get("default")]
+            else:
+                jobs += [(f"{name}{v:g}", {name: v}) for v in positions]
+        for tag, mv in jobs:
+            y, _ = render_recipe(rec, sr, macros=mv)
+            p = od / f"{tag}.wav"
+            write_wav(p, y / (np.max(np.abs(y)) + 1e-12) * 0.9, sr)
+            files.append(str(p))
+        return files
     fps = [parse_param(p["key"] + f":{p['lo']}:{p['hi']}", rec) for p in result["params"]]
     files = []
     for tag, d in (("fitted", 0.0), ("low", -shift), ("high", shift)):
@@ -630,7 +646,7 @@ def report(result, ref_x, out_dir, ref_name="reference", recipe_name="recipe"):
                  "been scored on a second recording of the same sound and checked by ear.")
     if result.get("ear"):
         L += ["", "Listening renders: " + ", ".join(Path(f).name for f in result["ear"]) +
-              " (fitted, and all fitted controls 25 % of their range lower / higher)."]
+              " (fitted, then macro positions; or, without macros, all fitted controls 25 % of their range lower / higher)."]
     if result["notes"]:
         L += ["", "## Notes", ""] + [f"- {n}" for n in result["notes"]]
     (od / "report.md").write_text("\n".join(L) + "\n")

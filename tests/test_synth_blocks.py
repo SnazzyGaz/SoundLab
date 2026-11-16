@@ -128,3 +128,21 @@ def test_block_recipes_render(tmp_path):
                 assert REGISTRY[b["model"]].stage in ("synth", "fx"), (f.name, b["model"])
         y, sr = soundlab.render(rec, sample_rate=24000)
         assert np.all(np.isfinite(y)) and np.max(np.abs(y)) > 0.5
+
+
+def test_fast_svf_matches_loop_for_constant_cutoff():
+    from soundlab import dsp
+    x = np.random.default_rng(2).standard_normal(SR)
+    for mode in ("lp", "bp", "hp"):
+        a = dsp.svf_loop(x, np.full(SR, 1234.0), 2.0, SR, mode)
+        b = dsp.svf(x, 1234.0, 2.0, SR, mode)
+        assert np.max(np.abs(a - b)) < 1e-9
+
+
+def test_audition_renders_preview(tmp_path):
+    from pathlib import Path
+    from soundlab.batch import audition
+    root = Path(__file__).resolve().parents[1]
+    p = audition(root / "recipes" / "blocks" / "ui_click.json", {"pitch": 0.8}, out_dir=tmp_path, do_play=False,
+                 log=lambda m: None)
+    assert p.exists()

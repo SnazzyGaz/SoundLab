@@ -53,5 +53,188 @@
   "normalize_db": -1.0,
   "fade_out": 0.1,
   "highpass_hz": 60
+ },
+ "category": "animal",
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "small duckling-ish .. big drake-ish (pitch, formant, note length)",
+   "map": [
+    {
+     "to": "0.f0",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       1.45
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.75
+      ]
+     ]
+    },
+    {
+     "to": "0.formant_hz",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       1.2
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.85
+      ]
+     ]
+    },
+    {
+     "to": "0.note_s",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.8
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.2
+      ]
+     ]
+    }
+   ]
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "calm .. agitated (rasp, faster calls)",
+   "map": [
+    {
+     "to": "0.rasp",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.15
+      ]
+     ]
+    },
+    {
+     "to": "0.gap_s",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       1.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.7
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, air absorption, more reflections)",
+   "map": [
+    {
+     "to": "post.0.distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       6
+      ]
+     ]
+    },
+    {
+     "to": "post.1.tail_level",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.f0": {
+   "cents": 40
+  },
+  "0.note_s": {
+   "rel": 0.1
+  },
+  "0.gap_s": {
+   "rel": 0.12
+  },
+  "0.rasp": {
+   "abs": 0.05
+  }
  }
 }

@@ -1,13 +1,172 @@
 {
-  "soundlab": 1, "name": "V8 (one cross-plane bank) passing at 25 m/s, 8 m away",
-  "sample_rate": 48000, "duration": 7.0, "seed": 4,
-  "layers": [
-    {"name": "engine", "model": "engine", "params": {"rpm": 3200, "load": 0.6, "cylinders": 4, "firing": "crossplane_bank", "exhaust_length": 2.0, "muffler": 0.4, "jitter": 0.03}},
-    {"name": "tyres", "model": "noise", "params": {"color": "pink", "f_lo": 200, "f_hi": 3000, "attack": 0.01, "hold": 7, "release": 0.5}, "gain_db": -14}
-  ],
-  "post": [
-    {"model": "passby", "params": {"speed": 25, "closest": 8, "t_closest": 3.5}},
-    {"model": "ground", "params": {"source_height": 0.3, "listener_height": 1.6, "distance": 8, "reflection": 0.8}}
-  ],
-  "master": {"normalize_db": -1.0, "fade_out": 0.3}
+ "soundlab": 1,
+ "name": "V8 (one cross-plane bank) passing at 25 m/s, 8 m away",
+ "sample_rate": 48000,
+ "duration": 7.0,
+ "seed": 4,
+ "layers": [
+  {
+   "name": "engine",
+   "model": "engine",
+   "params": {
+    "rpm": 3200,
+    "load": 0.6,
+    "cylinders": 4,
+    "firing": "crossplane_bank",
+    "exhaust_length": 2.0,
+    "muffler": 0.4,
+    "jitter": 0.03
+   }
+  },
+  {
+   "name": "tyres",
+   "model": "noise",
+   "params": {
+    "color": "pink",
+    "f_lo": 200,
+    "f_hi": 3000,
+    "attack": 0.01,
+    "hold": 7,
+    "release": 0.5
+   },
+   "gain_db": -14
+  }
+ ],
+ "post": [
+  {
+   "model": "passby",
+   "params": {
+    "speed": 25,
+    "closest": 8,
+    "t_closest": 3.5
+   }
+  },
+  {
+   "model": "ground",
+   "params": {
+    "source_height": 0.3,
+    "listener_height": 1.6,
+    "distance": 8,
+    "reflection": 0.8
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.3
+ },
+ "category": "vehicle",
+ "macros": {
+  "speed": {
+   "default": 0.5,
+   "doc": "slow .. fast pass",
+   "map": [
+    {
+     "to": "post.0.speed",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.8
+      ]
+     ]
+    },
+    {
+     "to": "0.rpm",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.7
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.3
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "close .. far lane",
+   "map": [
+    {
+     "to": "post.0.closest",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       4
+      ]
+     ]
+    },
+    {
+     "to": "post.1.distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       4
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -8
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "post.0.speed": {
+   "rel": 0.1
+  }
+ }
 }

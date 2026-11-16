@@ -85,5 +85,141 @@
   "fade_out": 0.03
  },
  "sample_rate": 48000,
- "seed": 1
+ "seed": 1,
+ "macros": {
+  "pitch": {
+   "default": 0.5,
+   "doc": "low .. high coin",
+   "map": [
+    {
+     "to": "0.freq",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    }
+   ]
+  },
+  "length": {
+   "default": 0.5,
+   "doc": "short .. long ring",
+   "map": [
+    {
+     "to": "0.2.points",
+     "op": "stretch",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    },
+    {
+     "to": "duration",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.8
+      ]
+     ]
+    },
+    {
+     "to": "0.3.time_ms",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.7
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.4
+      ]
+     ]
+    }
+   ]
+  },
+  "brightness": {
+   "default": 0.5,
+   "doc": "dull .. bright (pulse width, filter)",
+   "map": [
+    {
+     "to": "0.1.cutoff",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.8
+      ]
+     ]
+    },
+    {
+     "to": "0.pulse_width",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -0.35
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.freq": {
+   "cents": 30
+  },
+  "0.3.feedback": {
+   "abs": 0.08
+  }
+ }
 }
