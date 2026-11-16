@@ -89,3 +89,9 @@ What makes simple versions sound "decent":
 |---|---|---|---|
 | engine "very muffled and still crackling on top" | (1) a slow 6 ms blowdown rise and a wide pulse; (2) a resonant muffler low-pass; (3) the top made of exhaust cracks and valve ticks (spiky) | 3.2-6.4 kHz -30.9 -> -27.3 dB, 6.4-12.8 kHz -36.1 -> -31.6 dB (V8 ref -23.4 / -28.1); >2 kHz frame kurtosis 23.7 -> 0.3 (ref 0.1); blips distance 0.509 -> 0.354 | `edge` (sharp valve-opening front, 0.25 ms rise, shorter pulse); gentler muffler (Q 0.5, higher corner); new `rasp` (smooth 0.7-9 kHz turbulence that swells softly with each firing); `exhaust_crack` off by default; ticks at 40 %. `engine_blips` rpm corrected to the clip (idle ~780, blips to 1700-2200: its strongest peak never goes above ~140 Hz) |
 | matchbox "wood is way heavy, a dog pawing at a wooden door" | handling rumble at 0.9 dominated; contacts 0.1-0.35 ms (too long for 0.1 g sticks); stick resonance fitted to 2.1 kHz; 2-4 ms knocks; card treated as 1 mm with the body down to 500 Hz | shake octave levels (re total) 20-100 Hz -2.5 -> -11.4 (ref -14.5), 1.6-3.2 kHz -16.8 -> -6.9 (ref -5.8), 3.2-6.4 kHz -21.2 -> -3.7 (ref -5.4); shake distance 0.726 -> 0.637 | 0.05-0.15 ms contacts; stick modes at `item_hz` (4.8 kHz: a 45 x 2 mm fir stick, f1 = 1.03 c t / L^2), x2.76 and a card mode at x0.4; 0.6-1.5 ms knocks; new `card_mm` (0.5-0.9 mm); body high-passed at 800 Hz; `handling` default 0.05 |
+
+Follow-up (same day): the files arrived and were measured against the reference clips. Ours is closer on all five
+(duck 0.38 vs 0.64, engine blips 0.35 vs 0.76, foghorn 0.35 vs 0.43, match 0.54 vs 0.75; for the short
+explosion clip `explosion_small` 0.43 vs 0.47). The simple engine is a steady pulse train with a clicky top
+(frame kurtosis ~26) and strong 200-800 Hz; its appeal is a clear, steady pitch, not a spectrum to copy. No
+model changes came out of the comparison.
