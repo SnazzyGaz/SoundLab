@@ -1,0 +1,137 @@
+{
+ "soundlab": 1,
+ "name": "Fit target: cross-plane V8 close up, two blips (vs Commons Rover V8 1.5-9.5 s)",
+ "sample_rate": 48000,
+ "duration": 8.0,
+ "seed": 1,
+ "layers": [
+  {
+   "name": "engine",
+   "model": "engine",
+   "params": {
+    "cylinders": 8,
+    "firing": "crossplane_v8",
+    "rpm": [
+     [
+      0,
+      800
+     ],
+     [
+      0.6,
+      800
+     ],
+     [
+      1.0,
+      3200
+     ],
+     [
+      1.2,
+      3000
+     ],
+     [
+      2.2,
+      900
+     ],
+     [
+      2.8,
+      800
+     ],
+     [
+      4.0,
+      800
+     ],
+     [
+      4.4,
+      3600
+     ],
+     [
+      4.9,
+      1200
+     ],
+     [
+      5.6,
+      800
+     ],
+     [
+      8,
+      800
+     ]
+    ],
+    "load": [
+     [
+      0,
+      0.15
+     ],
+     [
+      0.55,
+      0.15
+     ],
+     [
+      0.6,
+      0.9
+     ],
+     [
+      1.1,
+      0.9
+     ],
+     [
+      1.2,
+      0.0
+     ],
+     [
+      2.6,
+      0.0
+     ],
+     [
+      2.8,
+      0.15
+     ],
+     [
+      3.95,
+      0.15
+     ],
+     [
+      4.0,
+      0.9
+     ],
+     [
+      4.45,
+      0.9
+     ],
+     [
+      4.5,
+      0.0
+     ],
+     [
+      5.4,
+      0.0
+     ],
+     [
+      5.6,
+      0.15
+     ],
+     [
+      8,
+      0.15
+     ]
+    ],
+    "exhaust_length": 2.6,
+    "muffler": 0.5,
+    "jitter": 0.05,
+    "intake": 0.5,
+    "mechanical": 0.2,
+    "whine": 0.04,
+    "pops": 0.2,
+    "body": 0.7,
+    "exhaust_noise": 0.6,
+    "pipe_ring": 0.3
+   }
+  }
+ ],
+ "post": [],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.02,
+  "highpass_hz": 60
+ }
+}

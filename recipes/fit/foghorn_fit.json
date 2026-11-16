@@ -1,0 +1,31 @@
+{
+ "soundlab": 1,
+ "name": "Fit target: diaphone close (vs Commons East Brother CC0 0.3-5.0 s)",
+ "sample_rate": 48000,
+ "duration": 4.7,
+ "seed": 1,
+ "layers": [
+  {
+   "name": "diaphone",
+   "model": "foghorn",
+   "params": {
+    "tone_hz": 140,
+    "grunt_hz": 85,
+    "mode": "two_tone",
+    "blast_s": 1.9,
+    "grunt_s": 2.0,
+    "attack_s": 0.05,
+    "roughness": 0.5,
+    "chop": 0.3,
+    "brightness": 0.4,
+    "start": 0.12
+   }
+  }
+ ],
+ "post": [],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.02,
+  "highpass_hz": 60
+ }
+}

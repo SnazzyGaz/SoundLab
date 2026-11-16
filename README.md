@@ -41,6 +41,9 @@ soundlab render recipes/engine.json -o engine.wav --mp3
 soundlab render recipes/engine.json --set 0.cylinders=6 --seed 4 -o six.wav
 soundlab validate recipes/duck.json
 soundlab analyze sample.wav -o sample_stems/   # harmonic / transient / noise / sines stems + features.json + plot
+soundlab match ref.wav --recipe recipes/fit/duck_fit.json -p 0.f0:120:350 -p 0.rasp -o duck_fit/
+                                        # fit controls to a recording: fitted.json + report.md + comparison.png
+soundlab compare ref.wav a.wav b.wav    # distance of renders to a reference (lower = closer)
 ```
 
 ## Python API (what AIDAW calls)
@@ -53,6 +56,8 @@ audio, sr = soundlab.render({"duration": 2, "layers": [{"model": "hit", "params"
 soundlab.render_to_file(recipe, "out.wav", mp3=True, seed=7)
 soundlab.list_models("excitation"); soundlab.describe("modal")
 feats = soundlab.analyze_file("sample.wav", out_dir="stems/")
+res = soundlab.match("recipes/fit/match_fit.json", "strike.wav", ["0.flare_s", "0.flame_db"], out_dir="fit/")
+d = soundlab.compare("strike.wav", "render.wav")   # {"spectral", "stft", "envelope", "texture", "pitch", "total"}
 ```
 
 Renders are deterministic: the same recipe and seed always give the same samples.
@@ -76,8 +81,9 @@ control takes a breakpoint list `[[time_s, value], ...]`.
 }
 ```
 
-Shipped recipes: `duck`, `engine`, `foghorn`, `explosion`, `match` (reference sounds) and `glass_hit_room`,
-`car_passby`, `fire`, `drip`, `blaster` (examples). Full format: [docs/recipe-format.md](docs/recipe-format.md).
+Shipped recipes: `duck`, `engine`, `foghorn`, `explosion`, `match` (reference sounds), `foghorn_pattern`,
+`glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), and `recipes/fit/*_fit.json` (dry recipes
+matched to the reference recordings, the starting points for `soundlab match`). Full format: [docs/recipe-format.md](docs/recipe-format.md).
 
 ## Documentation
 
@@ -86,6 +92,8 @@ Shipped recipes: `duck`, `engine`, `foghorn`, `explosion`, `match` (reference so
 - [docs/physics-reference.md](docs/physics-reference.md): formulas, material and mode tables, sources.
 - [docs/models.md](docs/models.md): every block and control (generated from the code).
 - [docs/analysis.md](docs/analysis.md): the stem-split / feature tool and where it is going.
+- [docs/fitting.md](docs/fitting.md): fitting recipes to recordings (`soundlab match`), the loss, and how to read
+  a fit report.
 - [docs/architecture.md](docs/architecture.md): code layout and how AIDAW plugs in.
 - [docs/licensing.md](docs/licensing.md): what we may copy, what is reference-only.
 - [docs/roadmap.md](docs/roadmap.md): build order and status.

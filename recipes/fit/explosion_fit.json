@@ -1,0 +1,28 @@
+{
+ "soundlab": 1,
+ "name": "Fit target: single blast (vs Commons Explosions LS100155 0.4-1.57 s)",
+ "sample_rate": 48000,
+ "duration": 1.17,
+ "seed": 1,
+ "layers": [
+  {
+   "name": "blast",
+   "model": "explosion",
+   "params": {
+    "size": 0.6,
+    "fireball_s": 1.2,
+    "debris": 0.0,
+    "drive": 2.5,
+    "crack": 0.5,
+    "boom_hz": 60,
+    "at": 0.2
+   }
+  }
+ ],
+ "post": [],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.02,
+  "highpass_hz": 60
+ }
+}

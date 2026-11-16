@@ -1,0 +1,44 @@
+{
+ "soundlab": 1,
+ "name": "Fit target: dry mallard hen, calm series (vs Commons female mallard 0.3-2.9 s)",
+ "sample_rate": 48000,
+ "duration": 2.6,
+ "seed": 1,
+ "layers": [
+  {
+   "name": "hen",
+   "model": "duck",
+   "params": {
+    "voice": "female",
+    "notes": 4,
+    "f0": 200,
+    "formant_hz": 2100,
+    "rasp": 0.7,
+    "nasal": 0.6,
+    "note_s": 0.18,
+    "gap_s": 0.42,
+    "decrescendo_db": 0,
+    "start": 0.2
+   }
+  },
+  {
+   "name": "ambience",
+   "model": "noise",
+   "params": {
+    "color": "pink",
+    "f_lo": 80,
+    "f_hi": 8000,
+    "attack": 0.01,
+    "hold": 60,
+    "release": 0.1
+   },
+   "gain_db": -32
+  }
+ ],
+ "post": [],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.02,
+  "highpass_hz": 60
+ }
+}

@@ -19,9 +19,9 @@ from .core import REGISTRY, RecipeError
 from .recipe import load as load_recipe
 from .recipe import render, validate
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = ["render", "render_to_file", "list_models", "describe", "validate", "load_recipe", "analyze",
-           "analyze_file", "materials", "RecipeError", "__version__"]
+           "analyze_file", "materials", "RecipeError", "__version__", "match", "compare"]
 
 
 def list_models(stage: str | None = None) -> list[dict]:
@@ -55,3 +55,23 @@ def analyze_file(path: str | Path, out_dir: str | Path | None = None, plot: bool
     from .audio_io import read_audio
     x, sr = read_audio(path)
     return analyze(x, sr, out_dir, plot)
+
+
+def match(recipe: Any, ref_path: str | Path, params=None, out_dir: str | Path | None = None, **kw) -> dict:
+    """Fit a recipe's controls to a reference recording (see soundlab.fit). Returns the fit result."""
+    from . import fit as _fit
+    from .audio_io import read_audio
+    x, sr = read_audio(ref_path)
+    res = _fit.fit(load_recipe(recipe), x, sr, params, **kw)
+    if out_dir:
+        _fit.report(res, x, out_dir, Path(ref_path).name)
+    return res
+
+
+def compare(ref_path: str | Path, cand_path: str | Path, ref_start=None, ref_end=None) -> dict:
+    """Distance between a reference recording and a render (spectral/stft/envelope/texture/total)."""
+    from . import fit as _fit
+    from .audio_io import read_audio
+    r, rsr = read_audio(ref_path)
+    c, csr = read_audio(cand_path)
+    return _fit.compare_signals(r, rsr, c, csr, ref_start, ref_end)

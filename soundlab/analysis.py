@@ -139,41 +139,132 @@ def envelope(x, sr, win_ms=10.0):
     return e
 
 
-def f0_estimate(x, sr, fmin=40.0, fmax=1500.0, threshold=0.15):
-    """YIN pitch (de Cheveigne & Kawahara 2002): cumulative-mean-normalised difference function.
-    Returns (median f0 over voiced frames, number of voiced frames)."""
-    frame, hop = int(0.04 * sr), int(0.01 * sr)
-    lo, hi = max(2, int(sr / fmax)), min(int(sr / fmin), frame // 2)
-    vals = []
+def _yin_frames(x, sr, fmin, fmax, frame_s=0.04, hop_s=0.01):
+    """Per-frame YIN: returns list of (time, rms, best cmnd value, f0 or None) for frames above a -50 dB gate."""
+    frame, hop = int(frame_s * sr), int(hop_s * sr)
+    w = frame // 2
+    lo, hi = max(2, int(sr / fmax)), min(int(sr / fmin), w)
+    out = []
     gate = 10 ** (-50 / 20) * (np.max(np.abs(x)) + 1e-12)
+    taus = np.arange(1, hi + 1)
     for i in range(0, len(x) - frame, hop):
         fr = x[i:i + frame]
-        if np.sqrt(np.mean(fr ** 2)) < gate:
+        rms = float(np.sqrt(np.mean(fr ** 2)))
+        if rms < gate:
             continue
-        w = frame // 2
-        # difference function via FFT autocorrelation
         a = fr[:w]
-        d = np.empty(hi + 1)
-        d[0] = 0.0
         e0 = np.sum(a ** 2)
         cs = np.concatenate([[0.0], np.cumsum(fr ** 2)])
         ac = np.fft.irfft(np.fft.rfft(fr, 2 * frame) * np.conj(np.fft.rfft(a, 2 * frame)))[: hi + 1]
-        for tau in range(1, hi + 1):
-            d[tau] = e0 + (cs[tau + w] - cs[tau]) - 2 * ac[tau]
-        cm = d[1:] * np.arange(1, hi + 1) / (np.cumsum(d[1:]) + 1e-12)
-        cm = np.concatenate([[1.0], cm])
+        d = e0 + (cs[taus + w] - cs[taus]) - 2 * ac[1:hi + 1]
+        cm = np.concatenate([[1.0], d * taus / (np.cumsum(d) + 1e-12)])
+        out.append((i / sr, rms, cm, lo, hi))
+    return out
+
+
+def f0_track(x, sr, fmin=40.0, fmax=1500.0, threshold=0.15):
+    """YIN f0 per frame (de Cheveigne & Kawahara 2002). Returns (times, f0 or nan, aperiodicity, rms)."""
+    T, F, A, R = [], [], [], []
+    for t, rms, cm, lo, hi in _yin_frames(x, sr, fmin, fmax):
         seg = cm[lo - 1:hi + 1]
+        best = float(seg.min())
         mins = np.nonzero((seg[1:-1] < seg[:-2]) & (seg[1:-1] <= seg[2:]) & (seg[1:-1] < threshold))[0]
-        if len(mins) == 0:
-            continue
-        k = lo + mins[0]
-        if 0 < k < hi:
-            a_, b_, c_ = cm[k - 1], cm[k], cm[k + 1]
-            p = 0.5 * (a_ - c_) / (a_ - 2 * b_ + c_ + 1e-12)
-        else:
+        f = np.nan
+        if len(mins):
+            k = lo + mins[0]
             p = 0.0
-        vals.append(sr / (k + p))
-    return (float(np.median(vals)), len(vals)) if vals else (None, 0)
+            if 0 < k < hi:
+                a_, b_, c_ = cm[k - 1], cm[k], cm[k + 1]
+                p = 0.5 * (a_ - c_) / (a_ - 2 * b_ + c_ + 1e-12)
+            f = sr / (k + p)
+        T.append(t), F.append(f), A.append(best), R.append(rms)
+    return np.array(T), np.array(F), np.array(A), np.array(R)
+
+
+def f0_estimate(x, sr, fmin=40.0, fmax=1500.0, threshold=0.15, min_voiced=0.25, return_info=False):
+    """Robust pitch: YIN per frame, then voicing gates.
+
+    A frame is voiced when its YIN dip is below `threshold`. Loud frames count more (we only consider frames
+    within 30 dB of the loudest). The sound gets a pitch only if at least `min_voiced` of those frames are voiced
+    AND the voiced f0 values agree (most within a semitone band of the median after octave folding); noise,
+    explosions and scrapes therefore return None instead of a spurious number.
+    periodicity = 1 - median YIN dip over the loud frames (1 = pure tone, ~0.5 or less = noise-like).
+    Returns (f0 or None, voiced frame count) or, with return_info, a dict."""
+    T, F, A, R = f0_track(x, sr, fmin, fmax, threshold)
+    info = {"f0_hz": None, "voiced_frames": 0, "voiced_fraction": 0.0, "periodicity": None, "f0_spread_semitones": None}
+    if len(T) == 0:
+        return info if return_info else (None, 0)
+    loud = R > R.max() * 10 ** (-30 / 20)
+    v = loud & np.isfinite(F)
+    nv = int(v.sum())
+    frac = nv / max(int(loud.sum()), 1)
+    info.update(voiced_frames=nv, voiced_fraction=round(float(frac), 3),
+                periodicity=round(float(np.clip(1 - np.median(A[loud]), 0, 1)), 3))
+    if nv == 0:
+        return info if return_info else (None, 0)
+    fv, wv = F[v], R[v]
+    med = float(np.median(fv))
+    st = 12 * np.log2(fv / med)
+    spread = float(np.percentile(np.abs(st), 75))
+    info.update(f0_spread_semitones=round(spread, 2))
+    ok = frac >= min_voiced and nv >= 5
+    if ok:
+        # loudness-weighted median is less fooled by quiet tails
+        o = np.argsort(fv)
+        cw = np.cumsum(wv[o]) / wv.sum()
+        info["f0_hz"] = float(fv[o][np.searchsorted(cw, 0.5)])
+    if return_info:
+        return info
+    return (info["f0_hz"], nv)
+
+
+def envelope_class(x, sr, smooth_ms=50.0):
+    """Classify the level shape and measure decay only where that makes sense.
+
+    Returns dict: kind = 'decaying' (one event that dies away), 'sustained' (holds near its peak level) or
+    'repeated' (several separate events, e.g. quacks or footsteps), plus decay_t60_s (decaying only; Schroeder
+    energy-decay-curve slope between -5 and -25 dB after the attack peak, extrapolated to 60 dB), events and
+    event_rate_hz (repeated), and active_s (time within 20 dB of the peak)."""
+    env = envelope(x, sr, smooth_ms)
+    hop = max(1, int(0.005 * sr))
+    e = dsp.db(env[::hop] / (env.max() + 1e-12))
+    t = np.arange(len(e)) * hop / sr
+    res = {"kind": None, "decay_t60_s": None, "events": 0, "event_rate_hz": None,
+           "active_s": round(float((e > -20).sum() * hop / sr), 3)}
+    # events: rising crossings of -15 dB with at least 10 dB dip between them (hysteresis)
+    ev, armed = [], True
+    for i, v in enumerate(e):
+        if armed and v > -15:
+            ev.append(t[i])
+            armed = False
+        elif not armed and v < -25:
+            armed = True
+    res["events"] = len(ev)
+    if len(ev) >= 3:
+        res["kind"] = "repeated"
+        res["event_rate_hz"] = round(float((len(ev) - 1) / (ev[-1] - ev[0] + 1e-9)), 3)
+        return res
+    # Decay test on the Schroeder energy-decay curve (EDC) after the peak. For a free (exponential) decay the
+    # EDC takes about twice as long to go from -10 to -30 dB as from 0 to -10 dB, even with a few echoes on top.
+    # A held tone that stops has a nearly linear-energy EDC: -10 dB comes late and -30 dB right after it.
+    ip = int(np.argmax(np.abs(x) > 0.5 * np.max(np.abs(x))))
+    ip = int(np.argmax(env[: max(ip + int(0.2 * sr), 1)])) if ip else int(np.argmax(env))
+    y = x[ip:]
+    edc = np.cumsum((y ** 2)[::-1])[::-1]
+    if edc[0] > 0:
+        edc_db = 10 * np.log10(edc / edc[0] + 1e-20)
+        i10, i30 = int(np.argmax(edc_db < -10)), int(np.argmax(edc_db < -30))
+        if 0 < i10 < i30 and (i30 - i10) >= 0.8 * i10:
+            res["kind"] = "decaying"
+            i5, i25 = int(np.argmax(edc_db < -5)), int(np.argmax(edc_db < -25))
+            if i25 > i5 + 3:
+                tt = np.arange(i5, i25) / sr
+                slope = np.polyfit(tt, edc_db[i5:i25], 1)[0]
+                if slope < 0:
+                    res["decay_t60_s"] = round(float(-60 / slope), 3)
+            return res
+    res["kind"] = "sustained"
+    return res
 
 
 def schroeder_t60(x, sr):
@@ -191,25 +282,70 @@ def schroeder_t60(x, sr):
     return float(-60 / slope) if slope < 0 else None
 
 
-def modulation_rate(x, sr, fmin=5.0, fmax=400.0):
-    """Dominant periodicity of the amplitude envelope (e.g. engine firing frequency)."""
-    env = envelope(x, sr, 2.0)
-    env = env - env.mean()
-    d = 8
-    env = signal.decimate(env, d, zero_phase=True)
-    esr = sr / d
-    ac = np.correlate(env, env, "full")[len(env) - 1:]
-    if ac[0] <= 0:
-        return None
-    ac /= ac[0]
-    lo, hi = int(esr / fmax), min(int(esr / fmin), len(ac) - 1)
+def _mod_ac(x, sr, d):
+    acs = []
+    for lo_f, hi_f in ((40, 300), (300, 1200), (1200, 4000), (4000, min(12000, sr / 2 - 100))):
+        b = _band(x, lo_f, hi_f, sr)
+        env = np.log(envelope(b, sr, 2.0) + 1e-6 * (np.max(np.abs(x)) + 1e-12))
+        env = signal.decimate(env - env.mean(), d, zero_phase=True)
+        ac = np.correlate(env, env, "full")[len(env) - 1:]
+        if ac[0] > 0:
+            acs.append(ac / ac[0])
+    return np.mean(acs, axis=0) if acs else None
+
+
+def _mod_pick(ac, esr, fmin, fmax):
+    lo, hi = max(1, int(esr / fmax)), min(int(esr / fmin), len(ac) - 1)
     if hi <= lo + 1:
-        return None
-    pk, props = signal.find_peaks(ac[lo:hi], height=0.2)
+        return None, None
+    pk, props = signal.find_peaks(ac[lo:hi], height=0.0, prominence=0.05)
     if len(pk) == 0:
-        return None
-    k = lo + pk[0]
-    return float(esr / k)
+        return None, None
+    h = props["peak_heights"]
+    best = float(h.max())
+    k = lo + pk[np.nonzero(h >= 0.85 * best)[0][0]]
+    return float(esr / k), best
+
+
+def modulation_rate(x, sr, fmin=5.0, fmax=400.0, return_info=False, win_s=1.0):
+    """Dominant periodicity of the amplitude envelope (e.g. engine firing frequency).
+
+    Robust version: the envelope is taken in four broad bands (so one ringing resonance cannot dominate),
+    log-compressed, and their autocorrelations averaged. We pick the strongest peak, then prefer the shortest
+    lag whose peak is at least 85% as strong (avoids reporting a sub-multiple). This runs in 1 s windows
+    (rates change during a rev); windows with peak strength >= 0.3 vote and the median wins. Returns None
+    when fewer than a quarter of the loud windows are confident."""
+    d = 8
+    esr = sr / d
+    W = int(win_s * sr)
+    info = {"rate_hz": None, "strength": None, "confident_fraction": 0.0}
+    if len(x) < W:
+        segs = [x]
+    else:
+        loud = np.max(np.abs(x)) * 10 ** (-30 / 20)
+        segs = [x[i:i + W] for i in range(0, len(x) - W + 1, W // 2) if np.sqrt(np.mean(x[i:i + W] ** 2)) > loud * 0.3]
+    rates, strengths = [], []
+    for sgm in segs:
+        ac = _mod_ac(sgm, sr, d)
+        if ac is None:
+            continue
+        r, h = _mod_pick(ac, esr, fmin, fmax)
+        if h is not None:
+            strengths.append(h)
+            if h >= 0.3:
+                rates.append(r)
+    if strengths:
+        info["strength"] = round(float(np.median(strengths)), 3)
+    if segs:
+        info["confident_fraction"] = round(len(rates) / len(segs), 3)
+    if rates and len(rates) >= max(1, 0.25 * len(segs)):
+        info["rate_hz"] = float(np.median(rates))
+    return info if return_info else info["rate_hz"]
+
+
+def _band(x, lo, hi, sr):
+    sos = signal.butter(4, [lo, hi], btype="band", fs=sr, output="sos")
+    return signal.sosfiltfilt(sos, x)
 
 
 def onsets(x, sr, thresh=1.5):
@@ -258,7 +394,9 @@ def analyze(x: np.ndarray, sr: int, out_dir: str | Path | None = None, plot: boo
     i90 = int(np.argmax(env > 0.9 * pk))
     energy = {k: float(np.sum(v ** 2)) for k, v in stems.items()}
     etot = sum(energy.values()) + 1e-20
-    f0, voiced = f0_estimate(stems["harmonic"], sr)
+    pitch = f0_estimate(x, sr, return_info=True)
+    shape = envelope_class(x, sr)
+    mod = modulation_rate(x, sr, return_info=True)
     cen, roll, flat = spectral_stats(S, f)
     feats = {
         "duration_s": round(n / sr, 3),
@@ -266,16 +404,23 @@ def analyze(x: np.ndarray, sr: int, out_dir: str | Path | None = None, plot: boo
         "peak_dbfs": round(float(dsp.db(np.max(np.abs(x)))), 2),
         "rms_dbfs": round(float(dsp.db(np.sqrt(np.mean(x ** 2)))), 2),
         "stem_energy_share": {k: round(v / etot, 3) for k, v in energy.items()},
-        "f0_hz": round(f0, 1) if f0 else None,
-        "voiced_frames": voiced,
+        "f0_hz": round(pitch["f0_hz"], 1) if pitch["f0_hz"] else None,
+        "voiced_frames": pitch["voiced_frames"],
+        "voiced_fraction": pitch["voiced_fraction"],
+        "periodicity": pitch["periodicity"],
+        "envelope_kind": shape["kind"],
+        "events": shape["events"],
+        "event_rate_hz": shape["event_rate_hz"],
+        "active_s": shape["active_s"],
         "spectral_centroid_hz": round(cen, 1),
         "rolloff85_hz": round(roll, 1),
         "spectral_flatness": round(flat, 4),
         "octave_band_db": octave_bands(x, sr),
         "attack_s": round(max(i90 - i10, 0) / sr, 4),
         "peak_time_s": round(ipk / sr, 3),
-        "decay_t60_s": (lambda v: round(v, 3) if v else None)(schroeder_t60(x[ipk:], sr)),
-        "envelope_modulation_hz": (lambda v: round(v, 2) if v else None)(modulation_rate(x, sr)),
+        "decay_t60_s": shape["decay_t60_s"],
+        "envelope_modulation_hz": round(mod["rate_hz"], 2) if mod["rate_hz"] else None,
+        "modulation_strength": mod["strength"],
         "onsets_s": [round(o, 3) for o in onsets(x, sr)][:200],
         "partials": [{k: (round(v, 3) if isinstance(v, float) else v) for k, v in tr.items() if not k.startswith("_")}
                      for tr in top],

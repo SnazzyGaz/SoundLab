@@ -1,6 +1,6 @@
 # Roadmap (build order from the knowledge base)
 
-Status as of 0.1.0 (16 Nov 2026).
+Status as of 0.2.0 (16 Nov 2026).
 
 | step | content | status |
 |---|---|---|
@@ -9,9 +9,9 @@ Status as of 0.1.0 (16 Nov 2026).
 | 3 | Noise, stochastic events, source-filter (crackle, turbulence, valve pulse, formants, bubbles) | done |
 | 4 | Waveguides and tubes (string, tube, cone, dispersion, Helmholtz, horn) | done (1D only) |
 | 5 | Propagation and room (distance + ISO air absorption, Doppler pass-by, ground, image-source room, outdoor) | done (mono) |
-| 6 | Five reference recipes + docs | done; quality notes below |
-| 7 | Analysis and stem split | first version: HPR stems, sinusoidal tracks, features |
-| 8 | Differentiable matching (PyTorch twin, analytic init, MR-STFT + texture-statistic losses) | next |
+| 6 | Five reference recipes + docs | done; v2 reworked all five after listening notes and reference recordings |
+| 7 | Analysis and stem split | done: HPR stems, sinusoidal tracks, features; robust pitch/decay/modulation (0.2) |
+| 8 | Parameter matching (analysis-by-synthesis) | first version done: `soundlab match`, gradient-free CMA-ES / Nelder-Mead, spectral + MR-STFT + envelope + texture + pitch losses. A differentiable twin is still future work |
 | 9 | AIDAW plugin, MCP server, compiled real-time core, recipe library | later |
 
 ## Next concrete tasks
@@ -20,6 +20,12 @@ Status as of 0.1.0 (16 Nov 2026).
   for impacts first.
 - Stereo/binaural output and per-layer propagation.
 - Rolling, crumpling and fracture models (SDT papers as reference; reimplement).
-- Calibrate explosion `size` to charge/distance; measure match timings from recordings.
-- Collect a small CC0 / own-recorded reference set (duck, engines, foghorn, match) for objective checks.
+- Calibrate explosion `size` to charge/distance.
+- Engine: the two engine refs disagree wildly. One is a close, bright engine-bay recording; the other is a
+  bass-heavy recording that is nearly all below 100 Hz. The v2 distance moved only a little (0.935 -> 0.886),
+  and a fit to the bright one asks for less `body`, the opposite of the listening note. Get a matched set of
+  recordings (same car, idle + rev, known mic distance) and fit against that.
+- Fit against several references at once (mean loss), and add a perceptual embedding distance (e.g. DAC/CLAP)
+  as an optional external hook.
+- Own-recorded, full-quality references. Several current refs are 128 kbps Freesound previews.
 - Optional external hooks: Demucs (MIT) for isolation; DAC (MIT) embeddings for FAD-style scoring.

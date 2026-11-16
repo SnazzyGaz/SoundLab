@@ -1,0 +1,28 @@
+{
+ "soundlab": 1,
+ "name": "Fit target: match strike close mic (vs Freesound 423811)",
+ "sample_rate": 48000,
+ "duration": 1.42,
+ "seed": 1,
+ "layers": [
+  {
+   "name": "match",
+   "model": "match",
+   "params": {
+    "strike_s": 0.05,
+    "strike_speed": 0.9,
+    "flare_s": 0.15,
+    "flame_s": 0.85,
+    "flame_size": 0.3,
+    "flame_db": -20,
+    "brightness": 0.4,
+    "start": 0.02
+   }
+  }
+ ],
+ "post": [],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.01
+ }
+}

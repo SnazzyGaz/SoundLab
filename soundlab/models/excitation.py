@@ -310,3 +310,51 @@ def bubble_grain(sr: int, r: float, xi: float = 0.1) -> np.ndarray:
     if f0 > sr * 0.45:
         return np.zeros(1)
     return np.sin(ph) * np.exp(-d * t)
+
+
+@model("rough_pulses", "excitation",
+       "Irregular pulse train from a vibrating valve that closes sharply (bird syrinx labia, vocal fry, rough "
+       "voice). Each pulse is placed one at a time, so period jitter, period doubling (alternating long/short, "
+       "strong/weak) and shimmer are true cycle-to-cycle effects, not a smooth vibrato. Rough voices sound "
+       "'raspy' rather than sung: use this instead of valve_pulse when the sound should not have a clear pitch.",
+       [
+           Param("f0", 200.0, "Hz", 20, 2000, "mean pulse rate", automatable=True),
+           Param("level", 1.0, "", 0, 4, "amplitude", automatable=True),
+           Param("jitter", 0.12, "", 0, 0.5, "period variation (std, as a fraction of the period); speech ~0.01, "
+                 "rough/raspy voices 0.05-0.2", source="Titze 1994 (jitter in pathological voice)"),
+           Param("period_doubling", 0.4, "", 0, 1, "alternate long/short and strong/weak cycles (subharmonic)"),
+           Param("shimmer", 0.4, "", 0, 1, "cycle-to-cycle amplitude variation"),
+           Param("pulse_ms", 0.4, "ms", 0.05, 5, "pulse width; shorter = brighter, more 'clicky' closures"),
+           Param("aspiration", 0.2, "", 0, 1, "turbulent airflow noise gated by the pulses"),
+       ],
+       ["Titze 1994, Principles of Voice Production", "Fletcher 1988 (bird song syrinx model)",
+        "Herzel et al. 1995 (subharmonics and chaos in voice)", "Our reference analysis: mallard quacks are "
+        "irregular ~150-250 Hz pulse trains through a ~2 kHz resonance (refs/SOURCES.md)"])
+def rough_pulses(ctx: Ctx, x, f0, level, jitter, period_doubling, shimmer, pulse_ms, aspiration):
+    sr, n, rng = ctx.sr, ctx.n, ctx.rng
+    F = np.maximum(ctrl(ctx, f0, "exp"), 1.0)
+    A = ctrl(ctx, level)
+    w = max(3, int(pulse_ms * 1e-3 * sr))
+    # asymmetric flow pulse (slow opening 70%, fast closing 30%), differentiated -> strong closure spike
+    up = int(w * 0.7)
+    g = np.concatenate([0.5 - 0.5 * np.cos(np.pi * np.arange(up) / up),
+                        0.5 + 0.5 * np.cos(np.pi * np.arange(w - up) / max(w - up, 1))])
+    pulse = np.diff(g, append=0.0)
+    pulse /= np.max(np.abs(pulse)) + 1e-12
+    out = np.zeros(n)
+    gate = np.zeros(n)
+    t = float(rng.uniform(0, sr / F[0]))
+    k = 0
+    while t < n:
+        i = int(t)
+        P = sr / F[min(i, n - 1)]
+        side = 1 if k % 2 else -1
+        period = P * (1 + 0.3 * period_doubling * side) * (1 + jitter * rng.standard_normal())
+        amp = A[min(i, n - 1)] * max(0.05, 1 + 0.5 * shimmer * rng.standard_normal()) \
+            * (1 - 0.5 * period_doubling * (k % 2))
+        dsp.place(out, pulse, i, amp)
+        dsp.place(gate, g, i, abs(amp))
+        t += max(period, 0.3 * P)
+        k += 1
+    asp = dsp.highpass(rng.standard_normal(n), 1000.0, sr) * dsp.lowpass(gate, 300.0, sr) * aspiration * 0.5
+    return out + asp

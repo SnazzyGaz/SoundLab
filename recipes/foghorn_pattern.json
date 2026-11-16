@@ -1,0 +1,74 @@
+{
+ "soundlab": 1,
+ "name": "Diaphone pattern: three short choppy grunting blasts, about 500 m over water",
+ "sample_rate": 48000,
+ "duration": 12.0,
+ "seed": 5,
+ "layers": [
+  {
+   "name": "diaphone",
+   "model": "foghorn",
+   "params": {
+    "tone_hz": 120,
+    "grunt_hz": 75,
+    "mode": "grunt",
+    "blast_s": 1.2,
+    "grunt_s": 1.0,
+    "roughness": 0.45,
+    "chop": 0.8,
+    "brightness": 0.85,
+    "blasts": 3,
+    "interval_s": 3.2
+   }
+  },
+  {
+   "name": "sea",
+   "model": "noise",
+   "params": {
+    "color": "pink",
+    "f_lo": 60,
+    "f_hi": 1200,
+    "attack": 0.5,
+    "hold": 12,
+    "release": 1
+   },
+   "gain_db": -30
+  }
+ ],
+ "post": [
+  {
+   "model": "distance",
+   "params": {
+    "distance": 500,
+    "atmosphere": "15C_80RH",
+    "spreading": false
+   }
+  },
+  {
+   "model": "outdoor",
+   "params": {
+    "reflectors": [
+     [
+      350,
+      0.5
+     ],
+     [
+      900,
+      0.35
+     ],
+     [
+      1600,
+      0.25
+     ]
+    ],
+    "tail_s": 3.0,
+    "tail_level": 0.25,
+    "tail_lowpass": 900
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.4
+ }
+}

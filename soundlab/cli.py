@@ -1,4 +1,4 @@
-"""soundlab command line: render, models, describe, materials, analyze, validate."""
+"""soundlab command line: render, models, describe, materials, analyze, match, compare, validate."""
 from __future__ import annotations
 
 import argparse
@@ -44,6 +44,27 @@ def main(argv=None) -> int:
     a.add_argument("audio")
     a.add_argument("-o", "--out", help="output folder (default: <name>_analysis)")
     a.add_argument("--no-plot", action="store_true")
+
+    mm = sub.add_parser("match", help="fit a recipe's controls to a reference recording (analysis-by-synthesis)")
+    mm.add_argument("ref", help="reference audio (wav/mp3/ogg/flac)")
+    mm.add_argument("--recipe", required=True, help="base recipe JSON to start from")
+    mm.add_argument("--param", "-p", action="append", default=[], metavar="L.NAME[:LO:HI]",
+                    help="control to fit, e.g. 0.f0 or 0.f0:120:300 or 0.2.freq (layer.block.name); "
+                         "default: every scalar numeric control with a range")
+    mm.add_argument("--start", type=float, help="reference crop start (s)")
+    mm.add_argument("--end", type=float, help="reference crop end (s)")
+    mm.add_argument("--method", choices=("cmaes", "nelder-mead"), default="cmaes")
+    mm.add_argument("--budget", type=int, default=150, help="number of renders (default 150)")
+    mm.add_argument("--weights", default="", help="loss weights, e.g. spectral=1,stft=1,envelope=0.7,texture=0.7")
+    mm.add_argument("--duration", type=float, help="render length while fitting (default: reference length)")
+    mm.add_argument("-o", "--out", help="output folder (default: <recipe>_fit)")
+
+    c = sub.add_parser("compare", help="distance between a reference and one or more renders")
+    c.add_argument("ref")
+    c.add_argument("candidates", nargs="+")
+    c.add_argument("--start", type=float)
+    c.add_argument("--end", type=float)
+    c.add_argument("--json", action="store_true")
 
     v = sub.add_parser("validate", help="check a recipe")
     v.add_argument("recipe")
@@ -98,6 +119,34 @@ def main(argv=None) -> int:
             short["n_onsets"] = len(feats["onsets_s"])
             short["stems_dir"] = out
             print(json.dumps(short, indent=1))
+        elif args.cmd == "match":
+            from . import fit as F
+            from .audio_io import read_audio
+            rec = soundlab.load_recipe(args.recipe)
+            ref, rsr = read_audio(args.ref)
+            a = args.start or 0.0
+            b = args.end or len(ref) / rsr
+            rec["duration"] = float(args.duration or (b - a))
+            w = {k: float(v) for k, v in (kv.split("=") for kv in args.weights.split(",") if kv)}
+            res = F.fit(rec, ref, rsr, args.param or None, args.start, args.end, args.method, args.budget, w,
+                        log=lambda m: print(m, file=sys.stderr))
+            out = args.out or str(Path(args.recipe).with_suffix("")) + "_fit"
+            F.report(res, ref, out, Path(args.ref).name, Path(args.recipe).name)
+            print(json.dumps({"out": out, "before": res["before"], "after": res["after"],
+                              "params": [{k: p[k] for k in ("key", "before", "after")} for p in res["params"]]},
+                             indent=1, default=float))
+        elif args.cmd == "compare":
+            from . import fit as F
+            from .audio_io import read_audio
+            ref, rsr = read_audio(args.ref)
+            rows = {}
+            for cpath in args.candidates:
+                y, ysr = read_audio(cpath)
+                rows[cpath] = F.compare_signals(ref, rsr, y, ysr, args.start, args.end)
+            if not _print(rows, args.json):
+                print(f"{'candidate':<40}" + "".join(f"{k:>10}" for k in list(F.DEFAULT_WEIGHTS) + ["total"]))
+                for k, d in rows.items():
+                    print(f"{Path(k).name[:39]:<40}" + "".join(f"{d[c]:>10.3f}" for c in list(F.DEFAULT_WEIGHTS) + ["total"]))
         elif args.cmd == "validate":
             errs = soundlab.validate(soundlab.load_recipe(args.recipe))
             print("ok" if not errs else "\n".join(errs))

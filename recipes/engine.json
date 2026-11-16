@@ -1,18 +1,108 @@
 {
-  "soundlab": 1,
-  "name": "Inline-4 car: idle, rev to 4500 rpm, lift off, back to idle",
-  "sample_rate": 48000, "duration": 8.0, "seed": 11,
-  "layers": [
-    {"name": "engine", "model": "engine", "params": {
-      "cylinders": 4, "firing": "even",
-      "rpm":  [[0, 850], [1.5, 850], [3.2, 4500], [3.6, 4500], [5.6, 900], [8, 850]],
-      "load": [[0, 0.15], [1.5, 0.15], [1.6, 0.9], [3.5, 0.9], [3.65, 0.0], [5.6, 0.0], [5.9, 0.15], [8, 0.15]],
-      "exhaust_length": 2.4, "muffler": 0.55, "jitter": 0.04, "intake": 0.35, "mechanical": 0.15, "whine": 0.08, "pops": 0.4
-    }}
-  ],
-  "post": [
-    {"model": "distance", "params": {"distance": 4}},
-    {"model": "ground", "params": {"source_height": 0.3, "listener_height": 1.6, "distance": 4, "reflection": 0.8}}
-  ],
-  "master": {"normalize_db": -1.0, "fade_out": 0.2}
+ "soundlab": 1,
+ "name": "Cross-plane V8: idle, rev to 4500 rpm, lift off, back to idle",
+ "sample_rate": 48000,
+ "duration": 8.0,
+ "seed": 11,
+ "layers": [
+  {
+   "name": "engine",
+   "model": "engine",
+   "params": {
+    "cylinders": 8,
+    "firing": "crossplane_v8",
+    "rpm": [
+     [
+      0,
+      900
+     ],
+     [
+      1.5,
+      900
+     ],
+     [
+      3.0,
+      4500
+     ],
+     [
+      3.5,
+      4500
+     ],
+     [
+      5.4,
+      950
+     ],
+     [
+      8,
+      900
+     ]
+    ],
+    "load": [
+     [
+      0,
+      0.35
+     ],
+     [
+      1.5,
+      0.35
+     ],
+     [
+      1.6,
+      0.9
+     ],
+     [
+      3.5,
+      0.9
+     ],
+     [
+      3.65,
+      0.2
+     ],
+     [
+      5.6,
+      0.2
+     ],
+     [
+      5.9,
+      0.35
+     ],
+     [
+      8,
+      0.35
+     ]
+    ],
+    "exhaust_length": 1.6,
+    "muffler": 0.6,
+    "jitter": 0.075,
+    "intake": 0.8,
+    "mechanical": 0.5,
+    "whine": 0.04,
+    "pops": 0.4,
+    "body": 0.7,
+    "exhaust_noise": 0.8,
+    "pipe_ring": 0.15
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "distance",
+   "params": {
+    "distance": 4
+   }
+  },
+  {
+   "model": "ground",
+   "params": {
+    "source_height": 0.3,
+    "listener_height": 1.6,
+    "distance": 4,
+    "reflection": 0.8
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.2
+ }
 }

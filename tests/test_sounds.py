@@ -25,14 +25,31 @@ def test_recipes_render(name):
 
 
 def test_duck_formant_and_notes():
-    y = run("duck", 2.0, notes=5, f0=420, formant_hz=1900)
-    from soundlab.analysis import spectral_stats, stft
+    y = run("duck", 2.0, notes=5, gap_s=0.12)
+    from soundlab.analysis import spectral_stats, stft, envelope_class
     f, t, Z = stft(y, SR)
     cen, _, _ = spectral_stats(np.abs(Z), f)
     assert 1200 < cen < 2800  # main resonance 1.5-2.5 kHz
-    f0, voiced = f0_estimate(y, SR)
-    assert f0 is not None and 180 < f0 < 520  # rasp (period doubling) pulls perceived pitch down
-    assert 4 <= len(onsets(y, SR)) <= 7
+    ev = envelope_class(y, SR)
+    assert ev["kind"] == "repeated" and ev["events"] == 5
+
+
+def test_duck_is_rough_not_sung():
+    """v2: a real quack is aperiodic (refs: YIN periodicity 0.36-0.50); v1 was 0.61 and read as a laugh."""
+    rough = f0_estimate(run("duck", 2.0, notes=5), SR, return_info=True)
+    clean = f0_estimate(run("duck", 2.0, notes=5, rasp=0.0), SR, return_info=True)
+    assert rough["periodicity"] < 0.6
+    assert clean["periodicity"] > rough["periodicity"] + 0.1
+
+
+def test_duck_no_pitch_arc_inside_a_quack():
+    from soundlab.analysis import f0_track
+    y = run("duck", 0.6, notes=1, rasp=0.0, f0=250, note_s=0.3, start=0.05)
+    T, F, _, _ = f0_track(y, SR, 100, 600, threshold=0.3)
+    v = F[np.isfinite(F)]
+    assert len(v) >= 5
+    st = 12 * np.log2(v / np.median(v))
+    assert np.percentile(st, 90) - np.percentile(st, 10) < 2.5  # v1 rose and fell ~4 semitones
 
 
 def test_duck_decrescendo():
@@ -67,8 +84,9 @@ def test_engine_rpm_tracks():
 
 
 def test_engine_uneven_firing_has_half_orders():
-    even = run("engine", 2.0, rpm=3000, cylinders=2, firing="even", jitter=0.0, mechanical=0, whine=0, pops=0, intake=0)
-    vtw = run("engine", 2.0, rpm=3000, cylinders=2, firing="v_twin_45", jitter=0.0, mechanical=0, whine=0, pops=0, intake=0)
+    kw = dict(rpm=3000, cylinders=2, jitter=0.0, mechanical=0, whine=0, pops=0, intake=0, exhaust_noise=0)
+    even = run("engine", 2.0, firing="even", **kw)
+    vtw = run("engine", 2.0, firing="v_twin_45", **kw)
     # cycle rate 25 Hz; even 2-cyl fires at 50 Hz so 25 Hz is weak; uneven V-twin has strong 25 Hz
     def ratio(y):
         Y = np.abs(np.fft.rfft(y[SR // 2:]))
@@ -77,8 +95,49 @@ def test_engine_uneven_firing_has_half_orders():
     assert ratio(vtw) > 3 * ratio(even)
 
 
+def test_engine_high_rpm_not_tinny():
+    """v2: brightness should not scale with rpm (v1 differentiated the pulses, so 4x rpm = much brighter)."""
+    from soundlab.analysis import spectral_stats, stft
+    def cen(rpm):
+        y = run("engine", 1.5, rpm=rpm, load=0.8, cylinders=8, firing="crossplane_v8", mechanical=0, whine=0, pops=0)
+        f, t, Z = stft(y[SR // 2:], SR)
+        return spectral_stats(np.abs(Z), f)[0]
+    assert cen(6000) < 2.5 * cen(1500)
+    assert cen(6000) < 1200
+
+
+def test_engine_crossplane_v8_burble():
+    # two banks firing unevenly: strong half-order (cycle rate) content at 3000 rpm -> 25 Hz
+    y = run("engine", 2.0, rpm=3000, cylinders=8, firing="crossplane_v8", jitter=0.0, mechanical=0, whine=0,
+            pops=0, intake=0, exhaust_noise=0)
+    e = run("engine", 2.0, rpm=3000, cylinders=8, firing="even", jitter=0.0, mechanical=0, whine=0,
+            pops=0, intake=0, exhaust_noise=0)
+    def sub(y):
+        Y = np.abs(np.fft.rfft(y[SR // 2:]))
+        f = np.fft.rfftfreq(len(y) - SR // 2, 1 / SR)
+        return sum(Y[(f > k * 25 - 1) & (f < k * 25 + 1)].max() for k in (1, 2, 3)) / Y[(f > 199) & (f < 201)].max()
+    assert sub(y) > 2 * sub(e)
+
+
+def test_foghorn_defaults_are_bassy():
+    y = run("foghorn", 5.0)
+    f0 = f0_estimate(y, SR)[0]
+    assert f0 is not None and 60 < f0 < 160  # refs 87-150 Hz; v1 was 250
+    assert band_db(y, 20, 300) > -3  # most energy below 300 Hz
+
+
+def test_foghorn_grunt_is_choppy():
+    from soundlab.analysis import envelope
+    def depth(chop):
+        y = run("foghorn", 5.0, chop=chop, roughness=0.0, blast_s=1.5, grunt_s=1.5, start=0.1)
+        e = envelope(y, SR, 5.0)[int(2.0 * SR):int(2.9 * SR)]
+        return np.std(20 * np.log10(e / e.max() + 1e-6))
+    assert depth(0.9) > depth(0.0) + 2.0
+
+
 def test_foghorn_tone_and_grunt():
-    y = run("foghorn", 6.0, tone_hz=250, grunt_hz=110, mode="grunt", blast_s=2.5, attack_s=0.35, grunt_s=1.1, start=0.1)
+    y = run("foghorn", 6.0, tone_hz=250, grunt_hz=110, mode="grunt", blast_s=2.5, attack_s=0.35, grunt_s=1.1, start=0.1,
+            roughness=0.0, chop=0.0)
     mid = y[int(1.0 * SR):int(2.5 * SR)]
     assert abs(f0_estimate(mid, SR)[0] - 250) < 5
     end = y[int(3.75 * SR):int(3.95 * SR)]
@@ -94,11 +153,26 @@ def test_explosion_starts_sharp_and_is_bass_heavy():
     assert band_db(far, 20, 200) > band_db(far, 2000, 20000)  # distance leaves the low rumble
 
 
+def test_explosion_is_a_blast_not_a_vent():
+    """v2: fast rise, short hiss (energy above 2 kHz gone within ~0.6 s), heavy lows early."""
+    from soundlab.analysis import envelope
+    y = run("explosion", 4.0, size=0.65, at=0.05, debris=0.0)
+    e = envelope(y, SR, 2.0)
+    i10, i90 = int(np.argmax(e > 0.1 * e.max())), int(np.argmax(e > 0.9 * e.max()))
+    assert (i90 - i10) / SR < 0.01  # v1 took ~0.2 s to peak
+    import scipy.signal as ss
+    hi = ss.sosfilt(ss.butter(4, 2000, "high", fs=SR, output="sos"), y)
+    h = envelope(hi, SR, 20.0)
+    assert (h > 0.1 * h.max()).sum() / SR < 0.7
+    first = y[int(0.05 * SR):int(0.55 * SR)]
+    assert band_db(first, 20, 200) > band_db(first, 2000, 20000) + 6
+
+
 def test_match_phases():
-    y = run("match", 3.5, strike_s=0.22, flare_s=0.45, flame_s=2.0, start=0.1)
+    y = run("match", 3.5, strike_s=0.08, flare_s=0.25, flame_s=2.0, flame_db=-26, start=0.1)
     from soundlab.analysis import envelope
     env = envelope(y, SR, 20)
-    strike = env[int(0.12 * SR):int(0.3 * SR)].max()
+    strike = env[int(0.1 * SR):int(0.4 * SR)].max()
     flame = env[int(1.2 * SR):int(1.8 * SR)].mean()
     assert flame < 0.25 * strike  # steady flame much quieter than strike/flare
     assert flame > 0.005 * strike  # but present

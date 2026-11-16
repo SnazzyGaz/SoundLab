@@ -195,3 +195,17 @@ def test_dispersive_string_chirps_down():
 def dsp_band(x, lo, hi):
     from soundlab import dsp
     return dsp.bandpass(x, np.sqrt(lo * hi), SR, np.sqrt(lo * hi) / (hi - lo))
+
+
+def test_rough_pulses_rate_and_jitter():
+    from soundlab.analysis import f0_estimate
+    clean = run("rough_pulses", 1.0, f0=200, jitter=0.0, period_doubling=0.0, shimmer=0.0, aspiration=0.0)
+    rough = run("rough_pulses", 1.0, f0=200, jitter=0.2, period_doubling=0.6, shimmer=0.5, aspiration=0.3)
+    # clean train: about 200 pulses (closure spikes are the negative peaks)
+    from scipy.signal import find_peaks
+    pk, _ = find_peaks(-clean, height=0.5)
+    assert 190 <= len(pk) <= 210
+    ic = f0_estimate(clean, SR, return_info=True)
+    ir = f0_estimate(rough, SR, return_info=True)
+    assert abs(ic["f0_hz"] - 200) < 3
+    assert ir["periodicity"] < ic["periodicity"] - 0.2

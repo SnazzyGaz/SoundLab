@@ -1,14 +1,74 @@
 {
-  "soundlab": 1,
-  "name": "Type F diaphone with grunt, heard across the water from about 800 m",
-  "sample_rate": 48000, "duration": 8.0, "seed": 5,
-  "layers": [
-    {"name": "diaphone", "model": "foghorn", "params": {"tone_hz": 250, "grunt_hz": 110, "mode": "grunt", "blast_s": 2.6, "grunt_s": 1.1}},
-    {"name": "sea", "model": "noise", "params": {"color": "pink", "f_lo": 60, "f_hi": 1200, "attack": 0.5, "hold": 8, "release": 1}, "gain_db": -30}
-  ],
-  "post": [
-    {"model": "distance", "params": {"distance": 800, "atmosphere": "15C_80RH", "spreading": false}},
-    {"model": "outdoor", "params": {"reflectors": [[350, 0.5], [900, 0.35], [1600, 0.25]], "tail_s": 3.0, "tail_level": 0.25, "tail_lowpass": 900}}
-  ],
-  "master": {"normalize_db": -1.0, "fade_out": 0.4}
+ "soundlab": 1,
+ "name": "Type F diaphone with grunt, heard across the water from about 800 m",
+ "sample_rate": 48000,
+ "duration": 7.0,
+ "seed": 5,
+ "layers": [
+  {
+   "name": "diaphone",
+   "model": "foghorn",
+   "params": {
+    "tone_hz": 120,
+    "grunt_hz": 75,
+    "mode": "grunt",
+    "blast_s": 1.8,
+    "grunt_s": 1.2,
+    "roughness": 0.3,
+    "chop": 0.65,
+    "brightness": 0.85,
+    "blasts": 1,
+    "interval_s": 4.6
+   }
+  },
+  {
+   "name": "sea",
+   "model": "noise",
+   "params": {
+    "color": "pink",
+    "f_lo": 60,
+    "f_hi": 1200,
+    "attack": 0.5,
+    "hold": 7,
+    "release": 1
+   },
+   "gain_db": -30
+  }
+ ],
+ "post": [
+  {
+   "model": "distance",
+   "params": {
+    "distance": 500,
+    "atmosphere": "15C_80RH",
+    "spreading": false
+   }
+  },
+  {
+   "model": "outdoor",
+   "params": {
+    "reflectors": [
+     [
+      350,
+      0.5
+     ],
+     [
+      900,
+      0.35
+     ],
+     [
+      1600,
+      0.25
+     ]
+    ],
+    "tail_s": 3.0,
+    "tail_level": 0.25,
+    "tail_lowpass": 900
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.4
+ }
 }
