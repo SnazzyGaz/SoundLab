@@ -1,0 +1,403 @@
+{
+ "soundlab": 1,
+ "name": "Footstep on wooden floorboards",
+ "category": "impact",
+ "sample_rate": 48000,
+ "duration": 0.6,
+ "seed": 26,
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.03
+ },
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "small .. large object (pitch ~ 1/size)",
+   "map": [
+    {
+     "to": "0.size",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.8
+      ]
+     ]
+    }
+   ]
+  },
+  "force": {
+   "default": 0.5,
+   "doc": "tap .. slam (contact speed: brighter and louder)",
+   "map": [
+    {
+     "to": "0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.25
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    }
+   ]
+  },
+  "hardness": {
+   "default": 0.5,
+   "doc": "padded .. hard edge (contact stiffness)",
+   "map": [
+    {
+     "to": "0.hardness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.45
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.45
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "hollowness": {
+   "default": 0.5,
+   "doc": "solid .. hollow (thin walls, cavity boom)",
+   "map": [
+    {
+     "to": "0.hollowness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.6
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "muffle": {
+   "default": 0.5,
+   "doc": "ringing .. held/damped",
+   "map": [
+    {
+     "to": "0.muffle",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "contact_point": {
+   "default": 0.5,
+   "doc": "edge .. middle",
+   "map": [
+    {
+     "to": "0.contact_point",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.35
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.45
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.0,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       -6
+      ],
+      [
+       1,
+       -18
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  },
+  "surface": {
+   "default": "wood_hard",
+   "doc": "wood_hard / stone / steel / dirt / gravel / grass / leaves",
+   "choices": {
+    "wood_hard": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "wood_hard"
+     }
+    ],
+    "stone": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "stone"
+     }
+    ],
+    "steel": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "steel"
+     }
+    ],
+    "dirt": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "dirt"
+     }
+    ],
+    "gravel": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "gravel"
+     }
+    ],
+    "grass": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "grass"
+     }
+    ],
+    "leaves": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "leaves"
+     }
+    ]
+   }
+  }
+ },
+ "vary": {
+  "0.velocity": {
+   "rel": 0.15
+  },
+  "0.contact_point": {
+   "abs": 0.1
+  },
+  "0.size": {
+   "rel": 0.06
+  }
+ },
+ "layers": [
+  {
+   "name": "impact",
+   "model": "material_impact",
+   "params": {
+    "at": 0.01,
+    "gesture": "footstep",
+    "striker": "shoe",
+    "striker_mass_g": 6000,
+    "velocity": 3.2803,
+    "hardness": 0.0114,
+    "residual": 2.2734,
+    "material": "wood_hard",
+    "shape": "plate",
+    "size": 1.3079,
+    "hollowness": 0.7194,
+    "muffle": 0.0737,
+    "contact_point": 0.3137
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "eq",
+   "params": {
+    "curve": [
+     [
+      50,
+      -0.8
+     ],
+     [
+      63,
+      -0.6
+     ],
+     [
+      80,
+      -0.7
+     ],
+     [
+      100,
+      -0.8
+     ],
+     [
+      125,
+      0.5
+     ],
+     [
+      160,
+      -1.4
+     ],
+     [
+      200,
+      -3.0
+     ],
+     [
+      250,
+      -3.8
+     ],
+     [
+      315,
+      0.3
+     ],
+     [
+      400,
+      2.2
+     ],
+     [
+      500,
+      1.1
+     ],
+     [
+      630,
+      -3.2
+     ],
+     [
+      800,
+      -5.5
+     ],
+     [
+      1000,
+      -5.1
+     ],
+     [
+      1250,
+      -3.8
+     ],
+     [
+      1600,
+      -3.5
+     ],
+     [
+      2000,
+      -5.7
+     ],
+     [
+      2500,
+      -6.0
+     ],
+     [
+      3150,
+      -6.0
+     ],
+     [
+      4000,
+      -6.0
+     ],
+     [
+      5000,
+      -6.0
+     ],
+     [
+      6300,
+      -6.0
+     ],
+     [
+      8000,
+      -6.0
+     ],
+     [
+      10000,
+      -2.3
+     ],
+     [
+      12500,
+      6.0
+     ],
+     [
+      16000,
+      6.0
+     ]
+    ]
+   }
+  }
+ ],
+ "notes": "v0.26: controls fitted to one of the CC0 recorded footsteps on wooden floors (outside the repo), residual eq limited to +-6 dB; loss on that take 1.0 -> 0.856, on held-out takes [0.651] -> [0.5]."
+}

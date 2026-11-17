@@ -1,0 +1,384 @@
+{
+ "soundlab": 1,
+ "name": "Blade clash: steel sword on steel sword",
+ "category": "impact",
+ "sample_rate": 48000,
+ "duration": 2.0,
+ "seed": 26,
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.03
+ },
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "small .. large object (pitch ~ 1/size)",
+   "map": [
+    {
+     "to": "0.size",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.8
+      ]
+     ]
+    }
+   ]
+  },
+  "force": {
+   "default": 0.5,
+   "doc": "tap .. slam (contact speed: brighter and louder)",
+   "map": [
+    {
+     "to": "0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.25
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    }
+   ]
+  },
+  "hardness": {
+   "default": 0.5,
+   "doc": "padded .. hard edge (contact stiffness)",
+   "map": [
+    {
+     "to": "0.hardness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.45
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.45
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "hollowness": {
+   "default": 0.5,
+   "doc": "solid .. hollow (thin walls, cavity boom)",
+   "map": [
+    {
+     "to": "0.hollowness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.6
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "muffle": {
+   "default": 0.5,
+   "doc": "ringing .. held/damped",
+   "map": [
+    {
+     "to": "0.muffle",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "contact_point": {
+   "default": 0.5,
+   "doc": "edge .. middle",
+   "map": [
+    {
+     "to": "0.contact_point",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.35
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.45
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.0,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       -6
+      ],
+      [
+       1,
+       -18
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  },
+  "material": {
+   "default": "steel",
+   "doc": "steel / iron / aluminium / wood_hard",
+   "choices": {
+    "steel": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "steel"
+     }
+    ],
+    "iron": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "iron"
+     }
+    ],
+    "aluminium": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "aluminium"
+     }
+    ],
+    "wood_hard": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "wood_hard"
+     }
+    ]
+   }
+  }
+ },
+ "vary": {
+  "0.velocity": {
+   "rel": 0.15
+  },
+  "0.contact_point": {
+   "abs": 0.1
+  },
+  "0.size": {
+   "rel": 0.06
+  }
+ },
+ "layers": [
+  {
+   "name": "impact",
+   "model": "material_impact",
+   "params": {
+    "at": 0.01,
+    "material": "steel",
+    "shape": "bar",
+    "size": 0.4289,
+    "striker": "steel",
+    "striker_mass_g": 1200,
+    "velocity": 15.0,
+    "hardness": 0.8528,
+    "striker_ring": 0.2631,
+    "striker_size": 0.5949,
+    "contact_point": 0.0,
+    "muffle": 0.2049,
+    "max_t60": 2.2745,
+    "residual": 1.7206,
+    "hollowness": 0.6637
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "eq",
+   "params": {
+    "curve": [
+     [
+      50,
+      -6.0
+     ],
+     [
+      63,
+      -6.0
+     ],
+     [
+      80,
+      -6.0
+     ],
+     [
+      100,
+      -6.0
+     ],
+     [
+      125,
+      -6.0
+     ],
+     [
+      160,
+      -6.0
+     ],
+     [
+      200,
+      -6.0
+     ],
+     [
+      250,
+      -6.0
+     ],
+     [
+      315,
+      -6.0
+     ],
+     [
+      400,
+      -6.0
+     ],
+     [
+      500,
+      -6.0
+     ],
+     [
+      630,
+      -6.0
+     ],
+     [
+      800,
+      -6.0
+     ],
+     [
+      1000,
+      -6.0
+     ],
+     [
+      1250,
+      -6.0
+     ],
+     [
+      1600,
+      -6.0
+     ],
+     [
+      2000,
+      1.0
+     ],
+     [
+      2500,
+      -2.1
+     ],
+     [
+      3150,
+      4.5
+     ],
+     [
+      4000,
+      6.0
+     ],
+     [
+      5000,
+      6.0
+     ],
+     [
+      6300,
+      6.0
+     ],
+     [
+      8000,
+      -1.8
+     ],
+     [
+      10000,
+      -0.7
+     ],
+     [
+      12500,
+      6.0
+     ],
+     [
+      16000,
+      6.0
+     ]
+    ]
+   }
+  }
+ ],
+ "notes": "v0.26: controls fitted to one of the CC0 recorded sword clashes (outside the repo), residual eq limited to +-6 dB; loss on that take 0.525 -> 0.504, on held-out takes [0.657] -> [0.609]."
+}

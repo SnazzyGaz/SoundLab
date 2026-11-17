@@ -10,7 +10,10 @@ a library/plugin.
 
 What's in it:
 
-- **37 recipes** for game sound: footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind,
+- **One impact model for every material** (`material_impact`, v0.26): wood, metal, glass, ceramic, stone,
+  plastic, rubber, flesh, dirt, gravel, grass, leaves on plate/bar/rod/beam/box/shell/ball/block shapes, with
+  size, force, hardness, hollowness, muffle and contact-point sliders; see [docs/impacts.md](docs/impacts.md).
+- **37 hand-built recipes** for game sound (73 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind,
   rain, glass break, sword swing and clash, metal clang, door creak and slam, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splash, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.
@@ -177,6 +180,7 @@ matched to the reference recordings, the starting points for `soundlab match`). 
   a fit report.
 - [docs/resynthesis.md](docs/resynthesis.md): analysis and resynthesis (`soundlab resynth`), the recording
   -> layered recipe pipeline, its new blocks (`bandnoise`, `harmonic`) and first results.
+- [docs/impacts.md](docs/impacts.md): the impact and material model, its recipes and checks.
 - [docs/sdt-methods.md](docs/sdt-methods.md): every Sound Design Toolkit model mapped to SoundLab blocks
   (method only), and the v0.19 interaction blocks.
 - [docs/architecture.md](docs/architecture.md): code layout and how AIDAW plugs in.

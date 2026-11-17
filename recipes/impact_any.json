@@ -1,0 +1,446 @@
+{
+ "soundlab": 1,
+ "name": "Impact: any material and shape (material_impact showcase recipe)",
+ "category": "impact",
+ "sample_rate": 48000,
+ "duration": 1.2,
+ "seed": 26,
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.03
+ },
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "small .. large object (pitch ~ 1/size)",
+   "map": [
+    {
+     "to": "0.size",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.8
+      ]
+     ]
+    }
+   ]
+  },
+  "force": {
+   "default": 0.5,
+   "doc": "tap .. slam (contact speed: brighter and louder)",
+   "map": [
+    {
+     "to": "0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.25
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    }
+   ]
+  },
+  "hardness": {
+   "default": 0.5,
+   "doc": "padded .. hard edge (contact stiffness)",
+   "map": [
+    {
+     "to": "0.hardness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.45
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.45
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "hollowness": {
+   "default": 0.5,
+   "doc": "solid .. hollow (thin walls, cavity boom)",
+   "map": [
+    {
+     "to": "0.hollowness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.6
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "muffle": {
+   "default": 0.5,
+   "doc": "ringing .. held/damped",
+   "map": [
+    {
+     "to": "0.muffle",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "contact_point": {
+   "default": 0.5,
+   "doc": "edge .. middle",
+   "map": [
+    {
+     "to": "0.contact_point",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.35
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.45
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.0,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       -6
+      ],
+      [
+       1,
+       -18
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  },
+  "material": {
+   "default": "wood_hard",
+   "doc": "wood_soft / wood_hard / steel / aluminium / iron / glass / ceramic / stone / plastic / rubber / flesh / dirt / gravel / grass / leaves",
+   "choices": {
+    "wood_soft": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "wood_soft"
+     }
+    ],
+    "wood_hard": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "wood_hard"
+     }
+    ],
+    "steel": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "steel"
+     }
+    ],
+    "aluminium": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "aluminium"
+     }
+    ],
+    "iron": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "iron"
+     }
+    ],
+    "glass": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "glass"
+     }
+    ],
+    "ceramic": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "ceramic"
+     }
+    ],
+    "stone": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "stone"
+     }
+    ],
+    "plastic": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "plastic"
+     }
+    ],
+    "rubber": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "rubber"
+     }
+    ],
+    "flesh": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "flesh"
+     }
+    ],
+    "dirt": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "dirt"
+     }
+    ],
+    "gravel": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "gravel"
+     }
+    ],
+    "grass": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "grass"
+     }
+    ],
+    "leaves": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "leaves"
+     }
+    ]
+   }
+  },
+  "shape": {
+   "default": "plate",
+   "doc": "plate / bar / rod / beam / box / shell / ball / block",
+   "choices": {
+    "plate": [
+     {
+      "to": "0.shape",
+      "op": "set",
+      "value": "plate"
+     }
+    ],
+    "bar": [
+     {
+      "to": "0.shape",
+      "op": "set",
+      "value": "bar"
+     }
+    ],
+    "rod": [
+     {
+      "to": "0.shape",
+      "op": "set",
+      "value": "rod"
+     }
+    ],
+    "beam": [
+     {
+      "to": "0.shape",
+      "op": "set",
+      "value": "beam"
+     }
+    ],
+    "box": [
+     {
+      "to": "0.shape",
+      "op": "set",
+      "value": "box"
+     }
+    ],
+    "shell": [
+     {
+      "to": "0.shape",
+      "op": "set",
+      "value": "shell"
+     }
+    ],
+    "block": [
+     {
+      "to": "0.shape",
+      "op": "set",
+      "value": "block"
+     }
+    ],
+    "ball": [
+     {
+      "to": "0.shape",
+      "op": "set",
+      "value": "ball"
+     }
+    ]
+   }
+  }
+ },
+ "vary": {
+  "0.velocity": {
+   "rel": 0.15
+  },
+  "0.contact_point": {
+   "abs": 0.1
+  },
+  "0.size": {
+   "rel": 0.06
+  }
+ },
+ "layers": [
+  {
+   "name": "impact",
+   "model": "material_impact",
+   "params": {
+    "at": 0.01,
+    "material": "wood_hard",
+    "shape": "plate",
+    "size": 0.4,
+    "striker": "wood",
+    "velocity": 2.5,
+    "hollowness": 0.3
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "eq",
+   "params": {
+    "curve": [
+     [
+      63,
+      0
+     ],
+     [
+      125,
+      0
+     ],
+     [
+      250,
+      0
+     ],
+     [
+      500,
+      0
+     ],
+     [
+      1000,
+      0
+     ],
+     [
+      2000,
+      0
+     ],
+     [
+      4000,
+      0
+     ],
+     [
+      8000,
+      0
+     ],
+     [
+      16000,
+      0
+     ]
+    ]
+   }
+  }
+ ]
+}

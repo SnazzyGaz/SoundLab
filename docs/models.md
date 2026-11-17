@@ -496,8 +496,9 @@ Room: early reflections from a shoebox image-source model plus a statistical lat
 | `hf_ratio` | `0.5` |  | 0.1 .. 1.5 | T60 at 8 kHz relative to 125 Hz |
 | `source_distance` | `3.0` | m | 0.2 .. 100 | source-listener distance (sets direct/reverb ratio) |
 | `wet` | `1.0` |  | 0 .. 2 | scale on the physically derived reverb level |
+| `scattering` | `0.0` |  | 0 .. 1 | v0.24: share of each reflection's energy that the surfaces scatter into a diffuse spray (furnished rooms ~0.4-0.7, bare concrete ~0.1). 0 = perfect mirrors (the pre-0.24 room, which comb-filters steady sounds into a metallic 'saw') Source: ISO 17497-1 (scattering coefficient); Vorlaender 2008, Auralization. |
 
-Sources: Wikipedia: Reverberation (Sabine); Murch, Transom 2005 (direct-to-reverb = depth); pyroomacoustics docs (image-source method)
+Sources: Wikipedia: Reverberation (Sabine); Murch, Transom 2005 (direct-to-reverb = depth); pyroomacoustics docs (image-source method); Vorlaender 2008, Auralization (scattering)
 
 ### `outdoor`
 
@@ -663,6 +664,12 @@ Fire after Farnell: hiss (squared noise, high-passed), crackles (Dust-triggered 
 | `crackle_rate` | `8.0` | events/s | 0 .. 200 | crackles per second at intensity 1 |
 | `woof` | `0.6` |  | 0 .. 1 | low lapping flame level |
 | `hiss` | `0.3` |  | 0 .. 1 | hiss level |
+| `lap` | `0.8` |  | 0 .. 1.5 | v0.24: depth of the slow lapping swell on the low flame (big swells read as wind gusts; a burning log's roar is steadier) |
+| `crackle_ms` | `2.0` | ms | 0.2 .. 10 | crackle grain length (wood pops are short and sharp) |
+| `crackle_lo` | `1000.0` | Hz | 100 .. 8000 | lowest crackle grain centre |
+| `crackle_hi` | `8000.0` | Hz | 1000 .. 20000 | highest crackle grain centre |
+| `crackle_q` | `1.5` |  | 0.3 .. 10 | crackle grain resonance (low = clicky, high = tonal) |
+| `crackle_size` | `2.0` |  | 1.1 .. 4 | power-law exponent of crackle sizes (lower = more big pops) |
 
 Sources: Farnell 2010 practical 11; Wikibooks: Designing Sound in SuperCollider/Fire; Chadwick & James 2011
 
@@ -790,6 +797,7 @@ Rain: individual near drops (impact click through the surface's response, and on
 | `brightness` | `0.5` |  | 0 .. 1 | top end of the hiss (0 = far/indoors, 1 = close, outdoors) |
 | `texture` | `0.0` |  | 0 .. 1 | v0.15 texture statistics: slow independent band swells, air up to 16 kHz and a few close, loud drops (0 = the v0.14 steady wash) |
 | `patter` | `0.0` |  | 0 .. 1 | v0.16 mid-distance patter: hundreds of separately audible bright drop taps per second over a steadier wash and a lighter low end (0 = v0.15) |
+| `smooth` | `0.0` |  | 0 .. 1 | v0.25.3 density of the far rain: the share of the hiss made of so many overlapping drops that it is smooth Gaussian noise (0 = the sparse micro-tap hiss of v0.11-0.25, which stays impulsive: 3-12 kHz kurtosis ~4, heard as crackle in heavy rain) |
 
 Sources: McDermott & Simoncelli 2011 (sound texture statistics); Marshall & Palmer 1948 (drop size distribution); Prosperetti & Oguz 1993 (rain bubbles); Wikipedia: Minnaert resonance; van den Doel 2005 (liquid sounds)
 
@@ -856,6 +864,10 @@ A door creaking open: stick-slip at the hinge. The pin sticks, the door's push b
 | `hinge` | `0.5` |  | 0 .. 1 | metal hinge resonance vs wooden door body |
 | `door_size` | `1.0` |  | 0.3 .. 2 | door size (1 = 2.0 x 0.8 m) |
 | `at` | `0.05` | s | 0 .. None |  |
+| `slip` | `0.0` |  | 0 .. 0.5 | v0.25.3 slip phase as a share of each cycle (0 = v0.25: random 10-25 %); a short, steady slip gives the clear harmonic series of a real creak |
+| `steady` | `0.0` |  | 0 .. 1 | v0.25.3 cycle-to-cycle steadiness: scales down the per-cycle period and level jitter (0 = v0.25). Jittery cycles smear the harmonics into noise: a zipper, not a groan |
+| `hinge_hz` | `0.0` | Hz | 0 .. 5000 | v0.25.3 lowest hinge/door resonance (0 = v0.25: ~1150 Hz); real door creaks peak around 1-1.5 kHz |
+| `hinge_q` | `1.0` |  | 0.3 .. 6 | v0.25.3 ring time of the hinge resonances relative to v0.25 (longer = more tonal, a clearer formant) |
 
 Sources: Wikipedia: Stick-slip phenomenon; Avanzini, Serafin & Rocchesso 2002 (friction models); Farnell 2010, Designing Sound (creaking door)
 
@@ -1021,6 +1033,36 @@ Electrical hum: mains frequency and harmonics, the 2x-mains magnetostriction buz
 | `level` | `1.0` |  | 0.0 .. 4.0 | level (automatable) |
 
 Sources: Mains hum (power engineering): transformer magnetostriction at twice the mains frequency
+
+### `material_impact`
+
+One contact + resonance model for knocks, drops, bounces, footsteps, tool strikes, clashes, clinks, breaks and body hits. Pick a `material` (wood, metal, glass, ceramic, stone, plastic, rubber, flesh, dirt, gravel, grass, leaves), a `shape` and `size`; a Hunt-Crossley contact between `striker` and target excites the target's modes (shape formula x material, decay law per material, so non-metals never ring metallic) plus a material-shaped noise residual. `hollowness` thins the walls and adds air-cavity modes; `muffle` damps and darkens; `contact_point` moves the strike from edge to middle. Ground materials give a thud plus grains. `gesture` footstep plays heel, ball and a scuff; `fracture` adds shards.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `material` | `wood_hard` |  | wood_soft, wood_hard, steel, aluminium, iron, glass, ceramic, stone, plastic, rubber, flesh, dirt, gravel, grass, leaves |  |
+| `shape` | `plate` |  | plate, bar, rod, beam, box, shell, ball, block |  |
+| `size` | `0.3` | m | 0.01 .. 5.0 | largest dimension of the struck object (pitch ~ 1/size) |
+| `at` | `0.01` | s | 0 .. None |  |
+| `velocity` | `2.0` | m/s | 0.05 .. 30 | impact speed (louder, shorter, brighter contact) |
+| `striker` | `wood` |  | none, flesh, wood, steel, rubber, stone, glass, shoe | what hits it (none = rigid) |
+| `striker_mass_g` | `200.0` | g | 1 .. 100000 | mass of the striking object |
+| `hardness` | `0.5` |  | 0 .. 1 | contact stiffness trim: 0 = padded, 1 = hard edge |
+| `hollowness` | `0.3` |  | 0 .. 1 | 0 = solid, 1 = thin-walled and hollow (cavity modes) |
+| `muffle` | `0.0` |  | 0 .. 1 | damping by hands, mounting or soft contact (shorter, darker) |
+| `contact_point` | `0.3` |  | 0 .. 1 | 0 = edge/end .. 1 = middle |
+| `residual` | `1.0` |  | 0 .. 3 | scale of the material's noise residual (crack and grain) |
+| `gesture` | `hit` |  | hit, footstep |  |
+| `bounces` | `1` | count | 1 .. 30 | contacts (drops and bounces) |
+| `restitution` | `0.5` |  | 0 .. 0.95 | speed kept per bounce |
+| `fracture` | `0.0` |  | 0 .. 1 | energy spent breaking into shards |
+| `striker_ring` | `0.0` |  | 0 .. 1 | level of the striker's own ring (pick, sword, spoon) |
+| `striker_size` | `0.4` | m | 0.02 .. 3 | length of the striker (its ring pitch) |
+| `grains` | `1.0` |  | 0 .. 4 | grain count scale (ground and debris) |
+| `n_modes` | `40` | count | 4 .. 120 | modes of the target |
+| `max_t60` | `4.0` | s | 0.02 .. 20 | cap on ring time |
+
+Sources: Hunt & Crossley 1975; Avanzini & Rocchesso 2001 (contact); van den Doel, Kry & Pai 2001, FoleyAutomatic (modal synthesis, SIGGRAPH); Aramaki, Besson, Kronland-Martinet & Ystad 2011, IEEE TASLP (material categories from damping laws); Klatzky, Pai & Krotkov 2000, Presence (perceived material from decay); Ren, Yeh & Lin 2013, ACM TOG (example-guided modal sound: residual compensation); Cremer & Heckl, Structure-Borne Sound (material data via vibrationdata); Leissa, Vibration of Plates / thin ring bending modes (shape formulas); Sethna et al. 2001; Bresin et al. 2010 (granular crackle, walking on surfaces); SDT: method only
 
 ## Stage: synth
 

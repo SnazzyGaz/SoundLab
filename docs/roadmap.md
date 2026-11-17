@@ -9,7 +9,12 @@ Ground rules:
   ...). Deeper physics only comes after the checkpoint, and only for sounds a game steers live.
 - Offline render to WAV is the main use.
 
-## Now: interaction models and resynthesis (v0.17 to v0.21)
+## Now: interaction models and resynthesis (v0.17 to v0.26)
+
+v0.26: impacts and materials as one model (`material_impact`: Hunt-Crossley contact, shape x material modes,
+per-material damping laws, residual noise, ground grains, fracture) with 16 derived recipes; see
+[impacts.md](impacts.md). Next families: friction (creaks, squeaks, scrapes), air and whooshes, liquids,
+machines, fire and electricity, creatures (frame-wise resynthesis, see research/creature-research.md).
 
 v0.21: creature voices (`creature_voice`, CHIMERA glottis port + f0/2 ventricular layer + lossy-tube tract) and
 a `growl` resynthesis kind. Next for creatures: a moving tract (mouth automation is averaged today), a syrinx for

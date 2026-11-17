@@ -42,6 +42,15 @@ SOFTWARE.
 
 ## Methods adopted from other projects and papers (no code copied)
 
+v0.26 `material_impact`: modal synthesis with material parameters (K. van den Doel, P. G. Kry, D. K. Pai,
+"FoleyAutomatic", SIGGRAPH 2001); material categories from frequency-dependent damping (M. Aramaki, M. Besson,
+R. Kronland-Martinet, S. Ystad, "Controlling the perceived material in an impact sound synthesizer", IEEE TASLP
+19(2), 2011); perceived material from decay (R. L. Klatzky, D. K. Pai, E. P. Krotkov, Presence 9(4), 2000);
+residual compensation (Z. Ren, H. Yeh, M. C. Lin, "Example-guided physically based modal sound synthesis", ACM
+TOG 32(1), 2013); plate, ring and spherical-shell mode formulas (A. W. Leissa, *Vibration of Plates* and
+*Vibration of Shells*, NASA SP-160/288); granular ground and fracture as in the crumpling and walking models
+of the Sound Design Toolkit (GPL-3.0: method only) and R. Bresin et al. 2010.
+
 v0.21 `creature_voice`, beyond the CHIMERA port: ventricular folds vibrating at half the vocal-fold rate in growl
 singing (L. Bailly, N. Henrich, X. Pelorson, "Vocal fold and ventricular fold vibration in period-doubled
 phonation", JASA 127, 2010); vocal tract length and formant spacing in animals (W. T. Fitch, JASA 102, 1997;
