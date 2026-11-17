@@ -15,7 +15,7 @@ Folder layout (both --engine and --library): either one sub-folder per sound (ra
 named <sound>__anything.wav. Engine renders from `soundlab batch` (<category>_<name>_vNN.wav) are also
 understood when a manifest.json is present or with --engine-batch.
 
-Library recordings are the user's own and are never copied into the repo; only the listening set (OUT)
+Library recordings stay in their own folder and are never copied into the repo; only the listening set (OUT)
 contains them.
 """
 from __future__ import annotations
