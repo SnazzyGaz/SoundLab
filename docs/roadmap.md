@@ -14,6 +14,8 @@ Ground rules:
 v0.21: creature voices (`creature_voice`, CHIMERA glottis port + f0/2 ventricular layer + lossy-tube tract) and
 a `growl` resynthesis kind. Next for creatures: a moving tract (mouth automation is averaged today), a syrinx for
 birds, CHIMERA's pulsed seal calls and the elephant's trunk-valve trumpet.
+Research for the next creature step (frame-wise analysis-resynthesis with subharmonic and chaos tracks, macros
+that edit analysed tracks) is in [research/creature-research.md](research/creature-research.md).
 
 
 v0.20: splashes keep the v0.18 impact and get a separately fitted bubble tail; choirs lose the noise layer and gain

@@ -1,7 +1,8 @@
 # Third-party code
 
 No packages vendored (ported code is listed under "Ported code" below). Runtime dependencies (installed, not copied): NumPy (BSD-3-Clause), SciPy
-(BSD-3-Clause); optional: matplotlib (matplotlib licence, BSD-style), pytest (MIT), ffmpeg (external executable).
+(BSD-3-Clause); optional: matplotlib (matplotlib licence, BSD-style), pytest (MIT), ffmpeg (external executable), pyworld
+(MIT, wrapping WORLD by M. Morise, modified BSD; used only by `tools/world_probe.py`, extra `soundlab[world]`).
 
 ## Ported code
 
