@@ -1,185 +1,250 @@
 {
- "soundlab": 1,
- "name": "Wind: gusty wind with trees (aeroacoustic noise, howl, leaf rustle)",
- "category": "ambience",
- "sample_rate": 48000,
- "duration": 8.0,
- "seed": 11,
- "layers": [
-  {
-   "name": "main",
-   "model": "wind",
-   "params": {
-    "speed": 8.0,
-    "gustiness": 0.5,
-    "gust_hz": 0.15,
-    "howl": 0.3,
-    "whistle": 0.0,
-    "gap_mm": 6.0,
-    "trees": 0.0,
-    "rumble": 0.15
-   }
-  }
- ],
- "post": [],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.5
- },
- "macros": {
-  "strength": {
-   "default": 0.5,
-   "doc": "breeze .. gale",
-   "map": [
+  "soundlab": 1,
+  "name": "Wind in trees and grass: steady breeze, leaf rustle (gusts and openness on the sliders)",
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 8.0,
+  "seed": 11,
+  "layers": [
     {
-     "to": "0.speed",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.35
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.5
-      ]
-     ]
+      "name": "main",
+      "model": "wind",
+      "params": {
+        "speed": 17.804,
+        "gustiness": 0.06,
+        "gust_hz": 0.45,
+        "howl": 0.18,
+        "whistle": 0.0,
+        "gap_mm": 6.0,
+        "trees": 0.856,
+        "rumble": 0.3,
+        "rustle": 0.072,
+        "rustle_rate": 316.648,
+        "eddy": 0.593,
+        "low_cut_hz": 194.204
+      }
     }
-   ]
-  },
-  "gusts": {
-   "default": 0.5,
-   "doc": "steady .. very gusty",
-   "map": [
+  ],
+  "post": [
     {
-     "to": "0.gustiness",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.4
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.4
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            4000,
+            0.0
+          ],
+          [
+            6800,
+            4.0
+          ],
+          [
+            8600,
+            6.0
+          ],
+          [
+            11000,
+            5.0
+          ],
+          [
+            14000,
+            4.0
+          ]
+        ]
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.5
+  },
+  "macros": {
+    "strength": {
+      "default": 0.5,
+      "doc": "breeze .. gale",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.35
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        }
       ]
-     ]
     },
-    {
-     "to": "0.gust_hz",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.6
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.8
+    "gusts": {
+      "default": 0.5,
+      "doc": "steady .. very gusty",
+      "map": [
+        {
+          "to": "0.gustiness",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.05
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.5
+            ]
+          ]
+        },
+        {
+          "to": "0.gust_hz",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.8
+            ]
+          ]
+        }
       ]
-     ]
-    }
-   ]
-  },
-  "trees": {
-   "default": 0.5,
-   "doc": "open ground (default) .. in a wood",
-   "map": [
-    {
-     "to": "0.trees",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.6
+    },
+    "trees": {
+      "default": 0.5,
+      "doc": "open ground .. deep in a wood (default: trees and grass close by)",
+      "map": [
+        {
+          "to": "0.trees",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.85
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.14
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        },
+        {
+          "to": "0.rustle",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.07
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.3
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
       ]
-     ]
-    }
-   ]
-  },
-  "howl": {
-   "default": 0.5,
-   "doc": "hiss only .. moaning",
-   "map": [
-    {
-     "to": "0.howl",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.3
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.6
+    },
+    "howl": {
+      "default": 0.5,
+      "doc": "hiss only .. moaning",
+      "map": [
+        {
+          "to": "0.howl",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.3
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.6
+            ]
+          ]
+        }
       ]
-     ]
-    }
-   ]
-  },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level)",
-   "map": [
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
     }
-   ]
-  }
- },
- "vary": {
-  "0.speed": {
-   "rel": 0.1
   },
-  "0.gust_hz": {
-   "rel": 0.2
-  }
- },
- "loop": {
-  "lead_s": 1.0,
-  "xfade_s": 0.5
- }
+  "vary": {
+    "0.speed": {
+      "rel": 0.1
+    },
+    "0.gust_hz": {
+      "rel": 0.2
+    }
+  },
+  "loop": {
+    "lead_s": 1.0,
+    "xfade_s": 0.5
+  },
+  "stereo": {
+    "mode": "decorrelate",
+    "width": 0.6,
+    "mono_below_hz": 150
+  },
+  "fitted": "v0.23: controls fitted to two real recordings of wind in trees and tall grass (BigSoundBank #0904, #0908) on third-octave spectrum and band texture (modulation depth, spikiness, fast flutter)",
+  "notes": "v0.24: leaf ticks are now sharp (instant attack, 0.3-4 ms decay) instead of soft 1-12 ms swells, and the controls were refitted: high-band 20-70 Hz roughness 0.18 vs real 0.19 (v0.23: 0.39, a mushy wash). The eq restores the 7-14 kHz air the fit left 4-7 dB short."
 }

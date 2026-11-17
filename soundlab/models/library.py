@@ -14,7 +14,7 @@ import numpy as np
 from scipy import interpolate
 
 from .. import dsp
-from ..core import Ctx, Param, ctrl, model
+from ..core import Ctx, Param, model
 from .excitation import bubble_grain, friedlander
 from .foley import _conv, _hann, _mode_ir, _norm, _push
 from .resonator import mode_set
@@ -104,9 +104,18 @@ def band_modulate(x, sr, rng, depth=0.3, rates=(0.5, 4.0), corr=0.3, f_lo=100.0,
            Param("rumble", 0.15, "", 0, 1, "low buffeting (wind on a mic or a building); keep low"),
            Param("indoors", 0.0, "", 0, 1, "heard from inside through a window or wall: the wind noise is "
                  "low-passed (mass law), the whistle made at the gap itself is not"),
+           Param("rustle", 0.0, "", 0, 1, "v0.23 leaf rustle as many tiny leaf contacts (power-law sizes, 1-12 ms, "
+                 "broadband to 16 kHz, rate following the gusts): what wind in trees and grass sounds like up close. "
+                 "0 = off (the older `trees` band only)"),
+           Param("rustle_rate", 400.0, "events/s", 10, 5000, "leaf contacts per second at the mean wind speed"),
+           Param("eddy", 1.0, "", 0, 8, "depth of the fast (4-11 Hz) turbulent level flutter; 1 = the v0.14 shallow wobble"),
+           Param("low_cut_hz", 35.0, "Hz", 20, 300, "low-end roll-off (35 = bare; a windshielded field mic rolls "
+                 "off near 80-150 Hz)"),
        ], ["Farnell 2010, Designing Sound (wind)", "Wikipedia: Aeolian sound; Strouhal number",
-           "Lighthill / Curle (dipole sound power ~ U^6)"])
-def wind(ctx: Ctx, x, speed, gustiness, gust_hz, howl, whistle, gap_mm, trees, rumble, indoors):
+           "Lighthill / Curle (dipole sound power ~ U^6)",
+           "Houle & Sethna 1996 (crackling noise: power-law event sizes) for the leaf contacts"])
+def wind(ctx: Ctx, x, speed, gustiness, gust_hz, howl, whistle, gap_mm, trees, rumble, indoors, rustle=0.0,
+         rustle_rate=400.0, eddy=1.0, low_cut_hz=35.0):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     # v0.14: gusts carry faster flurries as well (0.5-2 Hz), so the level and brightness keep moving on a
     # scale of seconds; CC0 wind refs have ~4x more envelope energy below 4 Hz than the old model
@@ -122,8 +131,8 @@ def wind(ctx: Ctx, x, speed, gustiness, gust_hz, howl, whistle, gap_mm, trees, r
     body = dsp.svf(dsp.pink(rng, n), fc, 0.5, sr, "lp") + 0.3 * dsp.svf(dsp.pink(rng, n), np.minimum(4 * fc, 16000), 0.5, sr, "lp")
     # turbulent eddies make the level waver irregularly at a few Hz (two unrelated random rates, shallow: a
     # deep regular flutter is the plastic-bag sound)
-    eddy = np.exp(0.18 * smooth_random(rng, n, sr, 4.1) + 0.12 * smooth_random(rng, n, sr, 10.7))
-    out = _norm(body * amp * eddy)
+    flutter = np.exp(eddy * (0.18 * smooth_random(rng, n, sr, 4.1) + 0.12 * smooth_random(rng, n, sr, 10.7)))
+    out = _norm(body * amp * flutter)
     if howl > 0:
         # broad moaning resonances (Q 2.5-4; narrow ones beat into a fast grainy flutter)
         h = np.zeros(n)
@@ -149,12 +158,39 @@ def wind(ctx: Ctx, x, speed, gustiness, gust_hz, howl, whistle, gap_mm, trees, r
         # plastic bag waving, so only a shallow, irregular wobble (two unrelated rates) at a low level; off by default in wind.json (the `trees` macro brings it in).
         flut = np.exp(0.10 * smooth_random(rng, n, sr, 3.3) + 0.06 * smooth_random(rng, n, sr, 11.7))
         leaves = dsp.lowpass(dsp.bandpass(dsp.pink(rng, n), 1800.0 + 600.0 * min(speed / 10.0, 2.0), sr, 0.4),
-                             5000.0, sr) * flut * amp ** 0.7
+                             5000.0, sr) * flut * amp   # v0.23: ~amp like the body (was amp^0.7: gusts got duller)
         out += trees * 0.3 * _norm(leaves)
     if rumble > 0:
         r = dsp.lowpass(dsp.brown(rng, n), 90.0, sr, 0.5) * amp
         out += rumble * 0.5 * _norm(r)
-    return dsp.highpass(out, 35.0, sr)
+    if rustle > 0:
+        # leaf noise is aerodynamic too: it scales with the gusts like the body (power ~ amp^2: contact rate
+        # ~ amp and contact size ~ sqrt(amp)), so a gust gets louder and brighter together
+        a = amp / max(float(np.mean(amp)), 1e-9)
+        out += rustle * _leaf_contacts(rng, n, sr, rustle_rate * a) * np.sqrt(a)
+    return dsp.highpass(out, low_cut_hz, sr)
+
+
+def _leaf_contacts(rng, n, sr, rate):
+    """Leaves knocking and sliding past each other: a Poisson cloud of short noise bursts (1-12 ms, Hann), each
+    with its own brightness (a high-pass between 1 and 6 kHz: small, stiff leaves are brighter), sizes from a
+    power law (many tiny contacts, a few loud ones). Distinct bursts, not one smooth band: real tree and
+    grass recordings are spiky above 4 kHz (10 ms envelope kurtosis ~12) and flicker fast."""
+    idx = dsp.poisson_times(rng, rate, sr)
+    if not len(idx):
+        return np.zeros(n)
+    bank = [np.zeros(n) for _ in range(4)]                  # four brightness bins, one filter each
+    corners = (1000.0, 1800.0, 3200.0, 5600.0)
+    for i in idx:
+        # v0.24: a leaf tick is sharp, not a swell: instant attack, 0.3-4 ms exponential decay (v0.23's 1-12 ms
+        # Hann bursts overlapped into a mushy wash with too much 20-70 Hz flicker), and sizes spread wider
+        L = max(8, int(sr * rng.uniform(0.0003, 0.004)))
+        g = min(rng.pareto(1.2) + 0.05, 60.0)
+        burst = rng.standard_normal(L) * np.exp(-np.arange(L) / (0.3 * L))
+        dsp.place(bank[rng.integers(0, 4)], burst, int(i), g)
+    out = sum(dsp.highpass(b, c, sr, 0.6) for b, c in zip(bank, corners))
+    out = dsp.lowpass(out, 16000.0, sr, 0.6)
+    return 0.4 * out / (np.sqrt(np.mean(out ** 2)) * 4 + 1e-12)
 
 
 # =================================================================== rain
@@ -185,9 +221,12 @@ RAIN_SURFACES = {
                  "16 kHz and a few close, loud drops (0 = the v0.14 steady wash)"),
            Param("patter", 0.0, "", 0, 1, "v0.16 mid-distance patter: hundreds of separately audible bright drop "
                  "taps per second over a steadier wash and a lighter low end (0 = v0.15)"),
+           Param("smooth", 0.0, "", 0, 1, "v0.25.3 density of the far rain: the share of the hiss made of so many "
+                 "overlapping drops that it is smooth Gaussian noise (0 = the sparse micro-tap hiss of v0.11-0.25, "
+                 "which stays impulsive: 3-12 kHz kurtosis ~4, heard as crackle in heavy rain)"),
        ], ["McDermott & Simoncelli 2011 (sound texture statistics)", "Marshall & Palmer 1948 (drop size distribution)", "Prosperetti & Oguz 1993 (rain bubbles)",
            "Wikipedia: Minnaert resonance", "van den Doel 2005 (liquid sounds)"])
-def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness, texture=0.0, patter=0.0):
+def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness, texture=0.0, patter=0.0, smooth=0.0):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     su = RAIN_SURFACES[surface]
     R = rate_mm_h
@@ -254,6 +293,12 @@ def rain(ctx: Ctx, x, rate_mm_h, surface, near, hiss, drop_mm, brightness, textu
             part = imp * (rng.integers(0, 3, n) == k)
             w = max(3, int(w_ms * 1e-3 * sr))
             micro += np.convolve(part, _hann(w), "same")
+        if smooth > 0:
+            # v0.25.3: heavy rain is millions of far drops a second: they overlap into Gaussian noise. The micro-tap
+            # process is capped at one tap per sample, so on its own it stays impulsive (crackly); blend in
+            # Gaussian noise through the same tap shape, at equal power
+            g = np.convolve(rng.standard_normal(n), _hann(max(3, int(0.15e-3 * sr))), "same")
+            micro = np.sqrt(1 - smooth) * micro / (np.std(micro) + 1e-12) + np.sqrt(smooth) * g / (np.std(g) + 1e-12)
         h = dsp.lowpass(dsp.highpass(micro, 400.0, sr), min(top, 0.45 * sr), sr)
         if texture > 0:
             h = band_modulate(h, sr, rng, depth=0.5 * texture * (1 - 0.4 * patter), rates=(0.3, 1.5), corr=0.4,
@@ -531,9 +576,18 @@ def clash(ctx: Ctx, x, object, velocity, scrape_s, scrape, damping, size, second
            Param("hinge", 0.5, "", 0, 1, "metal hinge resonance vs wooden door body"),
            Param("door_size", 1.0, "", 0.3, 2, "door size (1 = 2.0 x 0.8 m)"),
            Param("at", 0.05, "s", 0, None),
+           Param("slip", 0.0, "", 0, 0.5, "v0.25.3 slip phase as a share of each cycle (0 = v0.25: random 10-25 %); "
+                 "a short, steady slip gives the clear harmonic series of a real creak"),
+           Param("steady", 0.0, "", 0, 1, "v0.25.3 cycle-to-cycle steadiness: scales down the per-cycle period and "
+                 "level jitter (0 = v0.25). Jittery cycles smear the harmonics into noise: a zipper, not a groan"),
+           Param("hinge_hz", 0.0, "Hz", 0, 5000, "v0.25.3 lowest hinge/door resonance (0 = v0.25: ~1150 Hz); real door "
+                 "creaks peak around 1-1.5 kHz"),
+           Param("hinge_q", 1.0, "", 0.3, 6, "v0.25.3 ring time of the hinge resonances relative to v0.25 (longer = more "
+                 "tonal, a clearer formant)"),
        ], ["Wikipedia: Stick-slip phenomenon", "Avanzini, Serafin & Rocchesso 2002 (friction models)",
            "Farnell 2010, Designing Sound (creaking door)"])
-def door_creak(ctx: Ctx, x, open_s, pitch_hz, pressure, wander, hinge, door_size, at):
+def door_creak(ctx: Ctx, x, open_s, pitch_hz, pressure, wander, hinge, door_size, at, slip=0.0, steady=0.0,
+               hinge_hz=0.0, hinge_q=1.0):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     t = np.arange(n) / sr
     u = np.clip((t - at) / open_s, 0, 1)
@@ -578,15 +632,26 @@ def door_creak(ctx: Ctx, x, open_s, pitch_hz, pressure, wander, hinge, door_size
             if rng.random() < 0.4 and i < n:
                 dsp.place(exc, _hann(6), i, 0.25 * rng.uniform(0.5, 1.0))
             continue
-        L = max(4, int(sr / rate[i] * (1 + 0.1 * wander * rng.standard_normal())))
-        slip = max(2, int(L * rng.uniform(0.1, 0.25)))
-        cyc = np.concatenate([np.linspace(-0.5, 0.5, L - slip), np.linspace(0.5, -0.5, slip)])
-        dsp.place(exc, cyc * (sp ** 0.7) * chatter[i] * (0.6 + 0.8 * pressure) * rng.uniform(0.75, 1.25), i)
+        jit = 1.0 - steady
+        if steady <= 0 and slip <= 0:                          # v0.25 draws, bit for bit
+            L = max(4, int(sr / rate[i] * (1 + 0.1 * wander * rng.standard_normal())))
+            ns = max(2, int(L * rng.uniform(0.1, 0.25)))
+            g = rng.uniform(0.75, 1.25)
+        else:
+            L = max(4, int(sr / rate[i] * (1 + 0.1 * wander * jit * rng.standard_normal())))
+            fr = rng.uniform(0.1, 0.25) if slip <= 0 else slip * rng.uniform(1 - 0.2 * jit, 1 + 0.2 * jit)
+            ns = max(2, int(L * fr))
+            g = rng.uniform(1 - 0.25 * jit, 1 + 0.25 * jit)
+        cyc = np.concatenate([np.linspace(-0.5, 0.5, L - ns), np.linspace(0.5, -0.5, ns)])
+        dsp.place(exc, cyc * (sp ** 0.7) * chatter[i] * (0.6 + 0.8 * pressure) * g, i)
         i += L
     # rubbing noise at the pin, following the speed (recordings have a friction floor under the squeal)
     fric = dsp.bandpass(dsp.white(rng, n), 2500.0, sr, 0.5) * speed ** 1.2
     hf = np.array([1150.0, 2350.0, 3900.0]) * rng.uniform(0.9, 1.1, 3)
-    hinge_y = _conv(exc, _mode_ir(sr, hf, [0.012, 0.009, 0.006], [1, .6, .3])) + 0.4 * dsp.highpass(exc, 600.0, sr)
+    if hinge_hz > 0:
+        hf = hf * (hinge_hz / 1150.0)
+    hinge_y = _conv(exc, _mode_ir(sr, hf, [0.012 * hinge_q, 0.009 * hinge_q, 0.006 * hinge_q], [1, .6, .3])) \
+        + 0.4 * dsp.highpass(exc, 600.0, sr)
     f, a = mode_set("plate", materials.get("oak"), 2.0 * door_size, 0.8 * door_size, 0.04, 0, 60, None, 0.1, rng)
     door_y = _conv(exc, _mode_ir(sr, f * rng.uniform(0.97, 1.03, len(f)), 6.91 / (np.pi * f * 0.01 + 40.0), a))
     # the squeal sits in the mid and upper-mid (hold-out creaks: most energy 400 Hz-7 kHz); the leaf adds
@@ -793,7 +858,8 @@ GUNS = {
            Param("mech", 0.4, "", 0, 1, "action clack level (slide/bolt, dry)"),
            Param("at", 0.02, "s", 0, None),
        ], ["Wikipedia: Blast wave (Friedlander)", "Maher 2006, Modeling and signal processing of acoustic gunshot "
-           "recordings", "Beck, Nakasone & Marr 2011 (muzzle blast variation)", "Farnell 2010 (guns)"])
+           "recordings", "Beck, Nakasone & Marr 2011 (muzzle blast variation)", "Farnell 2010 (guns)"],
+       min_s=lambda p: float(p["at"]) + 0.3)
 def gunshot(ctx: Ctx, x, calibre, crack, drive, body, echo, space, mech, at):
     from scipy import signal
     sr, n, rng = ctx.sr, ctx.n, ctx.rng

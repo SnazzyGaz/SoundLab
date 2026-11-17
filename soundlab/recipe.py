@@ -53,10 +53,16 @@ def _block(ctx: Ctx, spec: dict, x: np.ndarray | None) -> np.ndarray:
     params = m.resolve(spec.get("params"))
     if m.needs_input and x is None:
         raise RecipeError(f"{name} ({m.stage}) needs an input; put a source block before it")
-    if not m.needs_input and x is not None:
-        # a source in the middle of a chain is added to the running signal
-        return x + m.fn(ctx, None, **params)
-    y = m.fn(ctx, x, **params)
+    if m.needs_input:
+        y = m.fn(ctx, x, **params)
+    else:
+        need = m.min_samples(params, ctx.sr)
+        if need > ctx.n:    # too short for the model's own windows (or the event is past the end): render, crop
+            y = np.asarray(m.fn(Ctx(ctx.sr, need, ctx.rng, ctx.c), None, **params), float)[:ctx.n]
+        else:
+            y = m.fn(ctx, None, **params)
+        if x is not None:   # a source in the middle of a chain is added to the running signal
+            y = x + np.asarray(y, float)
     y = np.asarray(y, float)
     if y.shape != (ctx.n,):
         raise RecipeError(f"{name} returned shape {y.shape}, expected ({ctx.n},)")
@@ -113,12 +119,32 @@ def resolve(recipe: Any, macros: dict | None = None, variation: int = 0) -> tupl
     return rr, seed
 
 
+def ring_tail_s(recipe: dict) -> float:
+    """How long the recipe keeps sounding after its sources stop: per layer the tails of its processing blocks
+    in series, the longest layer, then the post blocks in series (see soundlab/models/tails.py)."""
+    from . import models  # noqa: F401
+    def chain_tail(blocks):
+        t = 0.0
+        for b in blocks:
+            m = REGISTRY.get(b.get("model"))
+            if m is not None and m.needs_input:
+                t += m.tail_seconds(m.resolve(b.get("params")))
+        return t
+    layers = [chain_tail(layer.get("chain") or [layer]) for layer in recipe.get("layers", [])]
+    return max(layers + [0.0]) + chain_tail(recipe.get("post", []))
+
+
 def render(recipe: Any, sample_rate: int | None = None, seed: int | None = None, return_layers: bool = False,
-           macros: dict | None = None, variation: int = 0):
+           macros: dict | None = None, variation: int = 0, ring_out: bool | float = False):
     """Render a recipe (dict or path) to a mono float array. Deterministic for a given seed.
 
     macros: {name: value} for the recipe's macro sliders (defaults otherwise). variation: 0 = the recipe as
-    written; k >= 1 = seeded variation k (jittered macros/controls and its own seed)."""
+    written; k >= 1 = seeded variation k (jittered macros/controls and its own seed).
+
+    ring_out: the sources still stop at `duration` (with the master fade-out), but rooms, reverbs, ringing
+    resonators and echoes keep running for their own tail (ring_tail_s; True caps it at 20 s, a number caps it
+    at that many seconds), so the result is longer than `duration` and nothing is cut mid-ring. Exports use it
+    and then trim the silent end. False (default): exactly `duration`, as always."""
     from . import models  # noqa: F401  (registers blocks)
 
     r, vseed = resolve(recipe, macros, variation)
@@ -130,30 +156,57 @@ def render(recipe: Any, sample_rate: int | None = None, seed: int | None = None,
     sr = int(sample_rate or r.get("sample_rate", 48000))
     dur = float(r.get("duration", 3.0))
     n = int(round(dur * sr))
+    master = r.get("master", {})
+    ring = 0
+    if ring_out:
+        cap = 20.0 if ring_out is True else float(ring_out)
+        ring = int(round(min(ring_tail_s(r), cap) * sr))
+    N = n + ring
+    fade_out = float(master.get("fade_out", 0.02))
+
+    def stop(x):    # sources end at `duration`: fade them there, then silence while the tails ring
+        return np.concatenate([dsp.fade(x, sr, 0.0, fade_out), np.zeros(ring)])
+
     root = np.random.default_rng(int(r.get("seed", 0) if seed is None else seed))
-    mix = np.zeros(n)
+    mix = np.zeros(N)
     stems = {}
     for i, layer in enumerate(r["layers"]):
         chain = layer.get("chain") or [layer]
         start = int(float(layer.get("start", 0.0)) * sr)
-        ln = n - start
+        ln = n - start      # a negative start is pre-roll: the layer began before t = 0 and its head is cut
+        layer_seed = int(root.integers(0, 2**31 - 1))   # drawn even for skipped layers: later layers keep their seed
         if ln <= 0:
             continue
-        ctx = Ctx(sr, ln, np.random.default_rng(int(root.integers(0, 2**31 - 1))))
+        ctx = Ctx(sr, ln, np.random.default_rng(layer_seed))
         x = None
         for b in chain:
+            m = REGISTRY.get(b.get("model"))
+            if ring and m is not None and x is not None and len(x) == ln:
+                if m.needs_input:               # first processing block: from here on the layer rings out
+                    x = stop(x)
+                    ctx = Ctx(sr, ln + ring, ctx.rng, ctx.c)
+                    x = _block(ctx, b, x)
+                else:                           # a source added mid-chain still stops at `duration`
+                    x = _block(ctx, b, x)
+                continue
+            if ring and m is not None and not m.needs_input and x is not None:
+                x = x + stop(_block(Ctx(sr, ln, ctx.rng, ctx.c), b, None))
+                continue
             x = _block(ctx, b, x)
+        if ring and len(x) == ln:
+            x = stop(x)
         g = 10 ** (float(layer.get("gain_db", 0.0)) / 20)
+        if start < 0:
+            x = x[-start:]
         if layer.get("normalize", True):
             x = x / (np.max(np.abs(x)) + 1e-12)
-        y = np.zeros(n)
-        y[start:] = x * g
+        y = np.zeros(N)
+        y[max(start, 0):] = x * g
         stems[layer.get("name", f"layer{i}")] = y
         mix += y
-    pctx = Ctx(sr, n, np.random.default_rng(int(root.integers(0, 2**31 - 1))))
+    pctx = Ctx(sr, N, np.random.default_rng(int(root.integers(0, 2**31 - 1))))
     for b in r.get("post", []):
         mix = _block(pctx, b, mix)
-    master = r.get("master", {})
     if master.get("highpass_hz"):
         mix = dsp.highpass(mix, float(master["highpass_hz"]), sr)
     # DC blocker on every recipe: 2nd-order high pass at 7 Hz (inaudible, removes offsets that cost headroom
@@ -161,7 +214,7 @@ def render(recipe: Any, sample_rate: int | None = None, seed: int | None = None,
     dc_hz = float(master.get("dc_block_hz", 7.0))
     if dc_hz > 0:
         mix = dsp.highpass(mix - mix.mean(), dc_hz, sr)
-    mix = dsp.fade(mix, sr, 0.0005, float(master.get("fade_out", 0.02)))
+    mix = dsp.fade(mix, sr, 0.0005, fade_out)
     if master.get("normalize_db", -1.0) is not None:
         mix = dsp.normalize_peak(mix, float(master.get("normalize_db", -1.0)))
     if master.get("gain_db"):

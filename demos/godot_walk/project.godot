@@ -1,0 +1,25 @@
+; Engine configuration file.
+; SoundLab Walk: a first-person scene whose sounds all come from SoundLab recipes.
+
+config_version=5
+
+[application]
+
+config/name="SoundLab Walk"
+config/description="Walk around a small yard; wind, rain, fire, a stream, footsteps, a door, a metal pipe. Every sound is rendered by SoundLab."
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[audio]
+
+driver/mix_rate=48000
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

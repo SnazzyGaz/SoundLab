@@ -1,185 +1,230 @@
 {
- "soundlab": 1,
- "name": "Dog growl: low pulsed rumble with tremor, mouth nearly shut, a little rasp",
- "category": "animal",
- "sample_rate": 48000,
- "duration": 2.5,
- "seed": 21,
- "layers": [
-  {
-   "name": "voice",
-   "model": "creature_voice",
-   "params": {
-    "f0": [
-     [
-      0,
-      105
-     ],
-     [
-      2.4,
-      95
-     ]
-    ],
-    "chaos": 0.3,
-    "ventricular": 0.4,
-    "rasp": 0.5,
-    "breath": 0.15,
-    "jitter": 0.02,
-    "shimmer": 0.15,
-    "open_quotient": 0.5,
-    "sharpness": 0.7,
-    "tract_cm": 20,
-    "mouth": 0.3,
-    "vibrato_hz": 22,
-    "vibrato_cents": 60,
-    "muffle_hz": 3000,
-    "level": [
-     [
-      0,
-      0
-     ],
-     [
-      0.2,
-      1
-     ],
-     [
-      2.2,
-      0.85
-     ],
-     [
-      2.45,
-      0
-     ]
-    ]
-   }
-  }
- ],
- "post": [
-  {
-   "model": "room",
-   "params": {
-    "volume": 40,
-    "absorption": 0.5,
-    "source_distance": 1.0
-   }
-  }
- ],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.05
- },
- "macros": {
-  "size": {
-   "default": 0.5,
-   "doc": "smaller .. bigger creature",
-   "map": [
+  "soundlab": 1,
+  "name": "Dog growl: low pulsed rumble with tremor, mouth nearly shut, a little rasp",
+  "category": "animal",
+  "sample_rate": 48000,
+  "duration": 1.4202898961924828,
+  "seed": 21,
+  "layers": [
     {
-     "to": "0.tract_cm",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2
-      ]
-     ]
+      "name": "voice",
+      "model": "creature_voice",
+      "params": {
+        "f0": [
+          [
+            0.0,
+            167.0499210514205
+          ],
+          [
+            1.3634783003447835,
+            151.14040476080902
+          ]
+        ],
+        "chaos": 0.5786200581957198,
+        "ventricular": 0.05281422240630007,
+        "rasp": 1.0478421892677439,
+        "breath": 0.4732678441371455,
+        "jitter": 0.02,
+        "shimmer": 0.39665026790064944,
+        "open_quotient": 0.5,
+        "sharpness": 0.6892744766250224,
+        "tract_cm": 27.64163073768608,
+        "mouth": 0.1647023404280557,
+        "vibrato_hz": 13.04911888258318,
+        "vibrato_cents": 60,
+        "muffle_hz": 1989.0776454415045,
+        "level": [
+          [
+            0.0,
+            0
+          ],
+          [
+            0.11362319169539864,
+            1
+          ],
+          [
+            1.249855108649385,
+            0.85
+          ],
+          [
+            1.3918840982686334,
+            0
+          ]
+        ]
+      }
     }
-   ]
-  },
-  "rough": {
-   "default": 0.5,
-   "doc": "smoother .. more chaotic",
-   "map": [
+  ],
+  "post": [
     {
-     "to": "0.chaos",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.3
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.25
-      ]
-     ],
-     "clamp": [
-      0,
-      1
-     ]
-    }
-   ]
-  },
-  "pitch": {
-   "default": 0.5,
-   "doc": "lower .. higher",
-   "map": [
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            0.4
+          ],
+          [
+            125,
+            -4.7
+          ],
+          [
+            250,
+            -6.0
+          ],
+          [
+            500,
+            -4.7
+          ],
+          [
+            1000,
+            4.9
+          ],
+          [
+            2000,
+            -0.2
+          ],
+          [
+            4000,
+            -4.3
+          ],
+          [
+            8000,
+            2.0
+          ],
+          [
+            16000,
+            6.0
+          ]
+        ]
+      }
+    },
     {
-     "to": "0.f0",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.6
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.6
-      ]
-     ]
+      "model": "room",
+      "params": {
+        "volume": 40,
+        "absorption": 0.5,
+        "source_distance": 1.0,
+        "wet": 0.5624642614787911
+      }
     }
-   ]
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
   },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level)",
-   "map": [
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
+  "macros": {
+    "size": {
+      "default": 0.5,
+      "doc": "smaller .. bigger creature",
+      "map": [
+        {
+          "to": "0.tract_cm",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
+    },
+    "rough": {
+      "default": 0.5,
+      "doc": "smoother .. more chaotic",
+      "map": [
+        {
+          "to": "0.chaos",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.3
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.25
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "pitch": {
+      "default": 0.5,
+      "doc": "lower .. higher",
+      "map": [
+        {
+          "to": "0.f0",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.6
+            ]
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
     }
-   ]
-  }
- },
- "vary": {
-  "0.f0": {
-   "rel": 0.08
   },
-  "0.chaos": {
-   "abs": 0.05
-  }
- }
+  "vary": {
+    "0.f0": {
+      "rel": 0.08
+    },
+    "0.chaos": {
+      "abs": 0.05
+    }
+  },
+  "notes": "v0.25: fitted to reference recordings (BBC 07020067, 07023370), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."
 }

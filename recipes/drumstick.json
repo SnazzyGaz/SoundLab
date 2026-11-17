@@ -1,0 +1,357 @@
+{
+  "soundlab": 1,
+  "name": "Drumstick click: two hardwood sticks struck together (short, bright, little ring)",
+  "category": "impact",
+  "sample_rate": 48000,
+  "duration": 1.5,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "hit",
+      "model": "hit",
+      "params": {
+        "material": "oak",
+        "shape": "bar",
+        "length": 0.16884871508255217,
+        "width": 0.008406859744930932,
+        "thickness": 0.027509832447793856,
+        "velocity": 1.9948620798305958,
+        "contact_ms": 0.17221337419746596,
+        "bounces": 1,
+        "strike_pos": 0.27,
+        "extra_damping": 95.33427409138744,
+        "at": 0.01,
+        "contact_noise": 1.9814421539255984,
+        "noise_hz": 4591.76111911083
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            6.0
+          ],
+          [
+            125,
+            6.0
+          ],
+          [
+            250,
+            5.1
+          ],
+          [
+            500,
+            1.3
+          ],
+          [
+            1000,
+            0.7
+          ],
+          [
+            2000,
+            -6.0
+          ],
+          [
+            4000,
+            0.2
+          ],
+          [
+            8000,
+            5.3
+          ],
+          [
+            16000,
+            -0.4
+          ]
+        ]
+      }
+    },
+    {
+      "model": "room",
+      "params": {
+        "volume": 40,
+        "absorption": 0.3,
+        "source_distance": 1.0,
+        "wet": 0.07507975159551339
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "material": {
+      "default": "wood",
+      "doc": "what is struck",
+      "choices": {
+        "wood": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "oak"
+          }
+        ],
+        "metal": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "steel"
+          },
+          {
+            "to": "0.thickness",
+            "op": "mul",
+            "value": 0.3
+          },
+          {
+            "to": "0.extra_damping",
+            "op": "mul",
+            "value": 0.2
+          }
+        ],
+        "glass": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "glass"
+          },
+          {
+            "to": "0.thickness",
+            "op": "mul",
+            "value": 0.3
+          }
+        ],
+        "plastic": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "plexiglas"
+          },
+          {
+            "to": "0.thickness",
+            "op": "mul",
+            "value": 0.5
+          }
+        ],
+        "stone": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "concrete"
+          },
+          {
+            "to": "0.thickness",
+            "op": "mul",
+            "value": 2.5
+          }
+        ],
+        "cardboard": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "cardboard"
+          },
+          {
+            "to": "0.thickness",
+            "op": "mul",
+            "value": 0.1
+          }
+        ]
+      }
+    },
+    "size": {
+      "default": 0.5,
+      "doc": "small .. large object (all dimensions)",
+      "map": [
+        {
+          "to": "0.length",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.35
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        },
+        {
+          "to": "0.width",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "to": "0.thickness",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.6
+            ]
+          ]
+        }
+      ]
+    },
+    "intensity": {
+      "default": 0.5,
+      "doc": "tap .. hard hit (speed; harder = shorter contact, brighter)",
+      "map": [
+        {
+          "to": "0.velocity",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.2
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        },
+        {
+          "to": "0.contact_ms",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              2.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              0.6
+            ]
+          ]
+        }
+      ]
+    },
+    "hardness": {
+      "default": 0.5,
+      "doc": "soft mallet .. hard stick",
+      "map": [
+        {
+          "to": "0.contact_ms",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              0.4
+            ]
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level, more room sound)",
+      "map": [
+        {
+          "to": "post.1.source_distance",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              10
+            ]
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.velocity": {
+      "rel": 0.2
+    },
+    "0.strike_pos": {
+      "abs": 0.06
+    },
+    "0.length": {
+      "rel": 0.03
+    },
+    "0.contact_ms": {
+      "rel": 0.15
+    },
+    "0.at": {
+      "abs": 0.004
+    }
+  },
+  "notes": "v0.25: new recipe, the dowel model fitted to reference recordings (BigSoundBank #1488, #1489 drumstick clicks; dowel.json stays the v0.7 hit), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."
+}

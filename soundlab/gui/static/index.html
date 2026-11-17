@@ -98,6 +98,7 @@
       <label class="inline"><input type="checkbox" id="trim" checked> trim silent tail</label>
       <span id="loopbox" class="inline" style="display:none"><label class="inline"><input type="checkbox" id="loopon"> seamless loop</label>
         <input type="number" id="loops" min="1" max="120" step="1" value="10"> s</span>
+      <label id="stereobox" class="inline" style="display:none" title="Stereo bed: rain, wind, fire, water... (one-shots stay mono: the game pans them)"><input type="checkbox" id="stereo" checked> stereo</label>
     </div>
     <p class="hint" style="margin-top:0">Play uses the same settings, so what you hear is what gets exported.</p>
     <div class="inline">
@@ -224,7 +225,8 @@ function wire() {
   $("#dice").onclick = () => { $("#seed").value = state.seed = String(Math.floor(Math.random() * 1e6)); changed(); };
   $("#reset").onclick = () => select(cur.id);
   $("#loopbox").style.display = cur.loopable ? "" : "none";
-  for (const id of ["#level", "#trim", "#loopon", "#loops"]) $(id).onchange = changed;
+  $("#stereobox").style.display = cur.stereo ? "" : "none";
+  for (const id of ["#level", "#trim", "#loopon", "#loops", "#stereo"]) $(id).onchange = changed;
   $("#exp").onclick = () => run("/api/export", {...req(), mp3: $("#mp3").checked}, r => "Saved " + r.wav + (r.mp3 ? "\n      " + r.mp3 : "") + (r.mp3_error ? "\nMP3 skipped: " + r.mp3_error : ""));
   $("#batch").onclick = () => run("/api/batch", {...req(), n: +$("#n").value || 10, mp3: $("#mp3").checked},
                                   r => `Saved ${r.files.length} variations in ${r.folder}` + (r.files.some(f => f.mp3_error) ? "\nMP3 skipped (ffmpeg not found)" : ""));
@@ -234,7 +236,8 @@ function wire() {
 function req() {
   const loop = cur.loopable && $("#loopon").checked ? Math.max(1, +$("#loops").value || 10) : 0;
   return {id: cur.id, macros: state.macros, overrides: state.overrides, variation: state.variation, seed: state.seed,
-          level: $("#level").value, trim: $("#trim").checked, loop};
+          level: $("#level").value, trim: $("#trim").checked, loop,
+          stereo: cur.stereo ? $("#stereo").checked : false};
 }
 function changed() { pending = true; if ($("#auto").checked) render(true); else $("#status").textContent = "changed: press Play"; }
 
@@ -258,7 +261,7 @@ async function render(play) {
     const f = r.finish || {};
     const lvl = f.result !== undefined ? ` · ${f.result} LUFS${f.measured_by === "integrated" ? " integrated" : " (max momentary)"}, target ${f.target}` +
                 (f.limiter_db ? ` · limited ${f.limiter_db} dB` : "") : "";
-    $("#status").textContent = `${r.seconds.toFixed(2)} s${req().loop ? " loop" : ""} · rendered in ${r.render_s} s · peak ${(20 * Math.log10(r.peak + 1e-9)).toFixed(1)} dBFS${lvl}`;
+    $("#status").textContent = `${r.seconds.toFixed(2)} s${req().loop ? " loop" : ""}${r.channels === 2 ? " stereo" : ""} · rendered in ${r.render_s} s · peak ${(20 * Math.log10(r.peak + 1e-9)).toFixed(1)} dBFS${lvl}`;
     drawWave(r.waveform); drawSpec(r.spectrogram);
     if (play) audio.play().catch(() => {});
   } catch (e) { if (my === seq) $("#status").textContent = "error: " + e.message; }

@@ -13,9 +13,10 @@ import json
 import re
 import shutil
 import subprocess
+import tempfile
 import time
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Iterable
 
 from .recipe import load
 
@@ -33,7 +34,8 @@ def _fmt(v) -> str:
 
 def file_name(recipe: dict, stem: str, k: int, tags: dict | None = None, ext: str = ".wav") -> str:
     cat, name = _slug(recipe.get("category", "sfx")), _slug(stem)
-    parts = ([cat] if cat != name else []) + [name] + [f"{_slug(m)}{_fmt(v)}" for m, v in (tags or {}).items()]
+    parts = ([cat] if cat != name else []) + [name] + [_slug(m) if v is True else f"{_slug(m)}{_fmt(v)}"
+                                                       for m, v in (tags or {}).items()]
     return "_".join(parts) + f"_v{k + 1:02d}{ext}"
 
 
@@ -45,7 +47,11 @@ def collect(inputs: Iterable[str | Path], recursive: bool = False) -> list[Path]
         if p.is_dir():
             out += sorted(p.rglob("*.json") if recursive else p.glob("*.json"))
         elif p.suffix == ".txt":
-            out += [Path(ln.strip()) for ln in p.read_text().splitlines() if ln.strip() and not ln.startswith("#")]
+            for ln in p.read_text().splitlines():
+                q = Path(ln.strip())
+                if ln.strip() and not ln.lstrip().startswith("#"):
+                    # relative entries: next to the list file (falls back to the current folder, as before)
+                    out.append(q if q.is_absolute() or q.exists() or not (p.parent / q).exists() else p.parent / q)
         else:
             out.append(p)
     return out
@@ -68,11 +74,13 @@ def parse_sweep(items) -> dict:
 
 def batch_export(inputs, out_dir, variations: int = 1, macros: dict | None = None, sweep: dict | None = None,
                  mp3: bool = False, sample_rate: int | None = None, recursive: bool = False,
-                 log=print, level: str = "lufs", trim: bool = True, loop: float | None = None) -> list[dict]:
+                 log=print, level: str = "lufs", trim: bool = True, loop: float | None = None,
+                 stereo: bool | None = None) -> list[dict]:
     """Render every recipe x every sweep combination x `variations` files into out_dir.
     Files are finished for games (trimmed tail, loudness per category; see soundlab.finish) unless
     level='peak' / trim=False. loop=SECONDS writes seamless loops for recipes tagged "loop" (the others are
-    exported as one-shots). Returns a manifest (also written to out_dir/manifest.json)."""
+    exported as one-shots). stereo: None = stereo beds for loops of recipes with a "stereo"
+    config, True/False to force (names get a `_stereo` tag). Returns a manifest (also written to out_dir/manifest.json)."""
     from . import render_to_file
     od = Path(out_dir)
     od.mkdir(parents=True, exist_ok=True)
@@ -92,11 +100,15 @@ def batch_export(inputs, out_dir, variations: int = 1, macros: dict | None = Non
             tags = dict(fixed, **dict(zip(names, combo)))
             if lp:
                 tags["loop"] = f"{lp:g}s"
+            from . import wants_stereo
+            st = wants_stereo(rec, bool(lp), stereo)
+            if st:
+                tags["stereo"] = True
             for k in range(max(1, int(variations))):
                 fn = od / file_name(rec, path.stem, k, tags)
                 t = time.time()
                 info = render_to_file(rec, fn, mp3=mp3, sample_rate=sample_rate, macros=mv, variation=k,
-                                      level=level, trim=trim, loop=lp)
+                                      level=level, trim=trim, loop=lp, stereo=st)
                 info.update({"recipe": str(path), "macros": mv, "variation": k, "render_s": round(time.time() - t, 3)})
                 manifest.append(info)
                 log(f"{fn.name}  ({info['render_s']} s)")
@@ -119,7 +131,7 @@ def play(path: str | Path) -> bool:
 
 
 def audition(recipe_path: str | Path, macros: dict | None = None, variation: int = 0, sample_rate: int = 24000,
-             seconds: float | None = None, out_dir: str | Path = "/tmp/soundlab-audition", do_play: bool = True,
+             seconds: float | None = None, out_dir: str | Path | None = None, do_play: bool = True,
              watch: bool = False, log=print) -> Path:
     """Quick preview: render at a low rate (default 24 kHz), optionally cut to `seconds`, write to a scratch
     folder and play it (ffplay/afplay/paplay/aplay if present). watch=True re-renders whenever the recipe
@@ -127,7 +139,7 @@ def audition(recipe_path: str | Path, macros: dict | None = None, variation: int
     from .audio_io import write_wav
     from .recipe import render
     p = Path(recipe_path)
-    od = Path(out_dir)
+    od = Path(out_dir) if out_dir else Path(tempfile.gettempdir()) / "soundlab-audition"   # not /tmp: Windows
     od.mkdir(parents=True, exist_ok=True)
     out = od / f"{p.stem}.wav"
     last = None

@@ -172,5 +172,5 @@ Reading it honestly:
 - If the overall result passes but the upper end of the 95 % range crosses 60 %, the tool says so: run more
   trials before calling it.
 - A sound spotted by every listener is a failure to fix before deeper physics work.
-- Record the item list, answers and "what gave it away" notes in `docs/checkpoint-results.md` (results only;
-  audio stays outside the repo).
+- Keep the item list, answers and "what gave it away" notes with the pack, outside the repo (results and
+  audio both stay out of it).

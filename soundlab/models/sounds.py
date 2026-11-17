@@ -9,7 +9,7 @@ import numpy as np
 
 from .. import dsp
 from ..materials import MATERIALS
-from ..core import Ctx, Param, REGISTRY, ctrl, model, scalar
+from ..core import Ctx, Param, REGISTRY, ctrl, model
 from .excitation import bubble_grain, friedlander
 
 
@@ -412,7 +412,8 @@ def ctrl_at(value, times, log=False):
        ], ["Wikipedia: Blast wave (Friedlander waveform)", "Kinney & Graham 1985, Explosive Shocks in Air "
            "(positive-phase duration grows with cube root of yield)", "Farnell 2010 practical 31",
            "ISO 9613-1 (air absorption: high frequencies die first with distance)",
-           "refs/SOURCES.md (Commons LS100155, oxyhydrogen detonation, huge explosion, explosion reference recordings)"])
+           "refs/SOURCES.md (Commons LS100155, oxyhydrogen detonation, huge explosion, explosion reference recordings)"],
+       min_s=lambda p: float(p["at"]) + 0.6)
 def explosion(ctx: Ctx, x, size, sub_blasts, fireball_s, debris, drive, crack, boom_hz, roar, surge, at):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     n0 = int(at * sr)
@@ -486,7 +487,8 @@ def explosion(ctx: Ctx, x, size, sub_blasts, fireball_s, debris, drive, crack, b
        ], ["Avanzini, Serafin & Rocchesso DAFx 2002", "Tsugi GameSynth physical modules (match friction)",
            "Farnell 2010 practical 11; Wikibooks Designing Sound in SuperCollider: Fire",
            "Wikipedia: Match; Stick-slip phenomenon", "Chadwick & James 2011 (fire sound)",
-           "refs/SOURCES.md (Freesound CC0 match strikes)"])
+           "refs/SOURCES.md (Freesound CC0 match strikes)"],
+       min_s=lambda p: float(p["start"]) + float(p["strike_s"]) + 0.6)
 def match(ctx: Ctx, x, strike_s, strike_speed, strike_force, ignite, flare_s, flame_s, flame_size, flame_db,
           brightness, start):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
@@ -642,16 +644,26 @@ def shaker(ctx: Ctx, x, rate_hz, shake_s, strokes, items, intensity, spread_ms, 
            Param("crackle_rate", 8.0, "events/s", 0, 200, "crackles per second at intensity 1"),
            Param("woof", 0.6, "", 0, 1, "low lapping flame level"),
            Param("hiss", 0.3, "", 0, 1, "hiss level"),
+           Param("lap", 0.8, "", 0, 1.5, "v0.24: depth of the slow lapping swell on the low flame (big swells read "
+                 "as wind gusts; a burning log's roar is steadier)"),
+           Param("crackle_ms", 2.0, "ms", 0.2, 10, "crackle grain length (wood pops are short and sharp)"),
+           Param("crackle_lo", 1000.0, "Hz", 100, 8000, "lowest crackle grain centre"),
+           Param("crackle_hi", 8000.0, "Hz", 1000, 20000, "highest crackle grain centre"),
+           Param("crackle_q", 1.5, "", 0.3, 10, "crackle grain resonance (low = clicky, high = tonal)"),
+           Param("crackle_size", 2.0, "", 1.1, 4, "power-law exponent of crackle sizes (lower = more big pops)"),
        ], ["Farnell 2010 practical 11", "Wikibooks: Designing Sound in SuperCollider/Fire",
            "Chadwick & James 2011"])
-def fire(ctx: Ctx, x, intensity, crackle_rate, woof, hiss):
+def fire(ctx: Ctx, x, intensity, crackle_rate, woof, hiss, lap=0.8, crackle_ms=2.0, crackle_lo=1000.0,
+         crackle_hi=8000.0, crackle_q=1.5, crackle_size=2.0):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     I = ctrl(ctx, intensity)
-    lap = np.clip(1 + 0.8 * dsp.lowpass(rng.standard_normal(n), 2.5, sr) / 0.035, 0.1, 3)
+    lap_depth = lap
+    lap = np.clip(1 + lap_depth * dsp.lowpass(rng.standard_normal(n), 2.5, sr) / 0.035, 0.1, 3)
     w = dsp.lowpass(rng.standard_normal(n), 180.0, sr) * lap * I
     h = dsp.highpass(rng.standard_normal(n) ** 2 * np.sign(rng.standard_normal(n)), 1500.0, sr) * I
     c = call("crackle", ctx.child(), rate=[[i / sr, float(v)] for i, v in zip(range(0, n, 480), (crackle_rate * I)[::480])],
-             grain_ms=2.0, f_lo=1000, f_hi=8000, q=1.5, size_exponent=2.0, level=1.0)
+             grain_ms=crackle_ms, f_lo=crackle_lo, f_hi=crackle_hi, q=crackle_q, size_exponent=crackle_size,
+             level=1.0)
     return woof * norm(w) + hiss * 0.5 * norm(h) + 0.6 * c
 
 

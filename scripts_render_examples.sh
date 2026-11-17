@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Render the reference recipes to WAV + MP3 and analyse them.
 set -euo pipefail
-OUT=${1:-/workspace/soundlab-out}
+OUT=${1:-../soundlab-out}
 cd "$(dirname "$0")"
 for r in duck engine engine_blips foghorn foghorn_pattern explosion match matchbox; do
   .venv/bin/soundlab render recipes/$r.json -o "$OUT/$r.wav" --mp3 >/dev/null

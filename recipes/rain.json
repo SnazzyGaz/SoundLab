@@ -189,5 +189,6 @@
  "loop": {
   "lead_s": 1.0,
   "xfade_s": 0.5
- }
+ },
+ "stereo": {"mode": "seeds", "width": 0.8, "mono_below_hz": 150}
 }

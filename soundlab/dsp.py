@@ -94,20 +94,67 @@ def svf_loop(x: np.ndarray, fc: np.ndarray, q: float, sr: int, mode: str = "bp")
     return out
 
 
+def onepole_phase_delay(p: float, w: float) -> float:
+    """Phase delay in samples of the loop lowpass (1-p)/(1 - p z^-1) at w rad/sample (p/(1-p) at DC)."""
+    if w <= 1e-9:
+        return p / (1 - p)
+    return float(np.angle(1 - p * np.exp(-1j * w)) / w)
+
+
+def allpass_phase_delay(c: float, w: float) -> float:
+    """Phase delay in samples of the first-order allpass (c + z^-1)/(1 + c z^-1) at w rad/sample."""
+    z = np.exp(-1j * w)
+    return float(-np.angle((c + z) / (1 + c * z)) / w)
+
+
+def allpass_for_delay(frac: float, w: float) -> float:
+    """Coefficient of the first-order allpass whose phase delay at w is `frac` samples (bisection; the delay
+    falls monotonically as c goes from -1 to 1). Thiran's (1-d)/(1+d) is the w -> 0 limit."""
+    lo, hi = -0.999, 0.999
+    for _ in range(50):
+        mid = 0.5 * (lo + hi)
+        if allpass_phase_delay(mid, w) > frac:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
 def comb_waveguide(x: np.ndarray, delay_samples: float, feedback: float, sr: int,
-                   damp_hz: float = 6000.0, sign: float = 1.0) -> np.ndarray:
+                   damp_hz: float = 6000.0, sign: float = 1.0, tune: bool = False) -> np.ndarray:
     """Delay line with a one-pole lowpass in the loop (digital waveguide / Karplus-Strong family).
 
-    y[n] = x[n] + sign * feedback * LP(y[n - D]). Built as a rational filter so lfilter runs it."""
-    D = max(1, int(round(delay_samples)))
+    y[n] = x[n] + sign * feedback * LP(y[n - D]). Built as a rational filter so lfilter runs it.
+
+    tune=True makes the loop's total delay at its fundamental exactly `delay_samples` (Jaffe & Smith 1983): the
+    lowpass's own phase delay is subtracted and the fractional rest goes into a first-order allpass, instead of
+    rounding to whole samples. Untuned, the pitch is flat by (rounding + p/(1-p)) samples per period: ~40 cents
+    at 1 kHz and several semitones at 3 kHz with a 5 kHz loop filter. The fitted models (foghorn pipe, engine
+    exhaust, horn) keep the untuned loop their reference fits were made with."""
     p = np.exp(-2 * np.pi * damp_hz / sr)  # LP: (1-p) / (1 - p z^-1)
-    # Y (1 - p z^-1) - s g (1-p) z^-D Y = X (1 - p z^-1)
-    a = np.zeros(D + 1)
-    a[0] = 1.0
-    a[1] += -p
-    a[D] += -sign * feedback * (1 - p)
-    b = np.array([1.0, -p])
-    return signal.lfilter(b, a, x)
+    if not tune:
+        D = max(1, int(round(delay_samples)))
+        # Y (1 - p z^-1) - s g (1-p) z^-D Y = X (1 - p z^-1)
+        a = np.zeros(D + 1)
+        a[0] = 1.0
+        a[1] += -p
+        a[D] += -sign * feedback * (1 - p)
+        b = np.array([1.0, -p])
+        return signal.lfilter(b, a, x)
+    P = float(delay_samples)
+    # the fundamental: sign +1 -> 1 / P cycles per sample; sign -1 (inverting end) -> 1 / (2P)
+    w0 = 2 * np.pi / (P if sign > 0 else 2 * P)
+    R = max(P - onepole_phase_delay(p, w0), 1.1)
+    D = max(1, int(np.floor(R - 0.1)))
+    frac = R - D                                  # in [0.1, 1.1): well-behaved range of the first-order allpass
+    c = allpass_for_delay(frac, w0)               # A(z) = (c + z^-1) / (1 + c z^-1), delay = frac at w0
+    # Y [Q(z) - s g (1-p) (c + z^-1) z^-D] = X Q(z),  Q(z) = (1 - p z^-1)(1 + c z^-1)
+    q = np.array([1.0, c - p, -c * p])
+    a = np.zeros(D + 2)
+    a[:3] += q
+    a[D] += -sign * feedback * (1 - p) * c
+    a[D + 1] += -sign * feedback * (1 - p)
+    return signal.lfilter(q, a, x)
 
 
 def dispersive_waveguide(x: np.ndarray, delay_samples: float, feedback: float, sr: int, damp_hz: float,
@@ -205,7 +252,9 @@ def softclip(x, drive=1.0):
 
 def fade(x: np.ndarray, sr: int, fin: float = 0.002, fout: float = 0.01) -> np.ndarray:
     y = x.copy()
-    ni, no = int(fin * sr), int(fout * sr)
+    # clamp to the signal: a render shorter than the fade (e.g. 5 ms with the default 20 ms fade-out) fades over
+    # its whole length instead of failing on a shape mismatch
+    ni, no = min(int(fin * sr), len(y)), min(int(fout * sr), len(y))
     if ni > 0:
         y[:ni] *= np.linspace(0, 1, ni)
     if no > 0:

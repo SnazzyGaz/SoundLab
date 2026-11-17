@@ -25,7 +25,8 @@ def late_ir(rng, sr: int, rt60: float, hf_ratio: float, length: float) -> np.nda
     return ir / (np.sqrt(np.sum(ir ** 2)) + 1e-12)
 
 
-def shoebox_early(sr: int, dims, src, lst, absorption: float, c: float) -> np.ndarray:
+def shoebox_early(sr: int, dims, src, lst, absorption: float, c: float, scattering: float = 0.0,
+                  rng=None) -> np.ndarray:
     """First- and second-order image sources of a shoebox (Allen & Berkley image method)."""
     Lx, Ly, Lz = dims
     taps = []
@@ -43,10 +44,39 @@ def shoebox_early(sr: int, dims, src, lst, absorption: float, c: float) -> np.nd
                 taps.append((d, refl ** order / d))
     d0 = math.dist(src, lst)
     n = int((max(t[0] for t in taps) - d0) / c * sr) + 2
-    ir = np.zeros(n)
+    if scattering <= 0 or rng is None:            # v0.23 and before: every reflection a perfect mirror
+        ir = np.zeros(n)
+        for d, g in taps:
+            ir[int((d - d0) / c * sr)] += g * d0
+        return ir
+    # v0.24: real surfaces scatter. A share `scattering` of each reflection's ENERGY leaves the mirror direction
+    # and arrives as a short diffuse spray (a few ms, longer for higher orders); the rest stays specular. A
+    # handful of strong mirror taps a few ms apart is a deep comb filter on any steady broadband sound (water,
+    # rustle, hum: a metallic saw-like buzz); the spray fills the notches the way real rooms do. Walls also
+    # absorb more at high frequencies, so the reflections (not the direct sound) lose some top.
+    spray_max = int(0.03 * sr)
+    ir = np.zeros(n + spray_max)
+    spec_g = math.sqrt(1.0 - scattering)
     for d, g in taps:
-        ir[int((d - d0) / c * sr)] += g * d0
+        i = int((d - d0) / c * sr)
+        order = 1 if g * d / d0 > refl ** 1.5 else 2
+        ir[i] += spec_g * g * d0
+        L = int((0.002 + 0.004 * order) * sr * rng.uniform(0.7, 1.3))
+        burst = rng.standard_normal(L) * np.exp(-np.arange(L) / (0.35 * L))
+        burst *= math.sqrt(scattering) * g * d0 / (np.sqrt(np.sum(burst ** 2)) + 1e-12)
+        ir[i:i + L] += burst
+    a = math.exp(-2 * math.pi * (3000.0 + 9000.0 * (1 - absorption)) / sr)     # wall HF absorption (estimate)
+    ir = signal.lfilter([1 - a], [1, -a], ir)
     return ir
+
+
+def room_geometry(volume: float, absorption: float, rt60: float = 0.0):
+    """Shoebox dimensions (Lx, Ly, Lz) for a volume, and the reverb time: `rt60` if given, else Sabine."""
+    Lz = min(3.0 + volume ** (1 / 3) * 0.3, volume ** (1 / 3))
+    Lx = math.sqrt(volume / Lz * 1.5)
+    Ly = volume / Lz / Lx
+    S = 2 * (Lx * Ly + Lx * Lz + Ly * Lz)
+    return (Lx, Ly, Lz), (rt60 or 0.161 * volume / (S * absorption))
 
 
 @model("room", "room",
@@ -59,18 +89,19 @@ def shoebox_early(sr: int, dims, src, lst, absorption: float, c: float) -> np.nd
            Param("hf_ratio", 0.5, "", 0.1, 1.5, "T60 at 8 kHz relative to 125 Hz"),
            Param("source_distance", 3.0, "m", 0.2, 100, "source-listener distance (sets direct/reverb ratio)"),
            Param("wet", 1.0, "", 0, 2, "scale on the physically derived reverb level"),
+           Param("scattering", 0.0, "", 0, 1, "v0.24: share of each reflection's energy that the surfaces scatter "
+                 "into a diffuse spray (furnished rooms ~0.4-0.7, bare concrete ~0.1). 0 = perfect mirrors (the "
+                 "pre-0.24 room, which comb-filters steady sounds into a metallic 'saw')",
+                 source="ISO 17497-1 (scattering coefficient); Vorlaender 2008, Auralization"),
        ], ["Wikipedia: Reverberation (Sabine)", "Murch, Transom 2005 (direct-to-reverb = depth)",
-           "pyroomacoustics docs (image-source method)"])
-def room(ctx: Ctx, x, volume, absorption, rt60, hf_ratio, source_distance, wet):
-    Lz = min(3.0 + volume ** (1 / 3) * 0.3, volume ** (1 / 3))
-    Lx = math.sqrt(volume / Lz * 1.5)
-    Ly = volume / Lz / Lx
-    S = 2 * (Lx * Ly + Lx * Lz + Ly * Lz)
-    T = rt60 or 0.161 * volume / (S * absorption)
+           "pyroomacoustics docs (image-source method)", "Vorlaender 2008, Auralization (scattering)"])
+def room(ctx: Ctx, x, volume, absorption, rt60, hf_ratio, source_distance, wet, scattering=0.0):
+    (Lx, Ly, Lz), T = room_geometry(volume, absorption, rt60)
     src = (Lx * 0.3, Ly * 0.4, min(1.5, Lz * 0.5))
     ang = 0.6
     lst = (min(src[0] + source_distance * math.cos(ang), Lx * 0.95), min(src[1] + source_distance * math.sin(ang), Ly * 0.95), 1.6 if Lz > 1.8 else Lz * 0.5)
-    early = shoebox_early(ctx.sr, (Lx, Ly, Lz), src, lst, absorption, ctx.c)
+    early = shoebox_early(ctx.sr, (Lx, Ly, Lz), src, lst, absorption, ctx.c, scattering,
+                          ctx.child().rng if scattering > 0 else None)
     # critical distance (Sabine diffuse field): r_c ~ 0.057 sqrt(V / T60); reverb energy ~ (r / r_c)^2 x direct
     rc = 0.057 * math.sqrt(volume / T)
     rev_gain = (source_distance / rc) * wet

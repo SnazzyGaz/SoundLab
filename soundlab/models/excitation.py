@@ -6,7 +6,7 @@ import math
 import numpy as np
 
 from .. import dsp
-from ..core import Ctx, Param, ctrl, model, scalar
+from ..core import Ctx, Param, ctrl, model
 
 
 def friedlander(n: int, sr: int, t_star: float, peak: float = 1.0) -> np.ndarray:
@@ -147,7 +147,7 @@ def noise(ctx: Ctx, x, color, f_lo, f_hi, at, attack, hold, release, level):
     if f_hi < ctx.sr * 0.45:
         y = dsp.lowpass(y, f_hi, ctx.sr)
     t = ctx.t - at
-    env = np.clip(t / attack, 0, 1) * np.where(t < attack + hold, 1.0, np.exp(-6.91 * (t - attack - hold) / release))
+    env = np.clip(t / attack, 0, 1) * np.exp(-6.91 * np.maximum(t - attack - hold, 0.0) / release)
     env[t < 0] = 0
     return y * env * ctrl(ctx, level) * 0.3
 
@@ -289,6 +289,7 @@ def combustion(ctx: Ctx, x, at, t_star_ms, peak, noise_mix, noise_t60):
        ], ["Cook 1997 PhISEM", "Farnell 2010 practical 11 (fire)"])
 def crackle(ctx: Ctx, x, rate, grain_ms, f_lo, f_hi, q, size_exponent, level):
     out = np.zeros(ctx.n)
+    f_lo, f_hi = sorted((float(f_lo), float(f_hi)))     # a band given upside down is still that band
     idx = dsp.poisson_times(ctx.rng, ctrl(ctx, rate), ctx.sr)
     lev = ctrl(ctx, level)
     for i in idx:

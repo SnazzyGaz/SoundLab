@@ -276,9 +276,13 @@ def harmonic(ctx: Ctx, x, f0, pitch_st, formants, bands, env_frames, ap_frames, 
            Param("damping", 1.0, "", 0.3, 4, "scale van den Doel's damping (more = shorter, drier blips)"),
            Param("bins", 40, "", 8, 120, "radius bins (quality vs speed)"),
            Param("level", 1.0, "", 0, 4, "level", automatable=True),
+           Param("burst", 0.0, "", 0, 3, "v0.23 clumping: turbulent eddies entrain air in bursts, so the bubble rate "
+                 "swings log-normally (std `burst` in natural-log units) around its mean; 0 = steady Poisson"),
+           Param("burst_hz", 8.0, "Hz", 0.5, 60, "how fast the bursts come and go"),
        ], ["Minnaert 1933; van den Doel 2005, ACM TAP 2(4) (liquid sounds from bubble populations)",
            "Moss et al. 2010 (sounding liquids: bubble-based fluid sound)", "Zheng & James 2009 (harmonic fluids)"])
-def bubble_cloud(ctx: Ctx, x, rate, r_min_mm, r_max_mm, size_exponent, amp_exponent, xi, damping, bins, level):
+def bubble_cloud(ctx: Ctx, x, rate, r_min_mm, r_max_mm, size_exponent, amp_exponent, xi, damping, bins, level,
+                 burst, burst_hz):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     rmin, rmax = sorted((r_min_mm * 1e-3, max(r_max_mm, r_min_mm * 1.01) * 1e-3))
     rmin = max(rmin, 3.26 / (0.45 * sr))
@@ -289,6 +293,11 @@ def bubble_cloud(ctx: Ctx, x, rate, r_min_mm, r_max_mm, size_exponent, amp_expon
     cdf = (edges ** a - rmin ** a) / (rmax ** a - rmin ** a) if abs(a) > 1e-9 else np.log(edges / rmin) / np.log(rmax / rmin)
     share = np.diff(cdf)
     R = ctrl(ctx, rate)
+    if burst > 0:   # mean-preserving log-normal rate: exp(b z - b^2 / 2), z smooth unit noise at ~burst_hz
+        from .. import dsp
+        z = dsp.lowpass(rng.standard_normal(n), burst_hz, sr, 0.5)
+        z /= np.std(z) + 1e-12
+        R = R * np.exp(burst * z - 0.5 * burst * burst)
     lev = ctrl(ctx, level)
     out = np.zeros(n)
     for b in range(int(bins)):

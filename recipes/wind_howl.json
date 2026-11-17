@@ -1,132 +1,180 @@
 {
- "soundlab": 1,
- "name": "Wind howl: gusts across a pipe opening, locking onto pipe modes as speed changes (SDT WindCavity method)",
- "category": "ambience",
- "sample_rate": 48000,
- "duration": 6.0,
- "seed": 19,
- "layers": [
-  {
-   "name": "howl",
-   "model": "wind_cavity",
-   "params": {
-    "length": 0.6,
-    "diameter": 0.05,
-    "wind_speed": [
-     [
-      0,
-      4
-     ],
-     [
-      1.5,
-      12
-     ],
-     [
-      3,
-      7
-     ],
-     [
-      4.5,
-      16
-     ],
-     [
-      6,
-      6
-     ]
-    ]
-   }
-  }
- ],
- "post": [
-  {
-   "model": "room",
-   "params": {
-    "volume": 40,
-    "absorption": 0.35,
-    "source_distance": 1.5
-   }
-  }
- ],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.05
- },
- "macros": {
-  "strength": {
-   "default": 0.5,
-   "doc": "breeze .. gale",
-   "map": [
+  "soundlab": 1,
+  "name": "Wind howl: gusts across a pipe opening, locking onto pipe modes as speed changes (SDT WindCavity method)",
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 6.0,
+  "seed": 19,
+  "layers": [
     {
-     "to": "0.wind_speed",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.6
-      ]
-     ]
+      "name": "howl",
+      "model": "wind_cavity",
+      "params": {
+        "length": 2.4389022406213905,
+        "diameter": 0.020189028718047203,
+        "wind_speed": [
+          [
+            0,
+            3.104598723190701
+          ],
+          [
+            1.5,
+            9.313796169572102
+          ],
+          [
+            3,
+            5.433047765583726
+          ],
+          [
+            4.5,
+            12.418394892762803
+          ],
+          [
+            6,
+            4.656898084786051
+          ]
+        ],
+        "q": 35.80131542037229,
+        "strouhal": 0.38227163136949677,
+        "floor": 0.015270816247700159
+      }
     }
-   ]
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            6.0
+          ],
+          [
+            125,
+            -6.0
+          ],
+          [
+            250,
+            -6.0
+          ],
+          [
+            500,
+            6.0
+          ],
+          [
+            1000,
+            6.0
+          ],
+          [
+            2000,
+            5.5
+          ],
+          [
+            4000,
+            -5.8
+          ],
+          [
+            8000,
+            -6.0
+          ],
+          [
+            16000,
+            -6.0
+          ]
+        ]
+      }
+    },
+    {
+      "model": "room",
+      "params": {
+        "volume": 40,
+        "absorption": 0.35,
+        "source_distance": 1.5,
+        "wet": 0.651241528163234
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
   },
-  "size": {
-   "default": 0.5,
-   "doc": "small bottle .. long pipe",
-   "map": [
-    {
-     "to": "0.length",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.4
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.5
+  "macros": {
+    "strength": {
+      "default": 0.5,
+      "doc": "breeze .. gale",
+      "map": [
+        {
+          "to": "0.wind_speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.6
+            ]
+          ]
+        }
       ]
-     ]
+    },
+    "size": {
+      "default": 0.5,
+      "doc": "small bottle .. long pipe",
+      "map": [
+        {
+          "to": "0.length",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
     }
-   ]
   },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level)",
-   "map": [
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
-      ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
-    }
-   ]
-  }
- }
+  "notes": "v0.25: fitted to reference recordings (BigSoundBank #0147, #2443), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."
 }

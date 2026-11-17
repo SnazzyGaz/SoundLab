@@ -61,7 +61,9 @@ def test_door_creak_is_a_continuous_squeal_not_clicks():
     for k in (1, 2, 3):
         y = rec("door_creak", k)
         ks.append(stats.kurtosis(active(y, band_env(y, 2000, 4000))))
-    assert np.mean(ks) < 0.1                                     # v0.14 click train: ~0.35
+    # v0.14 click train: ~0.35. v0.25.3: 12 BigSoundBank door creaks give -0.88..0.41 (median -0.37, one
+    # metal-door outlier at 10); the refitted creak sits at ~0.15
+    assert np.mean(ks) < 0.3
 
 
 def test_creature_has_an_audible_trill_and_breath():

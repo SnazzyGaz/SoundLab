@@ -209,6 +209,8 @@ Many bubbles at once, fast: the sound of flowing, splashing and pouring water. E
 | `damping` | `1.0` |  | 0.3 .. 4 | scale van den Doel's damping (more = shorter, drier blips) |
 | `bins` | `40` |  | 8 .. 120 | radius bins (quality vs speed) |
 | `level` | `1.0` |  | 0 .. 4 | level (automatable) |
+| `burst` | `0.0` |  | 0 .. 3 | v0.23 clumping: turbulent eddies entrain air in bursts, so the bubble rate swings log-normally (std `burst` in natural-log units) around its mean; 0 = steady Poisson |
+| `burst_hz` | `8.0` | Hz | 0.5 .. 60 | how fast the bursts come and go |
 
 Sources: Minnaert 1933; van den Doel 2005, ACM TAP 2(4) (liquid sounds from bubble populations); Moss et al. 2010 (sounding liquids: bubble-based fluid sound); Zheng & James 2009 (harmonic fluids)
 
@@ -351,7 +353,7 @@ Digital waveguide string (Karplus-Strong family): delay line of one period with 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
 | `f0` | `220.0` | Hz | 20 .. 5000 | fundamental |
-| `t60` | `2.0` | s | 0.01 .. 30 | ring time of the fundamental |
+| `t60` | `2.0` | s | 0.01 .. 30 | ring time of the fundamental (a low `brightness` caps how long high notes can ring: the loop lowpass alone loses energy every period) |
 | `brightness` | `5000.0` | Hz | 200 .. 20000 | loop lowpass corner (lower = duller, faster high decay) |
 | `dispersion` | `0.0` |  | 0 .. 0.95 | stiffness: allpass dispersion inside the loop (wires, springs; high values give the falling 'pew' chirp) |
 | `dispersion_stages` | `16` | count | 1 .. 64 | number of allpass sections (more = stronger chirp) |
@@ -767,8 +769,12 @@ Wind: turbulence noise whose level and brightness follow a gusting wind speed (a
 | `trees` | `0.4` |  | 0 .. 1 | level of leaf rustle (trees, bushes) |
 | `rumble` | `0.15` |  | 0 .. 1 | low buffeting (wind on a mic or a building); keep low |
 | `indoors` | `0.0` |  | 0 .. 1 | heard from inside through a window or wall: the wind noise is low-passed (mass law), the whistle made at the gap itself is not |
+| `rustle` | `0.0` |  | 0 .. 1 | v0.23 leaf rustle as many tiny leaf contacts (power-law sizes, 1-12 ms, broadband to 16 kHz, rate following the gusts): what wind in trees and grass sounds like up close. 0 = off (the older `trees` band only) |
+| `rustle_rate` | `400.0` | events/s | 10 .. 5000 | leaf contacts per second at the mean wind speed |
+| `eddy` | `1.0` |  | 0 .. 8 | depth of the fast (4-11 Hz) turbulent level flutter; 1 = the v0.14 shallow wobble |
+| `low_cut_hz` | `35.0` | Hz | 20 .. 300 | low-end roll-off (35 = bare; a windshielded field mic rolls off near 80-150 Hz) |
 
-Sources: Farnell 2010, Designing Sound (wind); Wikipedia: Aeolian sound; Strouhal number; Lighthill / Curle (dipole sound power ~ U^6)
+Sources: Farnell 2010, Designing Sound (wind); Wikipedia: Aeolian sound; Strouhal number; Lighthill / Curle (dipole sound power ~ U^6); Houle & Sethna 1996 (crackling noise: power-law event sizes) for the leaf contacts
 
 ### `rain`
 

@@ -1,134 +1,180 @@
 {
- "soundlab": 1,
- "name": "Knock: Hunt-Crossley contact on an oak plate (harder hits are brighter)",
- "category": "impact",
- "sample_rate": 48000,
- "duration": 1.6,
- "seed": 19,
- "layers": [
-  {
-   "name": "knock",
-   "chain": [
+  "soundlab": 1,
+  "name": "Knock: Hunt-Crossley contact on an oak plate (harder hits are brighter)",
+  "category": "impact",
+  "sample_rate": 48000,
+  "duration": 1.6,
+  "seed": 19,
+  "layers": [
     {
-     "model": "hc_contact",
-     "params": {
-      "at": 0.02,
-      "velocity": 1.5,
-      "mass_g": 60,
-      "stiffness": 100000000.0,
-      "alpha": 1.5,
-      "bounces": 1
-     }
+      "name": "knock",
+      "chain": [
+        {
+          "model": "hc_contact",
+          "params": {
+            "at": 0.02,
+            "velocity": 1.5410088397378112,
+            "mass_g": 104.27476491267333,
+            "stiffness": 72289135223.64644,
+            "alpha": 1.5,
+            "bounces": 1
+          }
+        },
+        {
+          "model": "modal",
+          "params": {
+            "material": "oak",
+            "shape": "plate",
+            "length": 1.3110393787318118,
+            "width": 0.3,
+            "thickness": 0.028852532125475772,
+            "strike_pos": 0.2194192998285454,
+            "extra_damping": 192.42640153960417
+          }
+        }
+      ]
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            -0.9
+          ],
+          [
+            125,
+            2.8
+          ],
+          [
+            250,
+            0.3
+          ],
+          [
+            500,
+            -6.0
+          ],
+          [
+            1000,
+            0.9
+          ],
+          [
+            2000,
+            -6.0
+          ],
+          [
+            4000,
+            -6.0
+          ],
+          [
+            8000,
+            4.0
+          ],
+          [
+            16000,
+            5.5
+          ]
+        ]
+      }
     },
     {
-     "model": "modal",
-     "params": {
-      "material": "oak",
-      "shape": "plate",
-      "length": 0.5,
-      "width": 0.3,
-      "thickness": 0.02,
-      "strike_pos": 0.3
-     }
+      "model": "room",
+      "params": {
+        "volume": 40,
+        "absorption": 0.35,
+        "source_distance": 1.5,
+        "wet": 0.5592523910232892
+      }
     }
-   ]
-  }
- ],
- "post": [
-  {
-   "model": "room",
-   "params": {
-    "volume": 40,
-    "absorption": 0.35,
-    "source_distance": 1.5
-   }
-  }
- ],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.05
- },
- "macros": {
-  "force": {
-   "default": 0.5,
-   "doc": "tap .. bang (also brighter)",
-   "map": [
-    {
-     "to": "0.0.velocity",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.15
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       4
-      ]
-     ]
-    }
-   ]
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
   },
-  "hardness": {
-   "default": 0.5,
-   "doc": "soft mallet .. hard hammer",
-   "map": [
-    {
-     "to": "0.0.stiffness",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.01
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       100
+  "macros": {
+    "force": {
+      "default": 0.5,
+      "doc": "tap .. bang (also brighter)",
+      "map": [
+        {
+          "to": "0.0.velocity",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.15
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        }
       ]
-     ]
+    },
+    "hardness": {
+      "default": 0.5,
+      "doc": "soft mallet .. hard hammer",
+      "map": [
+        {
+          "to": "0.0.stiffness",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.01
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              100
+            ]
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
     }
-   ]
   },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level)",
-   "map": [
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
-      ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
+  "vary": {
+    "0.0.velocity": {
+      "rel": 0.15
     }
-   ]
-  }
- },
- "vary": {
-  "0.0.velocity": {
-   "rel": 0.15
-  }
- }
+  },
+  "notes": "v0.25: fitted to reference recordings (BigSoundBank #0095 door knock, #1588 gavel), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."
 }

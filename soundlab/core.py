@@ -98,6 +98,33 @@ class Model:
     params: list[Param] = field(default_factory=list)
     sources: list[str] = field(default_factory=list)
     needs_input: bool = False
+    # Sources only: shortest internal render, in seconds, as a number or fn(resolved params) -> seconds. A render
+    # (or an event time `at`) shorter than the model's own fixed windows is computed this long and cropped, so a
+    # 5 ms render or a shot placed after the end gives the right (cut or silent) result instead of an error.
+    min_s: float | Callable[[dict], float] | None = None
+    # Processing blocks only: how long the block keeps sounding after its input stops (reverb, ringing modes,
+    # echoes), fn(resolved params) -> seconds. Used by render(ring_out=...) so exports keep whole tails.
+    # Set in soundlab/models/tails.py.
+    tail_s: Callable[[dict], float] | None = None
+
+    def tail_seconds(self, params: dict) -> float:
+        if not self.needs_input or self.tail_s is None:
+            return 0.0
+        try:
+            return max(0.0, float(self.tail_s(params)))
+        except (TypeError, ValueError, ZeroDivisionError):   # automated values etc.
+            return 0.0
+
+    def min_samples(self, params: dict, sr: int) -> int:
+        if self.needs_input:
+            return 0
+        s = MIN_SOURCE_S
+        if self.min_s is not None:
+            try:
+                s = max(s, float(self.min_s(params) if callable(self.min_s) else self.min_s))
+            except (TypeError, ValueError):     # automated value etc.: fall back to the floor
+                pass
+        return int(np.ceil(s * sr))
 
     def resolve(self, given: dict | None) -> dict:
         given = dict(given or {})
@@ -128,17 +155,18 @@ class Model:
 
 REGISTRY: dict[str, Model] = {}
 STAGES = ("excitation", "resonator", "radiation", "propagation", "room", "sound", "synth", "fx")
+MIN_SOURCE_S = 0.1  # floor for the internal render length of every source (see Model.min_s)
 
 
 def model(name: str, stage: str, doc: str, params: list[Param], sources: list[str] | None = None,
-          needs_input: bool | None = None):
+          needs_input: bool | None = None, min_s: float | Callable[[dict], float] | None = None):
     """Decorator registering a block. Signature: fn(ctx, x, **params) -> np.ndarray."""
     if stage not in STAGES:
         raise ValueError(stage)
 
     def deco(fn):
         ni = needs_input if needs_input is not None else stage in ("resonator", "radiation", "propagation", "room", "fx")
-        REGISTRY[name] = Model(name, stage, fn, doc, params, sources or [], ni)
+        REGISTRY[name] = Model(name, stage, fn, doc, params, sources or [], ni, min_s)
         return fn
 
     return deco

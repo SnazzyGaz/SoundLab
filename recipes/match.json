@@ -1,245 +1,290 @@
 {
- "soundlab": 1,
- "name": "Safety match struck on the box, flares and burns, small room, close mic",
- "sample_rate": 48000,
- "duration": 3.0,
- "seed": 8,
- "layers": [
-  {
-   "name": "match",
-   "model": "match",
-   "params": {
-    "strike_s": 0.03777,
-    "strike_speed": 0.9,
-    "strike_force": 3.0,
-    "flare_s": 0.27913,
-    "flame_s": 2.0,
-    "flame_size": 0.89618,
-    "flame_db": -37.87887,
-    "brightness": 0.6
-   }
-  }
- ],
- "post": [
-  {
-   "model": "room",
-   "params": {
-    "volume": 60,
-    "absorption": 0.35,
-    "source_distance": 0.4,
-    "hf_ratio": 0.6
-   }
-  }
- ],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.3
- },
- "category": "foley",
- "macros": {
-  "size": {
-   "default": 0.5,
-   "doc": "thin match .. big kitchen match (flame)",
-   "map": [
+  "soundlab": 1,
+  "name": "Safety match struck on the box, flares and burns, small room, close mic",
+  "sample_rate": 48000,
+  "duration": 3.0,
+  "seed": 8,
+  "layers": [
     {
-     "to": "0.flame_size",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.4
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.1
-      ]
-     ]
-    },
-    {
-     "to": "0.flame_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -4
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       2
-      ]
-     ]
+      "name": "match",
+      "model": "match",
+      "params": {
+        "strike_s": 0.03777,
+        "strike_speed": 0.9,
+        "strike_force": 3.0,
+        "flare_s": 0.78,
+        "flame_s": 2.0,
+        "flame_size": 0.002,
+        "flame_db": -12.576,
+        "brightness": 0.85
+      }
     }
-   ]
-  },
-  "intensity": {
-   "default": 0.5,
-   "doc": "gentle .. hard strike",
-   "map": [
+  ],
+  "post": [
     {
-     "to": "0.strike_force",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.5
-      ]
-     ]
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            -10.0
+          ],
+          [
+            125,
+            -6.0
+          ],
+          [
+            250,
+            -1.5
+          ],
+          [
+            500,
+            -3.5
+          ],
+          [
+            1000,
+            -0.2
+          ],
+          [
+            2000,
+            -1.6
+          ],
+          [
+            4000,
+            -1.2
+          ],
+          [
+            8000,
+            3.0
+          ],
+          [
+            16000,
+            -3.2
+          ]
+        ]
+      }
     },
     {
-     "to": "0.strike_speed",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.7
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.3
-      ]
-     ]
+      "model": "room",
+      "params": {
+        "volume": 60,
+        "absorption": 0.35,
+        "source_distance": 0.4,
+        "hf_ratio": 0.6,
+        "wet": 0.08
+      }
     }
-   ]
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.3
   },
-  "wetness": {
-   "default": 0.0,
-   "doc": "dry (as written) .. damp match: longer scrape, weak flare, quieter flame",
-   "map": [
-    {
-     "to": "0.strike_s",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       1
-      ],
-      [
-       1,
-       2.2
+  "category": "foley",
+  "macros": {
+    "size": {
+      "default": 0.5,
+      "doc": "thin match .. big kitchen match (flame)",
+      "map": [
+        {
+          "to": "0.flame_size",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.1
+            ]
+          ]
+        },
+        {
+          "to": "0.flame_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
       ]
-     ]
     },
-    {
-     "to": "0.flare_s",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       1
-      ],
-      [
-       1,
-       0.35
+    "intensity": {
+      "default": 0.5,
+      "doc": "gentle .. hard strike",
+      "map": [
+        {
+          "to": "0.strike_force",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.5
+            ]
+          ]
+        },
+        {
+          "to": "0.strike_speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.7
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.3
+            ]
+          ]
+        }
       ]
-     ]
     },
-    {
-     "to": "0.flame_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
+    "wetness": {
+      "default": 0.0,
+      "doc": "dry (as written) .. damp match: longer scrape, weak flare, quieter flame",
+      "map": [
+        {
+          "to": "0.strike_s",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2.2
+            ]
+          ]
+        },
+        {
+          "to": "0.flare_s",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0.35
+            ]
+          ]
+        },
+        {
+          "to": "0.flame_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              -8
+            ]
+          ]
+        },
+        {
+          "to": "0.brightness",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              -0.3
+            ]
+          ]
+        }
       ],
-      [
-       1,
-       -8
-      ]
-     ]
+      "jitter": 0.02
     },
-    {
-     "to": "0.brightness",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       1,
-       -0.3
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level, more room sound)",
+      "map": [
+        {
+          "to": "post.1.source_distance",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              10
+            ]
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
       ]
-     ]
     }
-   ],
-   "jitter": 0.02
   },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level, more room sound)",
-   "map": [
-    {
-     "to": "post.0.source_distance",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       10
-      ]
-     ]
+  "vary": {
+    "0.strike_s": {
+      "rel": 0.2
     },
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
-      ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
+    "0.flare_s": {
+      "rel": 0.15
+    },
+    "0.strike_speed": {
+      "rel": 0.1
     }
-   ]
-  }
- },
- "vary": {
-  "0.strike_s": {
-   "rel": 0.2
   },
-  "0.flare_s": {
-   "rel": 0.15
-  },
-  "0.strike_speed": {
-   "rel": 0.1
-  }
- }
+  "notes": "v0.24: fitted to two close-miked BigSoundBank matches. The room is almost dry (its early-reflection comb sounded metallic) and the eq takes 10-16 dB off 63-125 Hz (the hand/box thump and woof gave a bass-heavy, clipped boom)."
 }

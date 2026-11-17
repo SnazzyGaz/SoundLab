@@ -1,190 +1,246 @@
 {
- "soundlab": 1,
- "name": "Camp fire building up",
- "sample_rate": 48000,
- "duration": 8.0,
- "seed": 9,
- "layers": [
-  {
-   "model": "fire",
-   "params": {
-    "intensity": [
-     [
-      0,
-      0.2
-     ],
-     [
-      4,
-      0.8
-     ],
-     [
-      8,
-      0.7
-     ]
-    ],
-    "crackle_rate": 12
-   }
-  }
- ],
- "post": [
-  {
-   "model": "outdoor",
-   "params": {
-    "reflectors": [
-     [
-      15,
-      0.2
-     ]
-    ],
-    "tail_s": 0.6,
-    "tail_level": 0.05
-   }
-  }
- ],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.3
- },
- "category": "ambience",
- "macros": {
-  "size": {
-   "default": 0.5,
-   "doc": "candle-ish .. bonfire",
-   "map": [
+  "soundlab": 1,
+  "name": "Camp fire building up",
+  "sample_rate": 48000,
+  "duration": 8.0,
+  "seed": 9,
+  "layers": [
     {
-     "to": "0.intensity",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.35
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.4
-      ]
-     ]
+      "model": "fire",
+      "params": {
+        "intensity": 0.87,
+        "crackle_rate": 41.485,
+        "woof": 0.066,
+        "hiss": 0.092,
+        "lap": 0.647,
+        "crackle_ms": 2.783,
+        "crackle_lo": 1548.908,
+        "crackle_hi": 6828.866,
+        "crackle_q": 0.948,
+        "crackle_size": 1.549
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            90,
+            3.0
+          ],
+          [
+            150,
+            3.5
+          ],
+          [
+            250,
+            1.5
+          ],
+          [
+            400,
+            3.0
+          ],
+          [
+            500,
+            5.0
+          ],
+          [
+            650,
+            4.5
+          ],
+          [
+            800,
+            4.0
+          ],
+          [
+            1000,
+            1.0
+          ],
+          [
+            1300,
+            0.0
+          ]
+        ]
+      }
     },
     {
-     "to": "0.woof",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.3
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.3
-      ]
-     ]
+      "model": "outdoor",
+      "params": {
+        "reflectors": [
+          [
+            15,
+            0.2
+          ]
+        ],
+        "tail_s": 0.6,
+        "tail_level": 0.05
+      }
     }
-   ]
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.3
   },
-  "intensity": {
-   "default": 0.5,
-   "doc": "calm .. crackling",
-   "map": [
-    {
-     "to": "0.crackle_rate",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.3
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.5
+  "category": "ambience",
+  "macros": {
+    "size": {
+      "default": 0.5,
+      "doc": "candle-ish .. bonfire",
+      "map": [
+        {
+          "to": "0.intensity",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.35
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.4
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        },
+        {
+          "to": "0.woof",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.3
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.3
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
       ]
-     ]
     },
-    {
-     "to": "0.hiss",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.15
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.2
+    "intensity": {
+      "default": 0.5,
+      "doc": "calm .. crackling",
+      "map": [
+        {
+          "to": "0.crackle_rate",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.3
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        },
+        {
+          "to": "0.hiss",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.15
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.2
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
       ]
-     ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level, air absorption, more reflections)",
+      "map": [
+        {
+          "to": "post.1.tail_level",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
     }
-   ]
   },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level, air absorption, more reflections)",
-   "map": [
-    {
-     "to": "post.0.tail_level",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.5
-      ]
-     ]
-    },
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
-      ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
+  "vary": {
+    "0.crackle_rate": {
+      "rel": 0.2
     }
-   ]
-  }
- },
- "vary": {
-  "0.crackle_rate": {
-   "rel": 0.2
-  }
- },
- "loop": {
-  "lead_s": 4.0,
-  "xfade_s": 0.5
- }
+  },
+  "loop": {
+    "lead_s": 4.0,
+    "xfade_s": 0.5
+  },
+  "stereo": {
+    "mode": "seeds",
+    "width": 0.6,
+    "mono_below_hz": 150
+  },
+  "notes": "v0.24: refitted to two BigSoundBank fires. A wood fire is pop-led: the slow woof/lap swell is now small (it came across as wind gusts), crackle is 41/s pops of ~2.8 ms in 1.5-6.8 kHz. Mid/high envelope depth 2.2-2.4 vs real 2.5 (v0.23: 0.65-0.82)."
 }

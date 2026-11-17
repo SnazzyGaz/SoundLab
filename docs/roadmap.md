@@ -74,8 +74,8 @@ recipe sound and at least two listeners who did not tune the recipes.
 5. **Pass mark.** Physical sounds pass if the 95 % interval of pooled balanced accuracy includes 50 % (no
    reliable difference); a clear pass when the whole interval is under 60 %. A physical sound told apart by
    every listener is a failure to fix before any deeper physics work.
-6. **Record.** Item list, answers and "what gave it away" notes in `docs/checkpoint-results.md` (results only;
-   audio stays outside the repo).
+6. **Record.** Item list, answers and "what gave it away" notes stay with the pack, outside the repo
+   (results and audio both).
 
 ## Sound to-dos
 
@@ -100,10 +100,13 @@ recipe sound and at least two listeners who did not tune the recipes.
 - The pipe clang rings long (a free pipe does) and is very tonal.
 - Door creaks vary hugely in real life (CC0 refs from ~26 Hz ticking to a ~1.1 kHz squeal); ours sits at 260 Hz
   with slip-rate jumps of 0.6-1.6x.
-- Wind recorded on a bare microphone is mostly sub-60 Hz buffeting; ours only gets that from the `rumble`
-  control, which stays low by default.
+- Wind (v0.23) defaults to a steady breeze in trees fitted to windshielded field recordings; wind on a bare
+  microphone (sub-60 Hz buffeting) needs `rumble` up and `low_cut_hz` down.
 - The `room` block's early reflections colour close, broadband sounds slightly (comb lines); close foley
   recipes keep its level low.
+- `passby` reads its delay line up to c/(c - v) times faster than real time while the source approaches
+  (3.7x at 250 m/s) with linear interpolation and no anti-aliasing, so very fast flybys alias their top end.
+  Car speeds are unaffected (1.06x at 20 m/s).
 - Stereo/binaural output and per-layer propagation.
 
 ## Later, if the checkpoint says so

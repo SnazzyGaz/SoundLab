@@ -1,204 +1,210 @@
 {
- "soundlab": 1,
- "name": "Door creak: stick-slip at the hinge as a door opens",
- "category": "door",
- "sample_rate": 48000,
- "duration": 3.2,
- "seed": 18,
- "layers": [
-  {
-   "name": "main",
-   "model": "door_creak",
-   "params": {
-    "open_s": 2.6,
-    "pitch_hz": 260.0,
-    "pressure": 0.6,
-    "wander": 0.35,
-    "hinge": 0.5,
-    "door_size": 1.0,
-    "at": 0.05
-   }
-  }
- ],
- "post": [
-  {
-   "model": "room",
-   "params": {
-    "volume": 45,
-    "absorption": 0.3,
-    "source_distance": 2.0
-   }
-  }
- ],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.05
- },
- "macros": {
-  "speed": {
-   "default": 0.5,
-   "doc": "slow, ticking .. quick groan",
-   "map": [
+  "soundlab": 1,
+  "name": "Door creak: stick-slip at the hinge as a door opens",
+  "category": "door",
+  "sample_rate": 48000,
+  "duration": 3.2,
+  "seed": 18,
+  "layers": [
     {
-     "to": "0.open_s",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       2.0
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       0.45
+      "name": "main",
+      "model": "door_creak",
+      "params": {
+        "open_s": 2.6,
+        "pitch_hz": 340.1617,
+        "pressure": 0.6794,
+        "wander": 0.5,
+        "hinge": 0.9142,
+        "door_size": 0.35,
+        "at": 0.05,
+        "slip": 0.0538,
+        "steady": 0.0,
+        "hinge_hz": 1530.0628,
+        "hinge_q": 3.1327
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "room",
+      "params": {
+        "volume": 45,
+        "absorption": 0.3,
+        "source_distance": 2.0,
+        "wet": 0.383
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "speed": {
+      "default": 0.5,
+      "doc": "slow, ticking .. quick groan",
+      "map": [
+        {
+          "to": "0.open_s",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              2.0
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              0.45
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              1.9
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              0.5
+            ]
+          ]
+        }
       ]
-     ]
     },
-    {
-     "to": "duration",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       1.9
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       0.5
+    "pitch": {
+      "default": 0.5,
+      "doc": "low groan .. high squeal",
+      "map": [
+        {
+          "to": "0.pitch_hz",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.35
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.8
+            ]
+          ]
+        }
       ]
-     ]
-    }
-   ]
-  },
-  "pitch": {
-   "default": 0.5,
-   "doc": "low groan .. high squeal",
-   "map": [
-    {
-     "to": "0.pitch_hz",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.35
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.8
-      ]
-     ]
-    }
-   ]
-  },
-  "stiffness": {
-   "default": 0.5,
-   "doc": "oiled .. rusty",
-   "map": [
-    {
-     "to": "0.pressure",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.5
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.4
-      ]
-     ]
     },
-    {
-     "to": "0.wander",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.2
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.3
+    "stiffness": {
+      "default": 0.5,
+      "doc": "oiled .. rusty",
+      "map": [
+        {
+          "to": "0.pressure",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.5
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.4
+            ]
+          ]
+        },
+        {
+          "to": "0.wander",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.2
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.3
+            ]
+          ]
+        }
       ]
-     ]
-    }
-   ]
-  },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level, more room sound)",
-   "map": [
-    {
-     "to": "post.0.source_distance",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.4
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       8
-      ]
-     ]
     },
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level, more room sound)",
+      "map": [
+        {
+          "to": "post.0.source_distance",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              8
+            ]
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
     }
-   ]
-  }
- },
- "vary": {
-  "0.pitch_hz": {
-   "rel": 0.12
   },
-  "0.open_s": {
-   "rel": 0.12
+  "vary": {
+    "0.pitch_hz": {
+      "rel": 0.12
+    },
+    "0.open_s": {
+      "rel": 0.12
+    },
+    "0.wander": {
+      "abs": 0.1
+    }
   },
-  "0.wander": {
-   "abs": 0.1
-  }
- }
+  "notes": "v0.25.3: refitted to four BigSoundBank door creaks (#3206, #3208-#3210; hold-out #3205, #3207, #3211: loss 9.0 -> 4.6). The v0.25 creak had jittery cycles (smeared harmonics), a dull spectrum (centroid 430 Hz vs ~1050 Hz real) and no formant: the cycles smeared into a zipper-like rasp instead of a groan. Now: short slips (a sharp harmonic series), the hinge/door resonance at ~1.5 kHz ringing longer. wander set to 0.5 after the fit (hold-out loss 4.0; the fitted 0.88 made the 2-4 kHz level jagged, envelope kurtosis 0.7 vs -0.35 median real)."
 }

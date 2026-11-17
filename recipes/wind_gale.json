@@ -1,0 +1,110 @@
+{
+  "soundlab": 1,
+  "name": "Gale: strong wind roaring through trees (fitted to field recordings)",
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 8.0,
+  "seed": 11,
+  "layers": [
+    {
+      "name": "main",
+      "model": "wind",
+      "params": {
+        "speed": 16.887983399855464,
+        "gustiness": 0.028646156091503172,
+        "gust_hz": 0.8070647546090555,
+        "howl": 0.9059174477621117,
+        "whistle": 0.0,
+        "gap_mm": 6.0,
+        "trees": 0.7016450541543395,
+        "rumble": 0.3,
+        "rustle": 0.02824923890241976,
+        "rustle_rate": 182.49594329620606,
+        "eddy": 1.8168803137492997,
+        "low_cut_hz": 90.69041967040677
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            4000,
+            0.0
+          ],
+          [
+            6800,
+            4.0
+          ],
+          [
+            8600,
+            6.0
+          ],
+          [
+            11000,
+            5.0
+          ],
+          [
+            14000,
+            4.0
+          ]
+        ]
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.5
+  },
+  "macros": {
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.speed": {
+      "rel": 0.1
+    },
+    "0.gust_hz": {
+      "rel": 0.2
+    }
+  },
+  "loop": {
+    "lead_s": 1.0,
+    "xfade_s": 0.5
+  },
+  "stereo": {
+    "mode": "decorrelate",
+    "width": 0.6,
+    "mono_below_hz": 150
+  },
+  "fitted": "v0.23: controls fitted to two real recordings of wind in trees and tall grass (BigSoundBank #0904, #0908) on third-octave spectrum and band texture (modulation depth, spikiness, fast flutter)",
+  "notes": "v0.25.2: the wind model fitted to four BigSoundBank strong-wind recordings (#1450, #1452, #0152, #0153; hold-out #1451, #0154). The wind recipe's strength macro at 0.95 drove speed to 35 m/s with sparse, loud leaf ticks: 3-12 kHz kurtosis 13.9 vs 3.2-4.1 real, a crinkling texture. Here the leaves merge into a roar."
+}

@@ -228,7 +228,13 @@ def test_render_finishing_and_loop(srv):
     code, r = post(base + "/api/render", {"id": "rain", "loop": 3})
     assert r["seconds"] == pytest.approx(3.0) and r["finish"]["measured_by"] == "integrated"
     code, r = post(base + "/api/export", {"id": "rain", "loop": 3})
-    assert Path(r["wav"]).name == "ambience_rain_loop3s_v01.wav"
+    assert Path(r["wav"]).name == "ambience_rain_loop3s_stereo_v01.wav"      # v0.22: beds are stereo
+    assert wavfile.read(r["wav"])[1].shape[1] == 2
+    code, r = post(base + "/api/export", {"id": "rain", "loop": 3, "stereo": False})
+    assert Path(r["wav"]).name == "ambience_rain_loop3s_v01.wav" and wavfile.read(r["wav"])[1].ndim == 1
+    assert d["stereo"] and not json.loads(get(base + "/api/recipe?id=hit")[2])["stereo"]
+    code, r = post(base + "/api/render", {"id": "rain", "loop": 3})
+    assert r["channels"] == 2 and len(r["waveform"]) == 800
 
 
 def test_pack_clips_of_a_sound_match_in_length_and_level(tmp_path):

@@ -16,8 +16,9 @@ What's in it:
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.
 - **Macro sliders** on every recipe (size, distance, intensity, material, ...), **seeded variations** and
   **batch export** with sensible file names.
-- **Game-ready exports**: loudness per category (BS.1770 LUFS, -1 dBTP ceiling), silent tails trimmed,
-  DC blocked, and **seamless loops** for rain, wind, fire, water and engine idle (`--loop 10`); see
+- **Game-ready exports**: loudness per category (BS.1770 LUFS, -1 dBTP ceiling), reverb and ringing tails
+  played out then silent tails trimmed, DC blocked, 24-bit (16-bit dithered), and **seamless loops** for rain,
+  wind, fire, water and engine idle (`--loop 10`), exported as **stereo beds**; see
   [docs/export.md](docs/export.md).
 - A **slider app** in the browser (`soundlab gui`) with play, waveform/spectrogram preview and export.
 - A **blind listening test** in the browser (`/blindtest`, "real or synthesised?") and an A/B kit.
@@ -101,7 +102,7 @@ soundlab models                         # list all blocks and sound models by st
 soundlab describe engine                # controls, units, ranges, sources
 soundlab materials                      # material table (density, E, loss factor, T60 at 1 kHz)
 soundlab render recipes/engine.json -o engine.wav --mp3
-soundlab render recipes/rain.json --loop 10 -o rain_loop.wav   # seamless 10 s loop
+soundlab render recipes/rain.json --loop 10 -o rain_loop.wav   # seamless 10 s stereo loop (--mono for mono)
 soundlab render recipes/hit.json --level peak --no-trim   # raw level, full length (default: LUFS per category, trimmed)
 soundlab render recipes/engine.json --set 0.cylinders=6 --seed 4 -o six.wav
 soundlab describe recipes/hit.json      # a recipe's macro sliders (the main controls)
@@ -124,6 +125,8 @@ import soundlab
 
 audio, sr = soundlab.render("recipes/duck.json")            # numpy float array, mono
 audio, sr = soundlab.render({"duration": 2, "layers": [{"model": "hit", "params": {"material": "glass"}}]})
+audio, sr = soundlab.render("recipes/hit.json", ring_out=True)  # let the room ring past `duration`
+lr, sr = soundlab.render_loop("recipes/rain.json", 10, stereo=True)   # (n, 2) seamless stereo bed
 soundlab.render_to_file(recipe, "out.wav", mp3=True, seed=7)
 soundlab.list_models("excitation"); soundlab.describe("modal")
 feats = soundlab.analyze_file("sample.wav", out_dir="stems/")

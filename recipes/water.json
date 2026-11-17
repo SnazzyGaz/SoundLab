@@ -1,141 +1,269 @@
 {
- "soundlab": 1,
- "name": "Water: small stream / pouring (bubble model)",
- "category": "water",
- "sample_rate": 48000,
- "duration": 4.0,
- "seed": 1,
- "layers": [
-  {
-   "name": "stream",
-   "model": "water",
-   "params": {
-    "mode": "stream",
-    "rate": 400,
-    "radius_mm": 3.0
-   }
-  }
- ],
- "post": [
-  {
-   "model": "room",
-   "params": {
-    "volume": 30,
-    "absorption": 0.3,
-    "source_distance": 1.0
-   }
-  }
- ],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.2
- },
- "macros": {
-  "size": {
-   "default": 0.5,
-   "doc": "trickle .. bigger stream (bubble sizes)",
-   "map": [
+  "soundlab": 1,
+  "name": "Water: small stream (bubble wash, larger plinks, droplet ticks)",
+  "category": "water",
+  "sample_rate": 48000,
+  "duration": 4.0,
+  "seed": 1,
+  "layers": [
     {
-     "to": "0.radius_mm",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.45
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.2
-      ]
-     ]
-    }
-   ]
-  },
-  "intensity": {
-   "default": 0.5,
-   "doc": "gentle .. gushing (bubble rate)",
-   "map": [
-    {
-     "to": "0.rate",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.2
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       4.0
-      ]
-     ]
-    }
-   ]
-  },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level, more room sound)",
-   "map": [
-    {
-     "to": "post.0.source_distance",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       8
-      ]
-     ]
+      "name": "wash",
+      "model": "bubble_cloud",
+      "params": {
+        "rate": 5980.2968,
+        "r_min_mm": 0.3078,
+        "r_max_mm": 9.9298,
+        "size_exponent": 2.478,
+        "amp_exponent": 0.2532,
+        "damping": 1.2163,
+        "burst": 0.1501,
+        "burst_hz": 10.5916
+      }
     },
     {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
-      ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
+      "name": "plinks",
+      "model": "bubble_cloud",
+      "gain_db": -2.98,
+      "params": {
+        "rate": 9.7,
+        "r_min_mm": 1.05,
+        "r_max_mm": 5.9,
+        "size_exponent": 2.0,
+        "amp_exponent": 0.5,
+        "damping": 1.0,
+        "bins": 16
+      }
+    },
+    {
+      "name": "drops",
+      "model": "crackle",
+      "gain_db": -11.84,
+      "params": {
+        "rate": 20.0,
+        "grain_ms": 0.9,
+        "f_lo": 7300.0,
+        "f_hi": 14000.0,
+        "q": 0.7,
+        "size_exponent": 2.2,
+        "level": 1.0
+      }
     }
-   ]
-  }
- },
- "vary": {
-  "0.rate": {
-   "rel": 0.2
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            70,
+            -6.0
+          ],
+          [
+            91,
+            -6.5
+          ],
+          [
+            116,
+            -3.0
+          ],
+          [
+            150,
+            0.0
+          ],
+          [
+            10000,
+            0.0
+          ],
+          [
+            13961,
+            6.0
+          ],
+          [
+            16000,
+            6.0
+          ]
+        ]
+      }
+    },
+    {
+      "model": "distance",
+      "params": {
+        "distance": 1.0,
+        "spreading": false
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.2
   },
-  "0.radius_mm": {
-   "rel": 0.1
-  }
- },
- "loop": {
-  "lead_s": 1.0,
-  "xfade_s": 0.5
- }
+  "macros": {
+    "size": {
+      "default": 0.5,
+      "doc": "trickle .. bigger stream (bubble sizes)",
+      "map": [
+        {
+          "to": "wash.r_max_mm",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.45
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.2
+            ]
+          ]
+        },
+        {
+          "to": "plinks.r_max_mm",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.45
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.2
+            ]
+          ]
+        }
+      ]
+    },
+    "intensity": {
+      "default": 0.5,
+      "doc": "gentle .. gushing (bubble rate)",
+      "map": [
+        {
+          "to": "wash.rate",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.2
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              4.0
+            ]
+          ]
+        },
+        {
+          "to": "plinks.rate",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.2
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              4.0
+            ]
+          ]
+        },
+        {
+          "to": "drops.rate",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.2
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              4.0
+            ]
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level, more room sound)",
+      "map": [
+        {
+          "to": "post.1.distance",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              30
+            ]
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "wash.rate": {
+      "rel": 0.2
+    },
+    "wash.r_max_mm": {
+      "rel": 0.1
+    }
+  },
+  "loop": {
+    "lead_s": 1.0,
+    "xfade_s": 0.5
+  },
+  "stereo": {
+    "mode": "seeds",
+    "width": 0.6,
+    "mono_below_hz": 150
+  },
+  "fitted": "v0.23: fitted to two real recordings of small mountain streams (BigSoundBank #0823, #1354) on third-octave spectrum and band texture; bubbles 0.18-10 mm (Minnaert ~18 kHz down to ~310 Hz)",
+  "notes": "v0.24: no room: its early reflections made a comb (spectral peakiness 4.7-5.1 dB vs 0.65 real), heard as a saw-like buzz; burst rate capped at 12 Hz and the cloud refitted dry."
 }

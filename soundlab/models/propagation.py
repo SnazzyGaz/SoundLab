@@ -1,7 +1,6 @@
 """Stage 4: propagation (distance, air, motion, ground)."""
 from __future__ import annotations
 
-import math
 
 import numpy as np
 
@@ -63,12 +62,17 @@ def distance(ctx: Ctx, x, distance, atmosphere, delay, spreading):
        ], ["J. O. Smith, PASP (Doppler, variable delay lines)"])
 def passby(ctx: Ctx, x, speed, closest, t_closest, atmosphere):
     t = ctx.t
-    # emission-time solve: listener hears at t the sound emitted at te with t = te + r(te)/c
-    te = t.copy()
-    for _ in range(6):
-        r = np.sqrt((speed * (te - t_closest)) ** 2 + closest ** 2)
-        te = t - r / ctx.c
-    r = np.sqrt((speed * (te - t_closest)) ** 2 + closest ** 2)
+    c = ctx.c
+    v = min(float(speed), 0.999 * c)        # subsonic only (a supersonic source has no single emission time)
+    d = float(closest)
+    # emission time te: the listener hears at t the sound emitted at te with c (t - te) = r(te). With
+    # T = t - t_closest and u = te - t_closest this is (c^2 - v^2) u^2 - 2 c^2 T u + c^2 T^2 - d^2 = 0; the root
+    # with te <= t is exact for any subsonic speed. (Until v0.21.1: 6 fixed-point steps, which converge at the
+    # rate v/c and were audibly off for fast flybys: ~15 % of the travel time left at 250 m/s.)
+    T = t - t_closest
+    u = (c * c * T - np.sqrt(c * c * v * v * T * T + (c * c - v * v) * d * d)) / (c * c - v * v)
+    te = t_closest + u
+    r = np.sqrt((v * u) ** 2 + d * d)
     y = np.interp(te * ctx.sr, np.arange(len(x)), x, left=0.0, right=0.0)
     y = y * (closest / r)
     return air_absorb(y, ctx.sr, closest, atmosphere)

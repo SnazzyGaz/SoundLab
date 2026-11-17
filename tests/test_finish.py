@@ -183,7 +183,7 @@ def test_render_to_file_defaults_and_peak_mode(tmp_path):
 def test_batch_loop_and_names(tmp_path):
     man = batch_export([R / "rain.json", R / "hit.json"], tmp_path, loop=3, log=lambda *_: None)
     names = sorted(Path(m["wav"]).name for m in man)
-    assert names == ["ambience_rain_loop3s_v01.wav", "impact_hit_v01.wav"]
+    assert names == ["ambience_rain_loop3s_stereo_v01.wav", "impact_hit_v01.wav"]   # v0.22: beds are stereo
     rain = [m for m in man if "rain" in m["wav"]][0]
     assert rain["seconds"] == pytest.approx(3.0)
 

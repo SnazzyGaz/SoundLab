@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SoundLab Blind Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: one centred column, a studio-console card per clip; meter + two big answer keys. */
+:root {
+  --bg: #eef0f2;
+  --panel: #ffffff;
+  --ink: #1b2229;
+  --muted: #5d6874;
+  --line: #d5dae0;
+  --accent: #c27a12;      /* signal amber: play, meter, focus */
+  --real: #2f6f9f;        /* answer key: real */
+  --synth: #7a4a9a;       /* answer key: synthesised */
+  --good: #2e7d4f; --bad: #b3412f; --mid: #9a7a1c;
+  --display: "IBM Plex Sans", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161a; --panel: #1a2026; --ink: #e6eaee; --muted: #9aa5b0; --line: #2c343c;
+    --accent: #e3a33f; --real: #6aa7d6; --synth: #b28ad0; --good: #5fbf86; --bad: #e07a66; --mid: #d6b45a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161a; --panel: #1a2026; --ink: #e6eaee; --muted: #9aa5b0; --line: #2c343c;
+  --accent: #e3a33f; --real: #6aa7d6; --synth: #b28ad0; --good: #5fbf86; --bad: #e07a66; --mid: #d6b45a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+main { max-width: 760px; margin: 0 auto; padding: 28px 16px 48px; display: grid; gap: 18px; }
+h1 { font-family: var(--display); font-weight: 600; font-size: 1.75rem; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.15rem; margin: 0; font-weight: 600; text-wrap: balance; }
+p { margin: 0; max-width: 65ch; }
+.muted { color: var(--muted); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 16px; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+button { font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 10px 16px; }
+button:disabled { cursor: not-allowed; opacity: .45; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+input[type=text] { font: inherit; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); width: 100%; }
+label { font-size: .9rem; color: var(--muted); }
+.primary { background: var(--accent); border-color: var(--accent); color: #1b1305; font-weight: 600; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .2s; }
+.play { width: 100%; padding: 22px; font-size: 1.15rem; font-weight: 600; display: flex; gap: 12px; align-items: center; justify-content: center; }
+.play .tri { width: 0; height: 0; border-left: 16px solid currentColor; border-top: 10px solid transparent; border-bottom: 10px solid transparent; }
+.meter { display: grid; gap: 4px; }
+.meter canvas { width: 100%; height: 22px; display: block; border-radius: 4px; background: var(--bg); }
+.scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: .72rem; color: var(--muted); }
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.answers button { padding: 18px 12px; font-size: 1.05rem; font-weight: 600; border-width: 2px; display: grid; gap: 2px; }
+.answers small { font-family: var(--mono); font-weight: 400; font-size: .75rem; color: var(--muted); }
+#aReal { border-color: var(--real); color: var(--real); }
+#aSynth { border-color: var(--synth); color: var(--synth); }
+#aReal.on { background: var(--real); color: var(--panel); }
+#aSynth.on { background: var(--synth); color: var(--panel); }
+.nav { display: flex; justify-content: space-between; gap: 12px; }
+.status { font-size: .85rem; color: var(--muted); }
+.big { font-family: var(--mono); font-size: 2.6rem; font-weight: 600; line-height: 1; }
+.verdict { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .85rem; font-weight: 600; border: 1px solid currentColor; }
+.v-fail { color: var(--bad); } .v-pass { color: var(--good); } .v-mid { color: var(--mid); }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-weight: 500; color: var(--muted); font-size: .8rem; }
+td.num, th.num { text-align: right; }
+textarea { width: 100%; min-height: 64px; font-family: var(--mono); font-size: .8rem; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); resize: vertical; }
+kbd { font-family: var(--mono); font-size: .78rem; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+[hidden] { display: none !important; }
+@media (max-width: 420px) { .answers { grid-template-columns: 1fr; } .big { font-size: 2rem; } }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="row" style="justify-content: space-between">
+    <h1>Real or Synthesised?</h1>
+    <span class="status" id="saveState">Saved in this browser</span>
+  </header>
+
+  <!-- start -->
+  <section class="card" id="vStart">
+    <h2>SoundLab blind listening test</h2>
+    <p>You will hear <span class="num" id="nClips">96</span> short clips of everyday sounds. Each clip says what it is meant to be: judge whether it sounds like a real recording of that.
+      Some are real recordings, some come from the SoundLab engine. For each clip, say which you think it is.
+      Clips of the same sound are matched in length and loudness, so listen to what the sound does, not how loud it is.</p>
+    <p class="muted">Headphones help. Replay as often as you like; there is no time limit. Your place is kept if you stop halfway.</p>
+    <div class="row" style="align-items: end">
+      <div style="flex: 1 1 220px; display: grid; gap: 6px">
+        <label for="handle">Your name or initials</label>
+        <input type="text" id="handle" maxlength="40" autocomplete="nickname" placeholder="e.g. GA">
+      </div>
+      <button class="primary" id="startBtn">Start</button>
+    </div>
+    <p class="status" id="resumeNote" hidden></p>
+  </section>
+
+  <!-- test -->
+  <section class="card" id="vTest" hidden>
+    <div class="row" style="justify-content: space-between">
+      <span class="mono">Clip <span id="pos">1</span> of <span id="tot">96</span></span>
+      <span class="status"><span class="num" id="done">0</span> answered</span>
+    </div>
+    <div class="bar"><i id="prog"></i></div>
+    <p class="mono" id="whatRow" hidden>Meant to be: <b id="what"></b></p>
+    <button class="play" id="playBtn"><span class="tri" aria-hidden="true"></span><span id="playLbl">Play clip</span></button>
+    <div class="meter" aria-hidden="true">
+      <canvas id="meter" width="700" height="22"></canvas>
+      <div class="scale"><span>-60</span><span>-48</span><span>-36</span><span>-24</span><span>-12</span><span>0 dBFS</span></div>
+    </div>
+    <div class="answers">
+      <button id="aReal" disabled>Real recording<small>key R</small></button>
+      <button id="aSynth" disabled>Synthesised<small>key S</small></button>
+    </div>
+    <div style="display: grid; gap: 6px">
+      <label for="note">What gave it away? (optional)</label>
+      <input type="text" id="note" maxlength="300" placeholder="e.g. too clean a tail, cloned clicks, no room">
+    </div>
+    <div class="nav">
+      <button id="prevBtn">Previous</button>
+      <span class="status" style="align-self: center"><kbd>Space</kbd> play · <kbd>R</kbd> real · <kbd>S</kbd> synthesised · <kbd>←</kbd><kbd>→</kbd> move</span>
+      <button id="nextBtn">Next</button>
+    </div>
+    <p class="status" id="needPlay">Play the clip before answering.</p>
+  </section>
+
+  <!-- results -->
+  <section class="card" id="vDone" hidden>
+    <h2>Your result</h2>
+    <div class="row" style="gap: 24px; align-items: end">
+      <div><div class="big" id="ba">0%</div><div class="status">balanced accuracy (50% = can't tell)</div></div>
+      <div><span class="verdict" id="verdict">—</span></div>
+    </div>
+    <p id="summary"></p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Sound</th><th class="num">Engine clips called synthesised</th><th class="num">Real clips called synthesised</th><th>Read</th></tr></thead>
+        <tbody id="perSound"></tbody>
+      </table>
+    </div>
+    <p class="muted">Each row rests on two to four clips: a hint, not a verdict. The overall figure is the one that counts.</p>
+    <div style="display: grid; gap: 6px">
+      <label for="code">Answer code (for <span class="mono">soundlab blindtest score --codes</span>)</label>
+      <textarea id="code" readonly></textarea>
+      <div class="row"><button id="copyBtn">Copy code</button><span class="status" id="copyMsg"></span></div>
+    </div>
+    <div class="row"><button id="reviewBtn">Review answers</button></div>
+  </section>
+</main>
+
+<script>
+const PACK = /*PACK_DATA*/null;
+const $ = s => document.querySelector(s);
+const N = PACK.clips.length;
+
+// ---------------------------------------------------------------- state and storage
+let st = null;              // {handle, order:[clip...], answers:{clip:{a,note,t}}, finished}
+let idx = 0, played = false;
+let db = null, uid = null, remote = false, writing = Promise.resolve();
+
+function hash(s) { let h = 2166136261 >>> 0; for (const c of s) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; }
+function shuffled(list, seed) {
+  const a = list.slice(); let s = seed || 1;
+  const rnd = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; };
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+const localKey = h => `soundlab-bt-${PACK.pack}-${h}`;
+function loadLocal(h) { try { return JSON.parse(localStorage.getItem(localKey(h)) || "null"); } catch (e) { return null; } }
+function saveLocal() { try { localStorage.setItem(localKey(st.handle), JSON.stringify(st)); } catch (e) {} }
+
+function save() {
+  saveLocal();
+  if (!remote) return;
+  const body = JSON.parse(JSON.stringify({...st, pack: PACK.pack, n: N, updated: new Date().toISOString()}));
+  writing = writing.then(() => db.doc(`answers/${uid}`).set(body)).then(
+    () => { $("#saveState").textContent = "Saved to this page"; },
+    e => {
+      remote = false;   // no write access here: keep going in this browser, the answer code carries the result
+      $("#saveState").textContent = "Saved in this browser only (copy the code at the end)";
+    });
+}
+
+// the page works before (and without) the database; it lights up when db answers
+(async () => {
+  try {
+    const [d, u] = await Promise.all([window.claude?.use?.("db"), window.claude?.use?.("user")]);
+    if (d && u) {
+      const id = await u.id();
+      if (id) {
+        db = d; uid = id; remote = true;
+        $("#saveState").textContent = "Answers save to this page";
+        // a slow read only skips the resume note; saving stays on
+        const snap = await Promise.race([db.doc(`answers/${uid}`).get().catch(() => null),
+                                         new Promise(r => setTimeout(() => r(null), 10000))]);
+        if (snap && snap.exists && !st) {
+          const prev = snap.data();
+          if (prev && Array.isArray(prev.order) && prev.order.length === N && prev.pack === PACK.pack) {
+            $("#handle").value = prev.handle || "";
+            const n = Object.keys(prev.answers || {}).length;
+            $("#resumeNote").hidden = false;
+            $("#resumeNote").textContent = prev.finished ? `You finished this test (${n} answers). Start shows your result.`
+                                                         : `You have answered ${n} of ${N}. Start carries on where you stopped.`;
+            window.__prev = prev;
+          }
+        }
+      }
+    }
+  } catch (e) { remote = false; }
+})();
+
+// ---------------------------------------------------------------- audio + meter
+let ctx = null, analyser = null, audio = null, raf = 0, peak = -60;
+const cv = $("#meter"), g = cv.getContext("2d");
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function drawMeter(db_) {
+  const w = cv.width, h = cv.height;
+  g.clearRect(0, 0, w, h);
+  g.fillStyle = css("--line");
+  for (let d = -60; d <= 0; d += 12) { const x = (d + 60) / 60 * w; g.fillRect(Math.min(x, w - 1), 0, 1, h); }
+  const x = Math.max(0, (db_ + 60) / 60) * w;
+  g.fillStyle = css("--accent"); g.fillRect(0, 4, x, h - 8);
+  const px = Math.max(0, (peak + 60) / 60) * w;
+  g.fillStyle = css("--ink"); g.fillRect(Math.min(px, w - 2), 2, 2, h - 4);
+}
+function tick() {
+  if (!analyser) return;
+  const buf = new Float32Array(analyser.fftSize); analyser.getFloatTimeDomainData(buf);
+  let s = 0; for (const v of buf) s += v * v;
+  const lvl = 10 * Math.log10(s / buf.length + 1e-12);
+  peak = Math.max(peak - 0.6, lvl);
+  drawMeter(lvl);
+  if (audio && !audio.paused) raf = requestAnimationFrame(tick); else { peak = -60; drawMeter(-60); }
+}
+function play() {
+  const clip = st.order[idx];
+  try {
+    if (!ctx) { ctx = new (window.AudioContext || window.webkitAudioContext)(); analyser = ctx.createAnalyser(); analyser.fftSize = 1024; analyser.connect(ctx.destination); }
+    if (ctx.state === "suspended") ctx.resume();
+  } catch (e) { ctx = null; }
+  if (!audio || audio.dataset.clip !== clip) {
+    if (audio) audio.pause();
+    audio = new Audio(`clips/${clip}.wav`); audio.dataset.clip = clip; audio.preload = "auto";
+    if (ctx) { try { ctx.createMediaElementSource(audio).connect(analyser); } catch (e) {} }
+    audio.addEventListener("ended", () => { $("#playLbl").textContent = "Play again"; });
+  }
+  audio.currentTime = 0;
+  audio.play().then(() => {
+    played = true; enableAnswers();
+    $("#playLbl").textContent = "Playing…";
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
+  }).catch(() => { $("#playLbl").textContent = "Could not play: click again"; });
+  const nxt = st.order[idx + 1]; if (nxt) { const pre = new Audio(`clips/${nxt}.wav`); pre.preload = "auto"; }
+}
+
+// ---------------------------------------------------------------- test view
+function enableAnswers() {
+  const ok = played || !!st.answers[st.order[idx]];
+  $("#aReal").disabled = $("#aSynth").disabled = !ok;
+  $("#needPlay").hidden = ok;
+}
+function show(i) {
+  idx = Math.max(0, Math.min(N - 1, i));
+  if (audio) audio.pause();
+  played = false;
+  const clip = st.order[idx], a = st.answers[clip];
+  $("#pos").textContent = idx + 1; $("#tot").textContent = N;
+  if (PACK.labels) { $("#whatRow").hidden = false; $("#what").textContent = PACK.labels[PACK.clips.indexOf(clip)] || ""; }
+  const nd = Object.keys(st.answers).length;
+  $("#done").textContent = nd; $("#prog").style.width = `${100 * nd / N}%`;
+  $("#playLbl").textContent = "Play clip";
+  $("#aReal").classList.toggle("on", a?.a === "real");
+  $("#aSynth").classList.toggle("on", a?.a === "synth");
+  $("#note").value = a?.note || "";
+  $("#prevBtn").disabled = idx === 0;
+  $("#nextBtn").textContent = idx === N - 1 ? "Finish" : "Next";
+  enableAnswers(); drawMeter(-60);
+}
+function answer(kind) {
+  if ($("#aReal").disabled) return;
+  const clip = st.order[idx];
+  st.answers[clip] = {a: kind, note: $("#note").value.trim().slice(0, 300), t: new Date().toISOString()};
+  if (Object.keys(st.answers).length === N) st.finished = st.finished || new Date().toISOString();
+  save();
+  $("#aReal").classList.toggle("on", kind === "real"); $("#aSynth").classList.toggle("on", kind === "synth");
+  setTimeout(() => next(), 220);
+}
+function next() {
+  const clip = st.order[idx];
+  if (st.answers[clip] && $("#note").value.trim() !== (st.answers[clip].note || "")) { st.answers[clip].note = $("#note").value.trim().slice(0, 300); save(); }
+  if (Object.keys(st.answers).length === N && (idx === N - 1 || st.order.every(c => st.answers[c]))) { results(); return; }
+  if (idx < N - 1) show(idx + 1);
+  else { const first = st.order.findIndex(c => !st.answers[c]); if (first >= 0) show(first); }
+}
+
+// ---------------------------------------------------------------- results
+function truth() {
+  const b = Uint8Array.from(atob(PACK.k), c => c.charCodeAt(0));
+  let s = 0x5EED; const out = {};
+  PACK.clips.forEach((clip, i) => {
+    s = (Math.imul(s, 1103515245) + 12345) >>> 0;
+    const v = b[i] ^ ((s >>> 16) & 255);
+    out[clip] = {sound: PACK.sounds[v >> 1], engine: !!(v & 1)};
+  });
+  return out;
+}
+function answerCode() {
+  const nb = Math.ceil(N / 4), hb = new TextEncoder().encode(st.handle);
+  const b = new Uint8Array(4 + nb + hb.length);
+  b[0] = 1; b[1] = PACK.pack & 255; b[2] = N;
+  PACK.clips.forEach((clip, i) => { const a = st.answers[clip]?.a; const v = a === "real" ? 1 : a === "synth" ? 2 : 0; b[3 + (i >> 2)] |= v << ((i & 3) * 2); });
+  b.set(hb, 4 + nb);
+  let sum = 0; b.forEach((x, i) => { if (i !== 3 + nb) sum += x; }); b[3 + nb] = sum & 255;
+  return "SL1." + btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function results() {
+  if (audio) audio.pause();
+  const T = truth(), by = {};
+  let ne = 0, hit = 0, nr = 0, fa = 0;
+  for (const clip of PACK.clips) {
+    const t = T[clip], a = st.answers[clip]?.a; if (!a) continue;
+    const r = by[t.sound] = by[t.sound] || {ne: 0, hit: 0, nr: 0, fa: 0};
+    if (t.engine) { r.ne++; ne++; if (a === "synth") { r.hit++; hit++; } }
+    else { r.nr++; nr++; if (a === "synth") { r.fa++; fa++; } }
+  }
+  const H = ne ? hit / ne : 0, F = nr ? fa / nr : 0, BA = (H + 1 - F) / 2;
+  const se = Math.sqrt((ne ? H * (1 - H) / ne : 0) + (nr ? F * (1 - F) / nr : 0)) / 2;
+  const lo = Math.max(0, BA - 1.96 * se), hi = Math.min(1, BA + 1.96 * se);
+  $("#ba").textContent = `${Math.round(BA * 100)}%`;
+  const v = $("#verdict");
+  if (lo > 0.5) { v.textContent = "Told apart"; v.className = "verdict v-fail"; }
+  else if (hi < 0.6) { v.textContent = "Can't tell them apart"; v.className = "verdict v-pass"; }
+  else { v.textContent = "Not settled yet"; v.className = "verdict v-mid"; }
+  $("#summary").textContent = `You called ${hit} of ${ne} engine clips synthesised and ${fa} of ${nr} real recordings synthesised. ` +
+    `Roughly 95% range ${Math.round(lo * 100)}–${Math.round(hi * 100)}%. Under 60% for the whole range is the project's pass mark; above 50% for the whole range means the engine was told apart.`;
+  const tb = $("#perSound"); tb.textContent = "";
+  Object.keys(by).sort().forEach(s => {
+    const r = by[s], ba = ((r.ne ? r.hit / r.ne : 0) + 1 - (r.nr ? r.fa / r.nr : 0)) / 2;
+    const tr = document.createElement("tr");
+    const cells = [s.replace(/_/g, " "), `${r.hit} / ${r.ne}`, `${r.fa} / ${r.nr}`];
+    cells.forEach((c, i) => { const td = document.createElement("td"); td.textContent = c; if (i) td.className = "num"; tr.appendChild(td); });
+    const td = document.createElement("td"), sp = document.createElement("span");
+    sp.className = "verdict " + (ba >= 1 ? "v-fail" : ba > 0.5 ? "v-mid" : "v-pass");
+    sp.textContent = ba >= 1 ? "Caught" : ba > 0.5 ? "Mostly caught" : "Fooled you";
+    td.appendChild(sp); tr.appendChild(td); tb.appendChild(tr);
+  });
+  $("#code").value = answerCode();
+  $("#vTest").hidden = true; $("#vStart").hidden = true; $("#vDone").hidden = false;
+}
+
+// ---------------------------------------------------------------- wiring
+$("#nClips").textContent = N;
+$("#startBtn").onclick = () => {
+  const h = $("#handle").value.trim().replace(/[^\p{L}\p{N}_\- ]/gu, "").slice(0, 40);
+  if (!h) { $("#handle").focus(); $("#handle").placeholder = "Type a name or initials first"; return; }
+  st = (window.__prev && window.__prev.order) ? {handle: h, order: window.__prev.order, answers: window.__prev.answers || {}, finished: window.__prev.finished || null}
+     : loadLocal(h) || {handle: h, order: shuffled(PACK.clips, hash(h)), answers: {}, finished: null, started: new Date().toISOString()};
+  st.handle = h;
+  if (st.finished && Object.keys(st.answers).length === N) { results(); return; }
+  $("#vStart").hidden = true; $("#vTest").hidden = false;
+  const first = st.order.findIndex(c => !st.answers[c]);
+  show(first >= 0 ? first : 0);
+};
+$("#handle").addEventListener("keydown", e => { if (e.key === "Enter") $("#startBtn").click(); });
+$("#playBtn").onclick = play;
+$("#aReal").onclick = () => answer("real");
+$("#aSynth").onclick = () => answer("synth");
+$("#prevBtn").onclick = () => show(idx - 1);
+$("#nextBtn").onclick = () => next();
+$("#reviewBtn").onclick = () => { $("#vDone").hidden = true; $("#vTest").hidden = false; show(0); };
+$("#copyBtn").onclick = () => {
+  navigator.clipboard.writeText($("#code").value).then(() => { $("#copyMsg").textContent = "Copied"; },
+    () => { $("#code").select(); $("#copyMsg").textContent = "Select and copy the code by hand"; });
+};
+document.addEventListener("keydown", e => {
+  if ($("#vTest").hidden || e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.code === "Space") { e.preventDefault(); play(); }
+  else if (e.key === "r" || e.key === "R") answer("real");
+  else if (e.key === "s" || e.key === "S") answer("synth");
+  else if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") show(idx - 1);
+});
+drawMeter(-60);
+</script>
+</body>
+</html>

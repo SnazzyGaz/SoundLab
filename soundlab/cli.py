@@ -39,6 +39,10 @@ def main(argv=None) -> int:
         p.add_argument("--no-trim", action="store_true", help="keep the full recipe length (no tail trim)")
         p.add_argument("--loop", type=float, metavar="SECONDS",
                        help="write a seamless loop of this length (for loopable recipes: rain, wind, fire, ...)")
+        sg = p.add_mutually_exclusive_group()
+        sg.add_argument("--stereo", dest="stereo", action="store_true", default=None,
+                        help="stereo file (default: stereo only for loops of recipes with a stereo bed config)")
+        sg.add_argument("--mono", dest="stereo", action="store_false", help="always mono")
     _finish_args(r)
 
     b = sub.add_parser("batch", help="render many recipes (folders, files, .txt lists) with variations and macro sweeps")
@@ -62,7 +66,7 @@ def main(argv=None) -> int:
     au.add_argument("--seconds", type=float, help="cut the preview to this length")
     au.add_argument("--no-play", action="store_true")
     au.add_argument("--watch", action="store_true")
-    au.add_argument("-o", "--out", default="/tmp/soundlab-audition")
+    au.add_argument("-o", "--out", default=None, help="scratch folder (default: <system temp>/soundlab-audition)")
 
     m = sub.add_parser("models", help="list models")
     m.add_argument("--stage")
@@ -163,7 +167,7 @@ def main(argv=None) -> int:
             from .macros import parse_macro_args
             mv = parse_macro_args(args.macro)
             out = args.out or str(Path(args.recipe).with_suffix(".wav"))
-            fk = {"level": args.level, "trim": not args.no_trim, "loop": args.loop}
+            fk = {"level": args.level, "trim": not args.no_trim, "loop": args.loop, "stereo": args.stereo}
             if args.loop and not rec.get("loop"):
                 print("note: this recipe is not tagged as loopable; the loop may not sound seamless", file=sys.stderr)
             if args.variations and args.variations > 1:
@@ -181,7 +185,7 @@ def main(argv=None) -> int:
             from .macros import parse_macro_args
             man = batch_export(args.inputs, args.out, args.variations, parse_macro_args(args.macro),
                                parse_sweep(args.sweep), args.mp3, args.sr, args.recursive,
-                               level=args.level, trim=not args.no_trim, loop=args.loop)
+                               level=args.level, trim=not args.no_trim, loop=args.loop, stereo=args.stereo)
             if args.zip:
                 import shutil
                 z = shutil.make_archive(str(Path(args.out).resolve()), "zip", root_dir=Path(args.out).resolve().parent,

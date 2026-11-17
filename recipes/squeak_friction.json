@@ -1,121 +1,167 @@
 {
- "soundlab": 1,
- "name": "Squeak: rigid elasto-plastic friction exciting a high mode (rubber or glass squeal)",
- "category": "foley",
- "sample_rate": 48000,
- "duration": 1.5,
- "seed": 19,
- "layers": [
-  {
-   "name": "squeak",
-   "model": "ep_friction",
-   "params": {
-    "velocity": [
-     [
-      0,
-      0.0
-     ],
-     [
-      0.15,
-      0.25
-     ],
-     [
-      1.0,
-      0.3
-     ],
-     [
-      1.2,
-      0.0
-     ]
-    ],
-    "normal_force": 1.0,
-    "drive_hz": 0,
-    "modes": [
-     [
-      1150,
-      0.05,
-      1.0
-     ],
-     [
-      2380,
-      0.03,
-      0.5
-     ],
-     [
-      3600,
-      0.02,
-      0.25
-     ]
-    ]
-   }
-  }
- ],
- "post": [
-  {
-   "model": "room",
-   "params": {
-    "volume": 40,
-    "absorption": 0.35,
-    "source_distance": 1.5
-   }
-  }
- ],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.05
- },
- "macros": {
-  "pressure": {
-   "default": 0.5,
-   "doc": "light .. hard press",
-   "map": [
+  "soundlab": 1,
+  "name": "Squeak: rigid elasto-plastic friction exciting a high mode (rubber or glass squeal)",
+  "category": "foley",
+  "sample_rate": 48000,
+  "duration": 0.8869549855710175,
+  "seed": 19,
+  "layers": [
     {
-     "to": "0.normal_force",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2
-      ]
-     ]
+      "name": "squeak",
+      "model": "ep_friction",
+      "params": {
+        "velocity": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.08869549855710174,
+            0.6404959176568016
+          ],
+          [
+            0.5913033237140116,
+            0.7685951011881619
+          ],
+          [
+            0.7095639884568139,
+            0.0
+          ]
+        ],
+        "normal_force": 2.246968402088132,
+        "drive_hz": 0,
+        "modes": [
+          [
+            1202.8612360621798,
+            0.02689704455567935,
+            1.0
+          ],
+          [
+            2489.399775502598,
+            0.01613822673340761,
+            0.5
+          ],
+          [
+            3765.4786520207367,
+            0.01075881782227174,
+            0.25
+          ]
+        ],
+        "noise": 0.9531258352919523
+      }
     }
-   ]
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            -3.2
+          ],
+          [
+            125,
+            0.7
+          ],
+          [
+            250,
+            6.0
+          ],
+          [
+            500,
+            6.0
+          ],
+          [
+            1000,
+            -4.4
+          ],
+          [
+            2000,
+            4.5
+          ],
+          [
+            4000,
+            6.0
+          ],
+          [
+            8000,
+            6.0
+          ],
+          [
+            16000,
+            -3.8
+          ]
+        ]
+      }
+    },
+    {
+      "model": "room",
+      "params": {
+        "volume": 40,
+        "absorption": 0.35,
+        "source_distance": 1.5,
+        "wet": 0.13690611515464757
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
   },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level)",
-   "map": [
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
+  "macros": {
+    "pressure": {
+      "default": 0.5,
+      "doc": "light .. hard press",
+      "map": [
+        {
+          "to": "0.normal_force",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
     }
-   ]
-  }
- }
+  },
+  "notes": "v0.25: fitted to reference recordings (BigSoundBank #3447, #3448 shoe squeaks), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."
 }

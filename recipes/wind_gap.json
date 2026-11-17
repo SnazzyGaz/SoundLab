@@ -140,5 +140,6 @@
  "loop": {
   "lead_s": 1.0,
   "xfade_s": 0.5
- }
+ },
+ "stereo": {"mode": "decorrelate", "width": 0.6, "mono_below_hz": 150}
 }

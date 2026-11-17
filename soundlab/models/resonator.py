@@ -12,11 +12,14 @@ from ..core import Ctx, Param, RecipeError, ctrl, model, scalar
 # Free-free beam: beta_n * L roots (Euphonics gives ratios 1, 2.76, 5.40, 8.93, 13.34)
 BAR_BETA_L = [4.7300, 7.8532, 10.9956, 14.1372, 17.2788]
 # Circular membrane Bessel zeros j_mn in ascending order (Rochester PHY103 lists the first four)
-MEMBRANE_J = [2.405, 3.832, 5.136, 5.520, 6.380, 7.016, 7.588, 8.417, 8.654, 8.771, 9.761, 10.173, 11.065, 11.086]
+MEMBRANE_J = [2.405, 3.832, 5.136, 5.520, 6.380, 7.016, 7.588, 8.417, 8.654, 8.771, 9.761, 9.936, 10.173, 11.065,
+              11.086]  # v0.21.2: j_61 = 9.936 was missing
 
 
 def bar_modes(n: int) -> list[float]:
-    bl = BAR_BETA_L + [(2 * k + 1) * math.pi / 2 for k in range(5, n + 2)]
+    # roots 1-5 from the table, then the asymptote (2k + 1) pi / 2 from k = 6 (until v0.21.1 this started at
+    # k = 5, which is mode 5 again: a doubled mode 5 and every higher mode one place too low)
+    bl = BAR_BETA_L + [(2 * k + 1) * math.pi / 2 for k in range(len(BAR_BETA_L) + 1, n + 2)]
     return [(b / bl[0]) ** 2 for b in bl[:n]]
 
 
@@ -129,7 +132,8 @@ def modal(ctx: Ctx, x, material, shape, length, width, thickness, f0, ratios, n_
        "Digital waveguide string (Karplus-Strong family): delay line of one period with a lowpass loop filter.",
        [
            Param("f0", 220.0, "Hz", 20, 5000, "fundamental"),
-           Param("t60", 2.0, "s", 0.01, 30, "ring time of the fundamental"),
+           Param("t60", 2.0, "s", 0.01, 30, "ring time of the fundamental (a low `brightness` caps how long high notes "
+                 "can ring: the loop lowpass alone loses energy every period)"),
            Param("brightness", 5000.0, "Hz", 200, 20000, "loop lowpass corner (lower = duller, faster high decay)"),
            Param("dispersion", 0.0, "", 0, 0.95, "stiffness: allpass dispersion inside the loop (wires, springs; "
                  "high values give the falling 'pew' chirp)"),
@@ -142,7 +146,12 @@ def string(ctx: Ctx, x, f0, t60, brightness, dispersion, dispersion_stages, gain
     if dispersion > 0:
         y = dsp.dispersive_waveguide(x, D, g, ctx.sr, brightness, -dispersion, int(dispersion_stages))
     else:
-        y = dsp.comb_waveguide(x, D, g, ctx.sr, brightness, 1.0)
+        # v0.21.2: tuned loop (exact pitch, see dsp.comb_waveguide) and t60 measured on the fundamental: the loop
+        # lowpass also loses |H(f0)| per period, which shortened high notes' ring far below the given t60
+        p = math.exp(-2 * math.pi * brightness / ctx.sr)
+        w0 = 2 * math.pi * f0 / ctx.sr
+        h0 = (1 - p) / abs(1 - p * np.exp(-1j * w0))
+        y = dsp.comb_waveguide(x, D, min(g / h0, 0.99999), ctx.sr, brightness, 1.0, tune=True)
     return y * gain * 0.2
 
 
@@ -159,7 +168,7 @@ def string(ctx: Ctx, x, f0, t60, brightness, dispersion, dispersion_stages, gain
 def tube(ctx: Ctx, x, length, ends, loss, damp_hz, mix):
     D = 2 * length / ctx.c * ctx.sr
     sign = -1.0 if ends == "closed_open" else 1.0
-    y = dsp.comb_waveguide(x, D, loss, ctx.sr, damp_hz, sign) * (1 - loss) * 2
+    y = dsp.comb_waveguide(x, D, loss, ctx.sr, damp_hz, sign, tune=True) * (1 - loss) * 2   # v0.21.2: in tune
     return mix * y + (1 - mix) * x
 
 

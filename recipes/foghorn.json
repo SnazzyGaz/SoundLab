@@ -1,239 +1,283 @@
 {
- "soundlab": 1,
- "name": "Barge/ship air horn, heard across the water from about 250 m",
- "sample_rate": 48000,
- "duration": 5.5,
- "seed": 5,
- "layers": [
-  {
-   "name": "diaphone",
-   "model": "foghorn",
-   "params": {
-    "tone_hz": 109,
-    "mode": "single",
-    "blast_s": 3.1,
-    "brightness": 0.3,
-    "blasts": 1,
-    "interval_s": 4.6,
-    "throat_hz": 330,
-    "wobble": 0.85,
-    "release_s": 0.3,
-    "horn_length": 5.7,
-    "attack_s": 0.1,
-    "mouth_radius": 0.9
-   }
-  }
- ],
- "post": [
-  {
-   "model": "distance",
-   "params": {
-    "distance": 250,
-    "atmosphere": "15C_80RH",
-    "spreading": false
-   }
-  },
-  {
-   "model": "outdoor",
-   "params": {
-    "reflectors": [
-     [
-      350,
-      0.3
-     ]
-    ],
-    "tail_s": 1.5,
-    "tail_level": 0.12,
-    "tail_lowpass": 900,
-    "diffusion": 0.3
-   }
-  }
- ],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.4
- },
- "category": "ambience",
- "macros": {
-  "size": {
-   "default": 0.5,
-   "doc": "small air horn .. big diaphone (pitch, horn length)",
-   "map": [
+  "soundlab": 1,
+  "name": "Barge/ship air horn, heard across the water from about 250 m",
+  "sample_rate": 48000,
+  "duration": 5.5,
+  "seed": 5,
+  "layers": [
     {
-     "to": "0.tone_hz",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       1.7
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       0.75
-      ]
-     ]
+      "name": "diaphone",
+      "model": "foghorn",
+      "params": {
+        "tone_hz": 157.18050203735817,
+        "mode": "single",
+        "blast_s": 3.292040024005678,
+        "brightness": 0.05993001612528692,
+        "blasts": 1,
+        "interval_s": 4.6,
+        "throat_hz": 1029.1237273285813,
+        "wobble": 0.5081819244906177,
+        "release_s": 0.3,
+        "horn_length": 1.6106703452263953,
+        "attack_s": 0.1,
+        "mouth_radius": 0.416501765221631
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            0.4
+          ],
+          [
+            125,
+            -1.2
+          ],
+          [
+            250,
+            -6.0
+          ],
+          [
+            500,
+            6.0
+          ],
+          [
+            1000,
+            -6.0
+          ],
+          [
+            2000,
+            1.3
+          ],
+          [
+            4000,
+            4.7
+          ],
+          [
+            8000,
+            -6.0
+          ],
+          [
+            16000,
+            6.0
+          ]
+        ]
+      }
     },
     {
-     "to": "0.horn_length",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.6
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.3
-      ]
-     ]
-    }
-   ]
-  },
-  "intensity": {
-   "default": 0.5,
-   "doc": "soft .. full pressure (pressure, brightness)",
-   "map": [
-    {
-     "to": "0.pressure",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.4
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.3
-      ]
-     ]
+      "model": "distance",
+      "params": {
+        "distance": 187.8558624141475,
+        "atmosphere": "15C_80RH",
+        "spreading": false
+      }
     },
     {
-     "to": "0.brightness",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.2
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.3
-      ]
-     ]
+      "model": "outdoor",
+      "params": {
+        "reflectors": [
+          [
+            350,
+            0.3
+          ]
+        ],
+        "tail_s": 1.5,
+        "tail_level": 0.17800294102735076,
+        "tail_lowpass": 900,
+        "diffusion": 0.3
+      }
     }
-   ]
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.4
   },
-  "length": {
-   "default": 0.5,
-   "doc": "short toot .. long blast",
-   "map": [
-    {
-     "to": "0.blast_s",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.35
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.8
+  "category": "ambience",
+  "macros": {
+    "size": {
+      "default": 0.5,
+      "doc": "small air horn .. big diaphone (pitch, horn length)",
+      "map": [
+        {
+          "to": "0.tone_hz",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              1.7
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              0.75
+            ]
+          ]
+        },
+        {
+          "to": "0.horn_length",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.3
+            ]
+          ]
+        }
       ]
-     ]
-    }
-   ]
-  },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level, air absorption, more reflections)",
-   "map": [
-    {
-     "to": "post.0.distance",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.2
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       4
-      ]
-     ]
     },
-    {
-     "to": "post.1.tail_level",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.8
+    "intensity": {
+      "default": 0.5,
+      "doc": "soft .. full pressure (pressure, brightness)",
+      "map": [
+        {
+          "to": "0.pressure",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.3
+            ]
+          ]
+        },
+        {
+          "to": "0.brightness",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.2
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.3
+            ]
+          ]
+        }
       ]
-     ]
     },
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
+    "length": {
+      "default": 0.5,
+      "doc": "short toot .. long blast",
+      "map": [
+        {
+          "to": "0.blast_s",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.35
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.8
+            ]
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level, air absorption, more reflections)",
+      "map": [
+        {
+          "to": "post.1.distance",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.2
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        },
+        {
+          "to": "post.2.tail_level",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.8
+            ]
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
     }
-   ]
-  }
- },
- "vary": {
-  "0.tone_hz": {
-   "cents": 15
   },
-  "0.wobble": {
-   "rel": 0.2
-  }
- }
+  "vary": {
+    "0.tone_hz": {
+      "cents": 15
+    },
+    "0.wobble": {
+      "rel": 0.2
+    }
+  },
+  "notes": "v0.25: fitted to reference recordings (BBC 07018114 Southampton foghorn, BigSoundBank #3507 liner horn), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."
 }

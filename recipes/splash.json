@@ -1,137 +1,182 @@
 {
- "soundlab": 1,
- "name": "Splash: object into water (slap, pinch-off bloop, bubble cloud, droplets)",
- "category": "water",
- "sample_rate": 48000,
- "duration": 2.0,
- "seed": 26,
- "layers": [
-  {
-   "name": "main",
-   "model": "splash",
-   "params": {
-    "size": 0.08,
-    "speed": 4.0,
-    "bloop": 0.5,
-    "droplets": 1.0,
-    "at": 0.03,
-    "slosh": 0.5
-   }
-  }
- ],
- "post": [],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.05
- },
- "macros": {
-  "size": {
-   "default": 0.5,
-   "doc": "pebble .. rock",
-   "map": [
+  "soundlab": 1,
+  "name": "Splash: object into water (slap, pinch-off bloop, bubble cloud, droplets)",
+  "category": "water",
+  "sample_rate": 48000,
+  "duration": 2.0,
+  "seed": 26,
+  "layers": [
     {
-     "to": "0.size",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.25
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       3.5
-      ]
-     ]
+      "name": "main",
+      "model": "splash",
+      "params": {
+        "size": 0.08,
+        "speed": 4.0,
+        "bloop": 0.97,
+        "droplets": 0.8,
+        "at": 0.03,
+        "slosh": 0.5
+      }
     }
-   ]
-  },
-  "intensity": {
-   "default": 0.5,
-   "doc": "dropped .. thrown hard",
-   "map": [
+  ],
+  "post": [
     {
-     "to": "0.speed",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.4
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.5
-      ]
-     ]
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            -9.3
+          ],
+          [
+            125,
+            2.6
+          ],
+          [
+            250,
+            -1.4
+          ],
+          [
+            500,
+            11.6
+          ],
+          [
+            1000,
+            -3.0
+          ],
+          [
+            2000,
+            -8.3
+          ],
+          [
+            4000,
+            -9.5
+          ],
+          [
+            8000,
+            -11.5
+          ],
+          [
+            16000,
+            -9.6
+          ]
+        ]
+      }
     }
-   ]
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
   },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level)",
-   "map": [
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
+  "macros": {
+    "size": {
+      "default": 0.5,
+      "doc": "pebble .. rock",
+      "map": [
+        {
+          "to": "0.size",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.25
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              3.5
+            ]
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
-    }
-   ]
-  },
-  "spray": {
-   "default": 0.5,
-   "doc": "few drops .. lots of spray",
-   "map": [
-    {
-     "to": "0.droplets",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.3
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       1.25
+    },
+    "intensity": {
+      "default": 0.5,
+      "doc": "dropped .. thrown hard",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        }
       ]
-     ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    },
+    "spray": {
+      "default": 0.5,
+      "doc": "few drops .. lots of spray",
+      "map": [
+        {
+          "to": "0.droplets",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.3
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.25
+            ]
+          ]
+        }
+      ]
     }
-   ]
-  }
- },
- "vary": {
-  "0.size": {
-   "rel": 0.12
   },
-  "0.speed": {
-   "rel": 0.12
-  }
- }
+  "vary": {
+    "0.size": {
+      "rel": 0.12
+    },
+    "0.speed": {
+      "rel": 0.12
+    }
+  },
+  "notes": "v0.24: controls fitted to two close-miked BigSoundBank splashes; the eq puts the 250-1000 Hz body back and takes the excess 4-16 kHz hiss off. v0.24: louder cavity bloop (0.97) and an eq fitted to two close-miked BigSoundBank splashes: it puts the 500 Hz body back and takes 8-12 dB of excess 2-16 kHz hiss off. Length kept at ~1.3 s (those two refs are small drops, 0.3-0.6 s; earlier CC0 refs of thrown objects ring for about a second)."
 }

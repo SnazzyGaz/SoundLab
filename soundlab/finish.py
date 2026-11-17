@@ -56,13 +56,16 @@ def _k_filter(sr: int):
 
 
 def _block_power(x: np.ndarray, sr: int, win_s: float, hop_s: float) -> np.ndarray:
+    """Mean square of the K-weighted signal per block; stereo (n, 2): the sum over channels (BS.1770, L/R
+    weights 1.0)."""
     (b1, a1), (b2, a2) = _k_filter(sr)
-    y = lfilter(b2, a2, lfilter(b1, a1, np.asarray(x, float)))
+    y = lfilter(b2, a2, lfilter(b1, a1, np.asarray(x, float), axis=0), axis=0)
+    p = y * y if y.ndim == 1 else np.sum(y * y, axis=1)
     w, h = int(round(win_s * sr)), max(1, int(round(hop_s * sr)))
-    if len(y) < w:                       # shorter than one window: measure it inside one window
-        y = np.concatenate([y, np.zeros(w - len(y))])
-    c = np.concatenate([[0.0], np.cumsum(y * y)])
-    starts = np.arange(0, len(y) - w + 1, h)
+    if len(p) < w:                       # shorter than one window: measure it inside one window
+        p = np.concatenate([p, np.zeros(w - len(p))])
+    c = np.concatenate([[0.0], np.cumsum(p)])
+    starts = np.arange(0, len(p) - w + 1, h)
     return (c[starts + w] - c[starts]) / w
 
 
@@ -114,7 +117,8 @@ def limit(x: np.ndarray, sr: int, ceiling_db: float, lookahead_s: float = 0.0015
     clipped edges) and recovers over `release_s`."""
     from scipy.ndimage import maximum_filter1d
     c = 10 ** (ceiling_db / 20)
-    red = 1.0 - np.minimum(1.0, c / (np.abs(x) + 1e-12))          # gain reduction needed per sample
+    amp = np.abs(x) if x.ndim == 1 else np.max(np.abs(x), axis=1)  # stereo: one linked gain for both sides
+    red = 1.0 - np.minimum(1.0, c / (amp + 1e-12))                  # gain reduction needed per sample
     la = max(1, int(lookahead_s * sr))
     red = maximum_filter1d(red, size=2 * la + 1, mode="nearest")    # hold it over the look-ahead window
     a = math.exp(-1.0 / (release_s * sr))
@@ -129,7 +133,8 @@ def limit(x: np.ndarray, sr: int, ceiling_db: float, lookahead_s: float = 0.0015
         red[i0:i1] = seg
     k = np.hanning(2 * la + 1)
     red = np.convolve(red, k / k.sum(), mode="same")                # round the attack corner
-    return x * (1.0 - np.clip(red, 0, 1))
+    g = 1.0 - np.clip(red, 0, 1)
+    return x * (g if x.ndim == 1 else g[:, None])
 
 
 def normalize_loudness(x: np.ndarray, sr: int, target: float, measure_by: str = "momentary",
@@ -168,7 +173,8 @@ def trim_tail(x: np.ndarray, sr: int, trim_db: float = 60.0, min_s: float = 0.1,
     if n == 0:
         return x
     w = max(1, int(0.01 * sr))
-    c = np.concatenate([[0.0], np.cumsum(np.asarray(x, float) ** 2)])
+    xx = np.asarray(x, float)
+    c = np.concatenate([[0.0], np.cumsum(xx ** 2 if xx.ndim == 1 else np.mean(xx ** 2, axis=1))])
     env = np.sqrt(np.maximum((c[w:] - c[:-w]) / w, 0))          # env[i] = RMS of x[i:i+w]
     if env.max() <= 0:
         return x[: max(1, int(min_s * sr))]
@@ -180,7 +186,8 @@ def trim_tail(x: np.ndarray, sr: int, trim_db: float = 60.0, min_s: float = 0.1,
     y = np.array(x[:end], float)
     nf = min(int(fade_s * sr), end // 2)
     if nf > 0:
-        y[-nf:] *= 0.5 * (1 + np.cos(np.linspace(0, math.pi, nf)))
+        f = 0.5 * (1 + np.cos(np.linspace(0, math.pi, nf)))
+        y[-nf:] *= f if y.ndim == 1 else f[:, None]
     return y
 
 
@@ -193,14 +200,16 @@ def fold_loop(y: np.ndarray, sr: int, seconds: float, xfade_s: float = 0.5) -> n
         raise ValueError("render too short for the loop")
     out = np.array(y[:n], float)
     t = np.linspace(0, math.pi / 2, x, endpoint=False)
+    if out.ndim == 2:
+        t = t[:, None]
     out[:x] = y[:x] * np.sin(t) + y[n:n + x] * np.cos(t)
     return out
 
 
 def loop_seam_jump(y: np.ndarray) -> float:
     """Size of the jump at the loop point relative to the typical sample-to-sample step (about 1 = seamless)."""
-    d = np.abs(np.diff(y))
-    return float(abs(y[0] - y[-1]) / (np.median(d) + 1e-12))
+    d = np.abs(np.diff(y, axis=0))
+    return float(np.max(np.abs(y[0] - y[-1]) / (np.median(d, axis=0) + 1e-12)))
 
 
 # --------------------------------------------------------------------------------------------- finish

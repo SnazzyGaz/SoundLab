@@ -125,6 +125,9 @@ def ep_friction(ctx: Ctx, x, velocity, normal_force, mu_static, mu_dynamic, stri
     NF = ctrl(ctx, normal_force)
     W = rng.standard_normal(n)
     m = mass_g / 1000.0
+    # v0.25: modes at or above ~Nyquist make the explicit integrator blow up (a creak fitted at 48 kHz rendered
+    # at 16 kHz gave NaNs); they are inaudible at that rate anyway, so drop them (keep at least the lowest)
+    modes = [m for m in modes if float(m[0]) < 0.45 * ctx.sr] or sorted(modes, key=lambda m: float(m[0]))[:1]
     md = [(2 * math.pi * float(f), 1.0 / max(1e-3, float(d)), float(gn)) for f, d, gn in modes]
     K = len(md)
     w2 = [a * a for a, _, _ in md]
@@ -169,8 +172,13 @@ def ep_friction(ctx: Ctx, x, velocity, normal_force, mu_static, mu_dynamic, stri
                     al = 1.0
                 else:
                     al = 0.5 * (1 + math.sin(math.pi * ((az - 0.5 * (abs(zss) + zba)) / (abs(zss) - zba + 1e-15))))
-                zd = v * (1 - al * z / (zss if zss != 0 else 1e-15))
-                z += zd * dt
+                # bristle update, implicit in the relaxation term: z' = v (1 - al z / zss). With stiff
+                # bristles |v| / zss gets large (sigma0 = 1e6: ~3e5 /s) and explicit Euler blew up; here the
+                # denominator is >= 1 (zss has the sign of v), so it is stable for any stiffness and equal to
+                # the explicit step when al = 0.
+                zn = (z + v * dt) / (1.0 + dt * al * v / (zss if zss != 0 else 1e-15))
+                zd = (zn - z) / dt
+                z = zn
                 F = s0 * z + s1 * zd + s2 * v + nz
             for k in range(K):
                 a = -w2[k] * xs[k] - dmp[k] * vs[k] + F * gk[k] / m

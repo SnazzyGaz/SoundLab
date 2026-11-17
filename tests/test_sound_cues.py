@@ -38,9 +38,13 @@ def test_sword_blade_rings_high_and_short():
         assert np.nonzero(e[pk:] < -20)[0][0] / SR < 0.3  # grip + other blade choke the ring
 
 
-def test_metal_clang_unchanged_by_the_sword_rework():
-    y = rec("metal_clang")
-    assert band_share(y, 3000, 20000) < 0.6               # the pipe keeps its low ring
+def test_metal_clang_is_bright_with_a_little_body():
+    """v0.25: fitted to real anvil strikes and a dropped iron bar (BigSoundBank, outside the repo): 19-87 % of
+    their power is above 3 kHz and 1-2 % below 1 kHz. The v0.13-0.24 pipe kept a low ring (< 60 % above 3 kHz)."""
+    for k in (1, 2):
+        y = rec("metal_clang", k)
+        assert 0.3 < band_share(y, 3000, 20000) < 0.95
+        assert band_share(y, 0, 1000) < 0.3
 
 
 def test_glass_break_is_loudest_at_the_break_and_has_no_gap():
@@ -83,13 +87,19 @@ def test_paper_rustle_keeps_its_crinkle():
 
 
 def test_wind_gets_brighter_as_it_gets_louder():
-    y = rec("wind")
-    f, t, Z = signal.stft(y, SR, nperseg=4096, noverlap=2048)
-    P = np.abs(Z) ** 2
-    lvl = 10 * np.log10(P.sum(0) + 1e-20)
-    cen = (f[:, None] * P).sum(0) / (P.sum(0) + 1e-20)
-    keep = lvl > lvl.max() - 30
-    assert np.corrcoef(lvl[keep], np.log(cen[keep]))[0, 1] > 0.5
+    # v0.23: the default is now a steady breeze in trees (fitted to two real recordings, whose level and
+    # brightness are not linked: -0.35..+0.54 per 8 s window); the cue belongs to gusts, so it is tested with
+    # the gusts slider up, averaged over variations (one 8 s take is noisy)
+    cs = []
+    for k in range(1, 5):
+        y, _ = soundlab.render(RECIPES / "wind.json", macros={"gusts": 1.0}, variation=k)
+        f, t, Z = signal.stft(y, SR, nperseg=4096, noverlap=2048)
+        P = np.abs(Z) ** 2
+        lvl = 10 * np.log10(P.sum(0) + 1e-20)
+        cen = (f[:, None] * P).sum(0) / (P.sum(0) + 1e-20)
+        keep = lvl > lvl.max() - 30
+        cs.append(np.corrcoef(lvl[keep], np.log(cen[keep]))[0, 1])
+    assert np.mean(cs) > 0.2 and min(cs) > 0
     assert band_share(y, 1000, 8000) > 0.15
 
 

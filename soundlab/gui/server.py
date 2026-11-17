@@ -83,15 +83,21 @@ class App:
         return sorted(out, key=lambda d: (d["category"], d["id"]))
 
     def recipe_path(self, rid: str) -> Path:
-        if not re.fullmatch(r"[A-Za-z0-9_\-./]+", rid or "") or ".." in rid:
+        # relative ids only: no '..', and no leading '/' (Path("recipes") / "/etc/x.json" is "/etc/x.json")
+        if not re.fullmatch(r"[A-Za-z0-9_\-.]+(/[A-Za-z0-9_\-.]+)*", rid or "") or ".." in rid:
             raise RecipeError(f"bad recipe id {rid!r}")
+
+        def inside(root: Path, rel: str) -> Path | None:
+            p = (root / f"{rel}.json").resolve()
+            return p if p.is_file() and root.resolve() in p.parents else None
+
         if rid.startswith("my/"):
-            p = self.user_recipes / f"{rid[3:]}.json"
-            if p.exists():
+            p = inside(self.user_recipes, rid[3:])
+            if p:
                 return p
         for root in self.recipe_dirs:
-            p = root / f"{rid}.json"
-            if p.exists():
+            p = inside(root, rid)
+            if p:
                 return p
         raise RecipeError(f"no recipe {rid!r}")
 
@@ -113,7 +119,7 @@ class App:
             advanced.append(self._block_controls(f"post.{j}", "post", b))
         return {"id": rid, "name": r.get("name") or Path(rid).name, "category": r.get("category", "sfx"),
                 "duration": r.get("duration", 3.0), "seed": r.get("seed", 0), "macros": macros,
-                "loopable": bool(r.get("loop")),
+                "loopable": bool(r.get("loop")), "stereo": bool(r.get("stereo")),
                 "advanced": advanced, "vary": r.get("vary", {})}
 
     @staticmethod
@@ -159,16 +165,21 @@ class App:
 
     def finished_audio(self, req: dict):
         """Render as it will be exported: tail trim + loudness per category (or raw peak), or a seamless loop."""
-        from .. import render_loop
+        from .. import render_loop, render_stereo, wants_stereo
         from ..finish import finish
         raw = load_recipe(self.recipe_path(req["id"]))
         r, seed = self.concrete(req)
+        r["stereo"] = raw.get("stereo")
         loop = float(req.get("loop") or 0) or None
+        trim = req.get("trim", True) is not False
+        st = wants_stereo(raw, bool(loop), req.get("stereo"))
         if loop:
             loop = max(1.0, min(loop, 120.0))
-            audio, sr = render_loop(r, loop, seed=seed)
+            audio, sr = render_loop(r, loop, seed=seed, stereo=st)
+        elif st:
+            audio, sr = render_stereo(r, seed=seed, ring_out=trim)
         else:
-            audio, sr = render_recipe(r, seed=seed)
+            audio, sr = render_recipe(r, seed=seed, ring_out=trim)
         audio, fin = finish(audio, sr, raw, level=req.get("level") or "lufs", trim=req.get("trim", True) is not False,
                             loop=bool(loop))
         return audio, sr, fin
@@ -183,10 +194,11 @@ class App:
             self.order.append(key)
             while len(self.order) > self.cache_size:
                 self.cache.pop(self.order.pop(0), None)
+        mono = audio if audio.ndim == 1 else audio.mean(axis=1)
         return {"key": key, "url": f"/api/audio/{key}.wav", "sample_rate": sr, "seconds": len(audio) / sr,
-                "finish": fin,
+                "channels": 1 if audio.ndim == 1 else audio.shape[1], "finish": fin,
                 "render_s": round(dt, 3), "peak": float(np.max(np.abs(audio)) if len(audio) else 0.0),
-                "waveform": waveform(audio), "spectrogram": spectrogram(audio, sr)}
+                "waveform": waveform(mono), "spectrogram": spectrogram(mono, sr)}
 
     def export_name(self, req: dict, k: int, ext: str) -> str:
         from ..batch import file_name
@@ -195,6 +207,8 @@ class App:
         tags = {n: v for n, v in (req.get("macros") or {}).items() if n in defaults and v != defaults[n]}
         if req.get("loop"):
             tags["loop"] = f"{max(1.0, min(float(req['loop']), 120.0)):g}s"
+        if audio_channels(req, raw) == 2:
+            tags["stereo"] = True
         name = file_name(raw, Path(req["id"]).name, k, tags, ext)
         if req.get("overrides") or req.get("seed") not in (None, ""):
             name = name.replace(f"_v{k + 1:02d}{ext}", f"_custom_v{k + 1:02d}{ext}")
@@ -241,6 +255,11 @@ class App:
         return {"path": str(p), "id": f"my/{name}"}
 
 
+def audio_channels(req: dict, raw: dict) -> int:
+    from .. import wants_stereo
+    return 2 if wants_stereo(raw, bool(req.get("loop")), req.get("stereo")) else 1
+
+
 def apply_overrides(r: dict, overrides: dict) -> None:
     """Set controls by key: 'L.name' (single-model layer), 'L.B.name' (block B of a chain), 'post.J.name'."""
     for key, val in overrides.items():
@@ -280,7 +299,8 @@ def spectrogram(x: np.ndarray, sr: int, frames: int = 240, bands: int = 96) -> d
 
 def wav_bytes(x: np.ndarray, sr: int) -> bytes:
     buf = io.BytesIO()
-    wavfile.write(buf, sr, (np.clip(x, -1, 1) * 32767).astype(np.int16))
+    from ..audio_io import to_int16
+    wavfile.write(buf, sr, to_int16(np.clip(x, -1, 1)))
     return buf.getvalue()
 
 

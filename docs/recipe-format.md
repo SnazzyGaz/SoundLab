@@ -28,6 +28,12 @@ Rules:
   A source placed later in a chain is added to the running signal.
 - Each layer is peak-normalised before `gain_db` unless `"normalize": false`, so `gain_db` sets the balance
   between layers.
+- `start` places the layer in time. A negative `start` is pre-roll: the layer began before 0 s and its first
+  part is cut (variations that jitter a start around 0 rely on this). A layer starting after the end is silent.
+- `"stereo": {"mode": "seeds"|"decorrelate", "width": 0..1, "mono_below_hz": 150}` marks a recipe as a stereo
+  bed: its loops export in stereo ([export.md](export.md#stereo-beds-v022)).
+- Renders of any length work: a source shorter than its own fixed windows (a 5 ms render, or an event `at` a
+  time past the end) is computed long enough internally and cut to the recipe length.
 - Unknown models, unknown parameters, bad choices and automation on a non-automatable control are errors
   (`soundlab validate`).
 - Automation: any control marked `automatable` accepts `[[t_seconds, value], ...]`. Frequencies and rpm

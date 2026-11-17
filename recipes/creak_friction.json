@@ -1,150 +1,216 @@
 {
- "soundlab": 1,
- "name": "Creak: elasto-plastic friction with a springy drive, coupled to wood modes (stick-slip groan)",
- "category": "door",
- "sample_rate": 48000,
- "duration": 2.5,
- "seed": 19,
- "layers": [
-  {
-   "name": "creak",
-   "model": "ep_friction",
-   "params": {
-    "velocity": [
-     [
-      0,
-      0.0
-     ],
-     [
-      0.3,
-      0.02
-     ],
-     [
-      2.0,
-      0.03
-     ],
-     [
-      2.4,
-      0.0
-     ]
-    ],
-    "normal_force": 1.2,
-    "drive_hz": 20,
-    "modes": [
-     [
-      180,
-      0.08,
-      1.0
-     ],
-     [
-      410,
-      0.05,
-      0.6
-     ],
-     [
-      930,
-      0.03,
-      0.4
-     ],
-     [
-      1700,
-      0.02,
-      0.2
-     ]
-    ]
-   }
-  }
- ],
- "post": [
-  {
-   "model": "room",
-   "params": {
-    "volume": 40,
-    "absorption": 0.35,
-    "source_distance": 1.5
-   }
-  }
- ],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.05
- },
- "macros": {
-  "speed": {
-   "default": 0.5,
-   "doc": "slow ticks .. fast groan",
-   "map": [
+  "soundlab": 1,
+  "name": "Creak: stick-slip friction through dense, short-ringing wood modes (a squeaking floorboard)",
+  "category": "door",
+  "sample_rate": 48000,
+  "duration": 0.8877049569878231,
+  "seed": 19,
+  "layers": [
     {
-     "to": "0.drive_hz",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.5
-      ]
-     ]
+      "name": "creak",
+      "model": "ep_friction",
+      "params": {
+        "velocity": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.10652459483853878,
+            0.08745476446026557
+          ],
+          [
+            0.7101639655902585,
+            0.13118214669039835
+          ],
+          [
+            0.8521967587083102,
+            0.0
+          ]
+        ],
+        "normal_force": 2.551821272009393,
+        "drive_hz": 44.65622980177305,
+        "modes": [
+          [
+            1245.6200890321106,
+            0.004779822299102161,
+            1.0
+          ],
+          [
+            1868.4301335481657,
+            0.004779822299102161,
+            0.9
+          ],
+          [
+            2847.1316320733954,
+            0.004779822299102161,
+            0.85
+          ],
+          [
+            4270.697448110093,
+            0.004779822299102161,
+            0.8
+          ],
+          [
+            6228.100445160552,
+            0.004779822299102161,
+            0.75
+          ],
+          [
+            9253.177804238536,
+            0.004779822299102161,
+            0.7
+          ],
+          [
+            13523.87525234863,
+            0.004779822299102161,
+            0.6
+          ],
+          [
+            19574.029970504595,
+            0.004779822299102161,
+            0.5
+          ]
+        ],
+        "noise": 0.36442250467869586
+      }
     }
-   ]
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            -6.0
+          ],
+          [
+            125,
+            6.0
+          ],
+          [
+            250,
+            6.0
+          ],
+          [
+            500,
+            0.5
+          ],
+          [
+            1000,
+            -6.0
+          ],
+          [
+            2000,
+            -3.2
+          ],
+          [
+            4000,
+            0.9
+          ],
+          [
+            8000,
+            2.1
+          ],
+          [
+            16000,
+            -0.8
+          ]
+        ]
+      }
+    },
+    {
+      "model": "room",
+      "params": {
+        "volume": 40,
+        "absorption": 0.35,
+        "source_distance": 1.5,
+        "wet": 0.25930609842141267
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
   },
-  "pressure": {
-   "default": 0.5,
-   "doc": "loose .. tight",
-   "map": [
-    {
-     "to": "0.normal_force",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2
+  "macros": {
+    "speed": {
+      "default": 0.5,
+      "doc": "slow ticks .. fast groan",
+      "map": [
+        {
+          "to": "0.drive_hz",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        }
       ]
-     ]
+    },
+    "pressure": {
+      "default": 0.5,
+      "doc": "loose .. tight",
+      "map": [
+        {
+          "to": "0.normal_force",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
     }
-   ]
   },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level)",
-   "map": [
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
-      ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
-    }
-   ]
-  }
- }
+  "notes": "v0.25: fitted to reference recordings (BigSoundBank #3051, #3052 squeaking parquet); 8 dense board modes 0.4-1 ms decay replace the 4 long low modes (a parquet squeak is a bright, broad stick-slip burst, centroid ~5 kHz, not a low groan). Residual eq +-6 dB."
 }
