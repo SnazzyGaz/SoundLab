@@ -437,6 +437,14 @@ def eq_correct(rec, x, sr, fit_section=None, passes=2, max_db=18.0):
     return best
 
 
+# v0.19: the sparsity part (bubbles vs noise) matters most for liquid textures; pitched kinds leave it out
+# (on voices it traded timbre for grain statistics).
+FIT_WEIGHTS = {"texture": {**F.DEFAULT_WEIGHTS},
+               "impact": {**F.DEFAULT_WEIGHTS},
+               "voice": {**F.DEFAULT_WEIGHTS, "sparsity": 0.0},
+               "choir": {**F.DEFAULT_WEIGHTS, "sparsity": 0.0}}
+
+
 def fit_and_check(rec, x, sr, kind, fit_section=None, holdout=None, budget=80, log=print):
     """Fit the free controls of a built recipe and check it.
 
@@ -450,7 +458,7 @@ def fit_and_check(rec, x, sr, kind, fit_section=None, holdout=None, budget=80, l
     work["duration"] = round(s1 - s0, 3)
     params = [p for p in FIT_PARAMS[kind] if int(p.split(".")[0]) < len(work["layers"])]
     res = F.fit(work, x, sr, params=params, ref_start=s0 if s0 > 0 else None, ref_end=s1, budget=budget,
-                log=lambda *a, **k: None)
+                weights=FIT_WEIGHTS.get(kind), log=lambda *a, **k: None)
     fitted = copy.deepcopy(res["recipe"])
     fitted["duration"] = rec["duration"]
     fitted = eq_correct(fitted, x, sr, fit_section=(s0, s1))

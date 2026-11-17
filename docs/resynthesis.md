@@ -100,6 +100,22 @@ Lesson: our distance rewards a noise copy of the spectrum over a liquid made of 
 the fit to the right physics and judge by ear. A bubble-aware term in the distance (spectral peakiness or
 event statistics) is on the roadmap.
 
+## v0.19: a sparsity term in the fit loss
+
+The v0.18 notes said it: the distance prefers noise for water. v0.19 adds a `sparsity` part to the loss (see
+[fitting.md](fitting.md)), which compares the heavy tail of locally normalised STFT power. Shaped noise has a
+light tail; bubbles and drops a heavy one. It is weighted 0.5 for `texture` and `impact` recipes and switched off
+for `voice` and `choir` (there it pulled the timbre away and did not help). Re-run with budget 120, scored with
+the v0.19 loss (both versions scored the same way; "old" = the v0.18 loss without sparsity):
+
+| clip | v0.18 old / new loss | v0.19 old / new loss | sparsity v0.18 -> v0.19 |
+|---|---|---|---|
+| medium splash | 0.166 / 0.157 | 0.159 / 0.155 | 0.08 -> 0.12 |
+| big heavy splash | 0.222 / 0.323 | 0.301 / 0.337 | 1.16 -> 0.63 (grainier, but the spectrum is further off) |
+| double splash | 0.215 / 0.409 | 0.184 / 0.382 | 2.0 -> 2.0 (still far: the reference is much sparser) |
+| stream | 0.156 / 0.197 | 0.166 / 0.161 | 0.53 -> 0.12 (bubble grain now matches) |
+| cat meow, chant | unchanged | unchanged | not used for pitched kinds |
+
 ## First results, v0.17 (private reference recordings, kept outside the repo)
 
 | clip | kind | stock v0.16 recipe | fit section: before -> after | whole clip | other seed | hold-out |

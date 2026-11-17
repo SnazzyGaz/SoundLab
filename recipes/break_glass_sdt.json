@@ -1,0 +1,119 @@
+{
+ "soundlab": 1,
+ "name": "Break: a pane cracking into falling fragments (SDT-style breaking control)",
+ "category": "glass",
+ "sample_rate": 48000,
+ "duration": 2.5,
+ "seed": 19,
+ "layers": [
+  {
+   "name": "break",
+   "model": "crumple",
+   "params": {
+    "mode": "break",
+    "at": 0.03,
+    "length_s": 1.8,
+    "rate": 80,
+    "energy": 0.9,
+    "fragmentation": 0.6,
+    "freq_hz": 3500
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 40,
+    "absorption": 0.35,
+    "source_distance": 1.5
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "force": {
+   "default": 0.5,
+   "doc": "crack .. shatter",
+   "map": [
+    {
+     "to": "0.energy",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.1
+      ]
+     ]
+    }
+   ]
+  },
+  "pieces": {
+   "default": 0.5,
+   "doc": "big pieces .. shards",
+   "map": [
+    {
+     "to": "0.fragmentation",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.35
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ }
+}

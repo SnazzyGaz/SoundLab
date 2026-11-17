@@ -9,7 +9,22 @@ Ground rules:
   ...). Deeper physics only comes after the checkpoint, and only for sounds a game steers live.
 - Offline render to WAV is the main use.
 
-## Now: analysis and resynthesis (v0.17, v0.18)
+## Now: interaction models and resynthesis (v0.17 to v0.19)
+
+v0.19 went through every model in the Sound Design Toolkit (method only, see [sdt-methods.md](sdt-methods.md))
+and added Hunt-Crossley contact, elasto-plastic friction (squeaks and creaks), rolling and scraping, crumpling and
+breaking, wind cavities, DC motors and mains hum, plus a `sparsity` part in the fit loss so water fits choose
+bubbles over noise. Backlog from that study and the wider survey:
+- Hunt-Crossley contact inside the `hit`, `sword_clash` and `bullet_impact` sound models (they still use a
+  fixed contact time).
+- Engine: exhaust waveguides with runner reflections and a muffler, plus backfire (SDT Motor, engine-sim).
+- Voices: ventricular-fold growl at f0/2 (CHIMERA), an LF glottal pulse, a syrinx for birds, a waveguide vocal
+  tract for speech-like creatures.
+- STK-style bowed string and blown pipe/reed (bowed creaks, whistles, horns).
+- Explosion: FDN scattering after the Friedlander pulse.
+- Analysis: McLeod pitch, spectral flux onsets, a structure-tensor harmonic/percussive/residual split.
+- Water: bubble depth and "blooping" over time for pouring and filling.
+
 
 v0.18 rebuilt water on bubbles (`bubble_cloud`) and voices on harmonic + envelope + aperiodicity, following
 open-source projects and papers (see [resynthesis.md](resynthesis.md) and THIRD_PARTY.md). Next from that survey:

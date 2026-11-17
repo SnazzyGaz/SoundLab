@@ -153,7 +153,7 @@ control takes a breakpoint list `[[time_s, value], ...]`.
 ```
 
 Shipped recipes: `duck`, `engine`, `foghorn`, `explosion`, `match` (reference sounds), `matchbox` (shake +
-strike + flame), `engine_blips`, `explosion_small`, `foghorn_pattern`, `glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), `hit`, `dowel`, `footstep`, `coin`, `coin_jingle`, `water`; the 0.9 game library: `wind`, `wind_gap`, `rain`, `glass_break`, `sword_swing`, `sword_clash`, `metal_clang`, `door_creak`, `door_slam`, `punch`, `bullet_impact`, `gunshot`, `creature_growl`, `paper_rustle`, `cloth_rustle`, `splash`; `recipes/blocks/*` (generic-synth demos: UI click/confirm, coin, power-up, laser,
+strike + flame), `engine_blips`, `explosion_small`, `foghorn_pattern`, `glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), `hit`, `dowel`, `footstep`, `coin`, `coin_jingle`, `water`; the 0.9 game library: `wind`, `wind_gap`, `rain`, `glass_break`, `sword_swing`, `sword_clash`, `metal_clang`, `door_creak`, `door_slam`, `punch`, `bullet_impact`, `gunshot`, `creature_growl`, `paper_rustle`, `cloth_rustle`, `splash`; v0.19 interaction models: `hc_knock`, `hc_bounce`, `scrape_sdt`, `roll_sdt`, `creak_friction`, `squeak_friction`, `crumple_paper`, `break_glass_sdt`, `wind_howl`, `drill_motor`, `mains_hum`; `recipes/blocks/*` (generic-synth demos: UI click/confirm, coin, power-up, laser,
 magic shimmer, whoosh), and `recipes/fit/*_fit.json` (dry recipes
 matched to the reference recordings, the starting points for `soundlab match`). Full format: [docs/recipe-format.md](docs/recipe-format.md).
 
@@ -174,6 +174,8 @@ matched to the reference recordings, the starting points for `soundlab match`). 
   a fit report.
 - [docs/resynthesis.md](docs/resynthesis.md): analysis and resynthesis (`soundlab resynth`), the recording
   -> layered recipe pipeline, its new blocks (`bandnoise`, `harmonic`) and first results.
+- [docs/sdt-methods.md](docs/sdt-methods.md): every Sound Design Toolkit model mapped to SoundLab blocks
+  (method only), and the v0.19 interaction blocks.
 - [docs/architecture.md](docs/architecture.md): code layout and how AIDAW plugs in.
 - [docs/licensing.md](docs/licensing.md): what we may copy, what is reference-only.
 - [docs/checkpoint.md](docs/checkpoint.md): the blind test: browser "real or synthesised?" page with your own

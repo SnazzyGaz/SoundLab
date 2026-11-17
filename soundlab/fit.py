@@ -39,7 +39,7 @@ from .core import REGISTRY, is_automation
 from .recipe import render as render_recipe
 
 FIT_SR = 24000
-DEFAULT_WEIGHTS = {"spectral": 1.0, "stft": 1.0, "envelope": 0.7, "texture": 0.7, "pitch": 0.7}
+DEFAULT_WEIGHTS = {"spectral": 1.0, "stft": 1.0, "envelope": 0.7, "texture": 0.7, "sparsity": 0.5, "pitch": 0.7}
 THIRD_OCT = [25 * 2 ** (k / 3) for k in range(0, 27)]  # 25 Hz .. ~10 kHz
 TEX_BANDS = [(60, 150), (150, 300), (300, 600), (600, 1000), (1000, 1600), (1600, 2500), (2500, 4000),
              (4000, 6300), (6300, 10000)]
@@ -49,6 +49,24 @@ FLOOR_DB = -45.0  # level differences below this (re peak) are ignored: backgrou
 
 
 # ----------------------------------------------------------------------------- features
+def sparsity_stats(x, sr, lo=300.0, hi=10000.0, nfft=512):
+    """v0.19 bubble-aware term. STFT power (lo..hi Hz, frames within 30 dB of the loudest) is divided by its
+    local average over 15 bins x 9 frames; the log10 quantiles (50 / 99 / 99.9 %) of the result measure how
+    sparse the sound is in time and frequency. Gaussian noise, however it is shaped, has fixed, light-tailed
+    statistics (power ~ exponential); bubbles, droplets and crackle are short ringing blobs with a heavy tail.
+    Without this, the distance prefers band-shaped noise for water. Related: spectral flatness and kurtosis
+    descriptors (Peeters 2004; the Sound Design Toolkit's spectral features)."""
+    from scipy import ndimage
+    f, t, Z = signal.stft(x, sr, nperseg=nfft)
+    P = np.abs(Z[(f >= lo) & (f <= min(hi, sr / 2 - 1))]) ** 2 + 1e-20
+    e = P.sum(0)
+    P = P[:, e > e.max() * 1e-3]
+    if P.shape[1] < 9:
+        return np.zeros(3)
+    N = P / (ndimage.uniform_filter(P, (15, 9), mode="nearest") + 1e-20)
+    return np.log10(np.percentile(N, [50, 99, 99.9]))
+
+
 def prepare(x, sr, start=None, end=None, sr_out=FIT_SR):
     """Crop, mono, resample to the fitting rate, peak-normalise."""
     x = np.asarray(x, float)
@@ -147,6 +165,7 @@ class Target:
     tex: np.ndarray
     n: int
     f0: float | None = None
+    sparse: np.ndarray | None = None
 
     @classmethod
     def from_signal(cls, x, sr):
@@ -193,6 +212,9 @@ def distance(target: Target, y: np.ndarray, sr: int | None = None, weights=None)
     tdiff = np.abs(tc - target.tex)
     tdiff[:, 3:] *= 2  # modulation shares are small numbers
     parts["texture"] = float(np.mean(tdiff))
+    if getattr(target, "sparse", None) is None:
+        target.sparse = sparsity_stats(target.x, target.sr)
+    parts["sparsity"] = float(min(2.0, np.mean(np.abs(sparsity_stats(y, sr) - target.sparse)) / 0.1))
     keys = [k for k in DEFAULT_WEIGHTS if k != "pitch"]
     if target.f0:
         # pitch term (only when the reference has a confident pitch): distance in octaves, 1.0 if unpitched

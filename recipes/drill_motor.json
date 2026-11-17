@@ -1,0 +1,108 @@
+{
+ "soundlab": 1,
+ "name": "Cordless drill: DC motor spin-up, run and spin-down with gear whine (SDT DCMotor method)",
+ "category": "vehicle",
+ "sample_rate": 48000,
+ "duration": 3.0,
+ "seed": 19,
+ "layers": [
+  {
+   "name": "drill",
+   "model": "dc_motor",
+   "params": {
+    "rpm": [
+     [
+      0,
+      0
+     ],
+     [
+      0.4,
+      18000
+     ],
+     [
+      2.2,
+      18000
+     ],
+     [
+      2.9,
+      0
+     ]
+    ],
+    "load": 0.3,
+    "gear_teeth": 12
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 40,
+    "absorption": 0.35,
+    "source_distance": 1.5
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "load": {
+   "default": 0.5,
+   "doc": "free spin .. biting in",
+   "map": [
+    {
+     "to": "0.load",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.5
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ }
+}

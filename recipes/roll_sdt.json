@@ -1,0 +1,142 @@
+{
+ "soundlab": 1,
+ "name": "Rolling: a marble rolling across a wooden table (ground trace with micro-bounces)",
+ "category": "foley",
+ "sample_rate": 48000,
+ "duration": 3.0,
+ "seed": 19,
+ "layers": [
+  {
+   "name": "roll",
+   "chain": [
+    {
+     "model": "surface",
+     "params": {
+      "mode": "roll",
+      "velocity": [
+       [
+        0,
+        0.5
+       ],
+       [
+        2.8,
+        0.15
+       ]
+      ],
+      "force": 0.5,
+      "roughness": 0.4,
+      "size": 0.5,
+      "bounce": 0.5
+     }
+    },
+    {
+     "model": "modal",
+     "params": {
+      "material": "oak",
+      "shape": "plate",
+      "length": 1.0,
+      "width": 0.6,
+      "thickness": 0.025,
+      "strike_pos": 0.4
+     }
+    }
+   ]
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 40,
+    "absorption": 0.35,
+    "source_distance": 1.5
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "small marble .. big ball",
+   "map": [
+    {
+     "to": "0.0.size",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    }
+   ]
+  },
+  "roughness": {
+   "default": 0.5,
+   "doc": "glassy .. gritty table",
+   "map": [
+    {
+     "to": "0.0.roughness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.4
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ }
+}

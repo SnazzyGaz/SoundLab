@@ -1,0 +1,145 @@
+{
+ "soundlab": 1,
+ "name": "Scrape: a stick dragged over a rough board (fractal surface, SDT-style ground trace)",
+ "category": "foley",
+ "sample_rate": 48000,
+ "duration": 2.5,
+ "seed": 19,
+ "layers": [
+  {
+   "name": "scrape",
+   "chain": [
+    {
+     "model": "surface",
+     "params": {
+      "mode": "scrape",
+      "velocity": [
+       [
+        0,
+        0.1
+       ],
+       [
+        1.2,
+        0.6
+       ],
+       [
+        2.3,
+        0.05
+       ]
+      ],
+      "force": 0.6,
+      "roughness": 0.6
+     }
+    },
+    {
+     "model": "modal",
+     "params": {
+      "material": "fir",
+      "shape": "plate",
+      "length": 0.6,
+      "width": 0.25,
+      "thickness": 0.015,
+      "strike_pos": 0.2,
+      "extra_damping": 3
+     }
+    }
+   ]
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 40,
+    "absorption": 0.35,
+    "source_distance": 1.5
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "roughness": {
+   "default": 0.5,
+   "doc": "smooth .. coarse",
+   "map": [
+    {
+     "to": "0.0.roughness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.35
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "pressure": {
+   "default": 0.5,
+   "doc": "light .. heavy",
+   "map": [
+    {
+     "to": "0.0.force",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ }
+}

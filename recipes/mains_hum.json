@@ -1,0 +1,91 @@
+{
+ "soundlab": 1,
+ "name": "Mains hum: 50 Hz transformer hum with buzz and rattle",
+ "category": "ambience",
+ "sample_rate": 48000,
+ "duration": 4.0,
+ "seed": 19,
+ "layers": [
+  {
+   "name": "hum",
+   "model": "mains_hum",
+   "params": {
+    "mains_hz": 50,
+    "buzz": 0.4,
+    "rattle": 0.2
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 40,
+    "absorption": 0.35,
+    "source_distance": 1.5
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "buzz": {
+   "default": 0.5,
+   "doc": "clean hum .. nasty buzz",
+   "map": [
+    {
+     "to": "0.buzz",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.5
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ }
+}

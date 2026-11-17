@@ -1,0 +1,121 @@
+{
+ "soundlab": 1,
+ "name": "Squeak: rigid elasto-plastic friction exciting a high mode (rubber or glass squeal)",
+ "category": "foley",
+ "sample_rate": 48000,
+ "duration": 1.5,
+ "seed": 19,
+ "layers": [
+  {
+   "name": "squeak",
+   "model": "ep_friction",
+   "params": {
+    "velocity": [
+     [
+      0,
+      0.0
+     ],
+     [
+      0.15,
+      0.25
+     ],
+     [
+      1.0,
+      0.3
+     ],
+     [
+      1.2,
+      0.0
+     ]
+    ],
+    "normal_force": 1.0,
+    "drive_hz": 0,
+    "modes": [
+     [
+      1150,
+      0.05,
+      1.0
+     ],
+     [
+      2380,
+      0.03,
+      0.5
+     ],
+     [
+      3600,
+      0.02,
+      0.25
+     ]
+    ]
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 40,
+    "absorption": 0.35,
+    "source_distance": 1.5
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "pressure": {
+   "default": 0.5,
+   "doc": "light .. hard press",
+   "map": [
+    {
+     "to": "0.normal_force",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ }
+}

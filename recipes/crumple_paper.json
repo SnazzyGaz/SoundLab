@@ -1,0 +1,115 @@
+{
+ "soundlab": 1,
+ "name": "Crumple: a sheet of paper crushed in the hand (power-law crackle, SDT-style crumpling control)",
+ "category": "foley",
+ "sample_rate": 48000,
+ "duration": 2.0,
+ "seed": 19,
+ "layers": [
+  {
+   "name": "crumple",
+   "model": "crumple",
+   "params": {
+    "mode": "crumple",
+    "at": 0.05,
+    "length_s": 1.6,
+    "rate": 120,
+    "energy": 0.6,
+    "freq_hz": 1200,
+    "noise": 0.3
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 40,
+    "absorption": 0.35,
+    "source_distance": 1.5
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "speed": {
+   "default": 0.5,
+   "doc": "slow .. frantic",
+   "map": [
+    {
+     "to": "0.rate",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    }
+   ]
+  },
+  "material": {
+   "default": 0.5,
+   "doc": "thick card .. crisp foil",
+   "map": [
+    {
+     "to": "0.freq_hz",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ }
+}

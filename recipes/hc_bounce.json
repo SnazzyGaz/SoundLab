@@ -1,0 +1,135 @@
+{
+ "soundlab": 1,
+ "name": "Steel ball dropped on a steel plate: Hunt-Crossley contact with gravity bounces",
+ "category": "impact",
+ "sample_rate": 48000,
+ "duration": 3.0,
+ "seed": 19,
+ "layers": [
+  {
+   "name": "bounce",
+   "chain": [
+    {
+     "model": "hc_contact",
+     "params": {
+      "at": 0.02,
+      "velocity": 2.5,
+      "mass_g": 30,
+      "stiffness": 10000000000.0,
+      "alpha": 1.5,
+      "bounces": 12,
+      "restitution": 0.7,
+      "irregularity": 0.1
+     }
+    },
+    {
+     "model": "modal",
+     "params": {
+      "material": "steel",
+      "shape": "plate",
+      "length": 0.4,
+      "width": 0.3,
+      "thickness": 0.004,
+      "strike_pos": 0.2
+     }
+    }
+   ]
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 40,
+    "absorption": 0.35,
+    "source_distance": 1.5
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "bounce": {
+   "default": 0.5,
+   "doc": "dead .. lively bounce",
+   "map": [
+    {
+     "to": "0.0.restitution",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.2
+      ]
+     ],
+     "clamp": [
+      0.1,
+      0.95
+     ]
+    }
+   ]
+  },
+  "height": {
+   "default": 0.5,
+   "doc": "low drop .. high drop",
+   "map": [
+    {
+     "to": "0.0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.3
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ }
+}

@@ -206,6 +206,79 @@ Many bubbles at once, fast: the sound of flowing, splashing and pouring water. E
 
 Sources: Minnaert 1933; van den Doel 2005, ACM TAP 2(4) (liquid sounds from bubble populations); Moss et al. 2010 (sounding liquids: bubble-based fluid sound); Zheng & James 2009 (harmonic fluids)
 
+### `hc_contact`
+
+Hunt-Crossley contact force of an object (`mass_g`) hitting a surface at `velocity`: F = k x^alpha (1 + damping * xdot). Faster or harder hits get shorter, brighter contacts by themselves. Optional bouncing: each rebound speed comes from the contact, times `restitution`, with `irregularity`; flight time from gravity. Feed a resonator (modal) with it.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `at` | `0.0` | s | 0 .. None |  |
+| `velocity` | `1.0` | m/s | 0.05 .. 20 | impact speed |
+| `mass_g` | `50.0` | g | 0.5 .. 20000 | mass of the striking object |
+| `stiffness` | `100000000.0` | N/m^alpha | 10000.0 .. 1000000000000.0 | contact stiffness (rubber ~1e5, wood ~1e8, steel ~1e11) |
+| `alpha` | `1.5` |  | 1.0 .. 3.0 | contact exponent (1.5 = Hertz, spheres) |
+| `damping` | `0.3` | s/m | 0.0 .. 5.0 | Hunt-Crossley dissipation (more = deader, less rebound) |
+| `bounces` | `1` | count | 1 .. 60 | maximum number of contacts |
+| `restitution` | `0.7` |  | 0.0 .. 0.99 | extra speed kept per bounce (losses in the bodies) |
+| `irregularity` | `0.2` |  | 0.0 .. 1.0 | random variation of each bounce |
+
+Sources: Hunt & Crossley 1975, J. Appl. Mech.; Avanzini & Rocchesso 2001 (modelling collision sounds); Papetti, Avanzini & Rocchesso 2011, IEEE TASLP (numerical impact models); Rath 2003 (bouncing control); Sound Design Toolkit (SDT), SkAT-VG: method only
+
+### `ep_friction`
+
+Elasto-plastic friction (bristle model) between a rubbing object and a small modal resonator, solved together so stick-slip, pre-sliding and squeal emerge: creaking hinges, squeaky shoes and floors, bowed glass and metal, tyre squeal. `velocity` (rubbing speed) and `normal_force` can be automated. `modes` [[Hz, decay s, gain], ...] are the resonator's modes. Output: the resonator's surface velocity.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `velocity` | `0.1` | m/s | 0.0 .. 3.0 | rubbing speed (automatable) (automatable) |
+| `normal_force` | `1.0` | N | 0.0 .. 30.0 | pressing force (automatable) (automatable) |
+| `mu_static` | `0.6` |  | 0.05 .. 1.5 | static friction coefficient |
+| `mu_dynamic` | `0.3` |  | 0.02 .. 1.2 | dynamic (Coulomb) friction coefficient |
+| `stribeck_v` | `0.05` | m/s | 0.001 .. 1.0 | Stribeck velocity |
+| `stiffness` | `2000.0` | N/m | 100 .. 1000000.0 | bristle stiffness sigma0 |
+| `bristle_damping` | `0.3` |  | 0.0 .. 2.0 | bristle damping sigma1 (re critical) |
+| `viscosity` | `0.2` | N s/m | 0.0 .. 5.0 | viscous friction sigma2 |
+| `noise` | `0.2` |  | 0.0 .. 1.0 | surface roughness noise (sigma3, re normal force) |
+| `break_away` | `0.7` |  | 0.05 .. 0.99 | pre-sliding zone as a fraction of the steady bristle bend |
+| `mass_g` | `30.0` | g | 1 .. 5000 | effective mass of the resonator at the contact |
+| `drive_hz` | `0.0` | Hz | 0.0 .. 200.0 | compliance of the rubbing object: 0 = rigid (squeal, bowing); 10-60 Hz = a springy drive that sticks, winds up and slips (creaking, ticking) |
+| `modes` | `[[260.0, 0.25, 1.0], [610.0, 0.18, 0.6], [1180.0, 0.12, 0.4]]` | [[Hz, decay s, gain], ...] |  | resonator modes |
+
+Sources: Dupont, Hayward, Armstrong & Altpeter 2002, IEEE TAC (elasto-plastic friction); Avanzini, Serafin & Rocchesso 2005, IEEE TSAP (interactive simulation of rigid body interaction with friction-induced sound generation); Sound Design Toolkit (SDT), SkAT-VG: method only
+
+### `surface`
+
+Contact force of an object rolling or scraping over a rough surface. The surface is a fractal profile (`roughness`: 0 smooth, 1 coarse) read at the contact `velocity` (automatable); the object's `size` stops it following narrow dips (the ground trace). Scrape: force from every rise, growing with speed. Roll: the object also flies off bumps under gravity and lands again, which gives rolling its rumble and rhythm. Feed a modal resonator (the scraped plate, the rolling ball or the floor).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `mode` | `scrape` |  | scrape, roll |  |
+| `velocity` | `0.3` | m/s | 0.0 .. 10.0 | contact speed (automatable) (automatable) |
+| `force` | `1.0` |  | 0.0 .. 4.0 | pressing force / weight (automatable) (automatable) |
+| `roughness` | `0.5` |  | 0.0 .. 1.0 | surface coarseness (0 = polished, 1 = gravel) |
+| `grain_mm` | `0.5` | mm | 0.01 .. 20 | typical bump spacing |
+| `size` | `0.3` |  | 0.0 .. 1.0 | object size: bigger objects bridge more dips (duller) |
+| `bounce` | `0.5` |  | 0.0 .. 1.0 | roll: how easily the object leaves the surface |
+
+Sources: van den Doel, Kry & Pai 2001, SIGGRAPH (FoleyAutomatic: scraping and rolling); Rath & Rocchesso 2004 (continuous sonic feedback from a rolling ball); Sound Design Toolkit (SDT), SkAT-VG: method only
+
+### `wind_cavity`
+
+Wind blowing across a pipe, bottle neck, doorway gap or tunnel: turbulence excites the cavity's modes (open pipe f_n = n c / 2L), and the flow speed picks which mode sings (edge tone f = St U / D locks to the nearest mode, so the howl jumps up a harmonic as the wind rises). Plus a broadband turbulence floor.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `length` | `0.5` | m | 0.02 .. 50 | cavity length |
+| `diameter` | `0.03` | m | 0.002 .. 5 | opening size (sets which speed excites which mode) |
+| `wind_speed` | `8.0` | m/s | 0.0 .. 60 | flow speed (automatable) (automatable) |
+| `q` | `40.0` |  | 3 .. 400 | mode sharpness |
+| `n_modes` | `10` | count | 1 .. 40 | modes simulated |
+| `strouhal` | `0.3` |  | 0.05 .. 1.0 | edge-tone Strouhal number |
+| `floor` | `0.1` |  | 0.0 .. 1.0 | broadband turbulence level |
+| `closed` | `False` |  |  | closed at one end (bottle): odd modes f = (2n-1) c / 4L |
+
+Sources: Farnell 2010, Designing Sound (wind, pipes); Howe 1998, Acoustics of fluid-structure interactions (edge tones); Sound Design Toolkit (SDT) WindCavity, SkAT-VG: method only
+
 ## Stage: resonator
 
 ### `modal`
@@ -851,6 +924,58 @@ An object dropping into water. In order: (1) the impact: the object slaps the su
 | `slosh` | `0.0` |  | 0 .. 1 | v0.16: the churn, bubble cloud and foam each slosh on their own fast, irregular envelope over a longer plateau (0 = v0.15: one shared, smoothly decaying envelope) |
 
 Sources: Minnaert 1933; Prosperetti & Oguz 1993; van den Doel 2005; Phillips et al. 2018; Franz 1959 (splashes as sources of sound in liquids)
+
+### `crumple`
+
+Crumpling and breaking as many tiny impacts (crackling noise). `mode` crumple: events at `rate` while the gesture lasts (paper, plastic, foil, cloth, leaves, snow, gravel underfoot). `mode` break: a stored energy is spent in bursts that come fast at first and thin out as the object falls apart (glass, ice, pottery, wood splintering). Each event's energy follows a power law; its fragment size sets the pitch (small pieces ring higher and shorter) through a modal grain with `ratios` and `decay_ms`.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `mode` | `crumple` |  | crumple, break |  |
+| `at` | `0.0` | s | 0 .. None |  |
+| `length_s` | `1.0` | s | 0.05 .. 30 | gesture length (crumple) |
+| `rate` | `300.0` | events/s | 1 .. 20000 | event rate (crumple) or initial rate (break) |
+| `energy` | `0.5` |  | 0.0 .. 1.0 | crushing energy per event |
+| `fragmentation` | `0.5` |  | 0.0 .. 1.0 | spread of fragment sizes |
+| `freq_hz` | `1500.0` | Hz | 50 .. 15000 | ring of a unit-size fragment |
+| `ratios` | `[1.0, 2.32, 4.25, 6.63]` |  |  | mode ratios of a fragment |
+| `decay_ms` | `8.0` | ms | 0.2 .. 2000 | decay of a unit-size fragment |
+| `noise` | `0.5` |  | 0.0 .. 1.0 | share of a broadband click in each event (paper is noisy, glass not) |
+| `gesture` | `0.5` |  | 0.0 .. 1.0 | crumple: how bursty the hand's squeezes are |
+
+Sources: Sethna, Dahmen & Myers 2001, Nature (crackling noise); Houben, Kohlrausch & Hermes 2004 (auditory cues for size and speed of rolling/crumpling); Bresin et al. 2010 (SDT crumpling, walking on surfaces); Sound Design Toolkit (SDT), SkAT-VG: method only
+
+### `dc_motor`
+
+Electric motor: rotor partials at the rotation rate times the number of coils (whine), unevenness from the load (FM), gear whine at rpm x teeth, brush crackle at the commutation rate, fan/air noise rising with speed, and a chassis resonance (comb). Drills, fans, servos, RC cars, electric scooters, toys.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `rpm` | `6000.0` | rpm | 0 .. 60000 | rotor speed (automatable) (automatable) |
+| `load` | `0.2` |  | 0.0 .. 1.0 | load unevenness (wobble) |
+| `coils` | `3` | count | 1 .. 24 | commutator segments / poles |
+| `gear_teeth` | `12` | count | 0 .. 200 | gear mesh teeth per rotor turn (0 = no gearbox) |
+| `harshness` | `0.5` |  | 0.0 .. 1.0 | brighter, buzzier partials |
+| `rotor` | `1.0` |  | 0.0 .. 2.0 | rotor whine level |
+| `gear` | `0.5` |  | 0.0 .. 2.0 | gear whine level |
+| `brush` | `0.4` |  | 0.0 .. 2.0 | brush crackle level |
+| `air` | `0.3` |  | 0.0 .. 2.0 | fan / air noise level |
+| `chassis_hz` | `900.0` | Hz | 50 .. 8000 | chassis resonance |
+
+Sources: Sound Design Toolkit (SDT) DCMotor, SkAT-VG: method only; Farnell 2010, Designing Sound (motors)
+
+### `mains_hum`
+
+Electrical hum: mains frequency and harmonics, the 2x-mains magnetostriction buzz of transformers and lamp ballasts, and an optional rattle (loose laminations, a buzzing fluorescent tube).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `mains_hz` | `50.0` | Hz | 40 .. 70 | 50 (UK/EU) or 60 (US) |
+| `buzz` | `0.5` |  | 0.0 .. 1.0 | harmonic richness (clipped, rectified hum) |
+| `rattle` | `0.0` |  | 0.0 .. 1.0 | loose-part rattle |
+| `level` | `1.0` |  | 0.0 .. 4.0 | level (automatable) |
+
+Sources: Mains hum (power engineering): transformer magnetostriction at twice the mains frequency
 
 ## Stage: synth
 

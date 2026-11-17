@@ -57,7 +57,7 @@ soundlab match refs/foghorn.wav --recipe recipes/fit/foghorn_fitted.json -p 0.to
 ## The distance
 
 Five parts, each scaled so about 1.0 means "clearly different". `total` is their weighted mean (weights
-spectral 1, stft 1, envelope 0.7, texture 0.7, pitch 0.7; change them with `--weights`). Both signals are
+spectral 1, stft 1, envelope 0.7, texture 0.7, sparsity 0.5, pitch 0.7; change them with `--weights`). Both signals are
 resampled to 24 kHz and peak-normalised. Level differences more than 45 dB below the peak are ignored, so a
 field recording's background hiss does not dominate.
 
@@ -67,6 +67,7 @@ field recording's background hiss does not dominate.
 | stft | multi-resolution (FFT 256/1024/4096) log spectrogram in 1/3-octave bands, dB / 10 (cf. DDSP multi-scale spectral loss, Engel et al. 2020) | yes (onset-aligned) |
 | envelope | 10 ms level envelope, dB / 10: half onset-aligned difference, half difference of level quantiles (timing-free duty cycle) | half |
 | texture | McDermott & Simoncelli (2011) style: per-band envelope level, variation, skewness and modulation power 0.5-256 Hz: rough vs smooth, steady vs choppy | no |
+| sparsity | v0.19: STFT power divided by its local average (15 bins x 9 frames, 300 Hz-10 kHz); the 50 / 99 / 99.9 % log quantiles separate sparse ringing grains (bubbles, drops, crackle) from shaped noise, which always has the same light tail | no |
 | pitch | octaves between candidate and reference f0, only if the reference is pitched | no |
 
 Why a pitch term: spectral losses are poor at pitch (Turian & Henry 2020). In our first foghorn fit, the
