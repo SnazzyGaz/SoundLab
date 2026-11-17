@@ -181,6 +181,61 @@ def _grains(sr, rng, n_events, spread, band, grain_ms, tonal, size_exp=1.5, deca
     return out
 
 
+# shard character per material: (band lo, hi Hz, grain ms, tonal share). Ceramic and stone fragments are dull,
+# short and partly noisy; glass and metal pieces ring (the sparkle belongs to them, not to pottery).
+SHARD = {"glass": (2500, 11000, 5.0, 0.9), "ceramic": (900, 5000, 1.2, 0.35), "stone": (700, 4500, 0.9, 0.25),
+         "steel": (2500, 10000, 8.0, 0.95), "aluminium": (2500, 10000, 6.0, 0.95), "iron": (2000, 8000, 4.0, 0.9)}
+
+
+def _shards(sr, rng, n_shards, m, room_s, name):
+    """Fragments thrown off by a break: each lands 20-250 ms later and bounces 1-4 times with shrinking gaps and
+    levels (restitution ~0.45), then settles; a few skitter. Pitch from the material, decay short for pottery."""
+    lo, hi, gms, tonal = SHARD.get(name, (m["shard"] * 0.4, m["shard"] * 1.6, 1.5, 0.4))
+    L = int(min(room_s, 1.6) * sr)
+    out = np.zeros(max(L, 16))
+    for _ in range(n_shards):
+        t = rng.uniform(0.0, 0.03) + rng.exponential(0.06) + 0.02
+        gap = rng.uniform(0.04, 0.16)
+        e = min(4.0, (1 - rng.random()) ** (-1 / 1.5)) / 3
+        size = rng.uniform(0.4, 1.0)
+        fc = math.exp(rng.uniform(math.log(lo), math.log(min(hi, 0.42 * sr)))) / size ** 0.5
+        for b in range(int(rng.integers(1, 5))):
+            i = int(t * sr)
+            if i >= L:
+                break
+            T = gms * 1e-3 * (0.6 + 0.8 * rng.random())
+            Lg = int(T * 6 * sr) + 16
+            tg = np.arange(Lg) / sr
+            env = np.exp(-tg / T)
+            if rng.random() < tonal and fc * 2.3 < 0.45 * sr:
+                g = sum(np.sin(2 * math.pi * fc * r * tg + rng.uniform(0, 6.28)) / (j + 1)
+                        for j, r in enumerate((1.0, 1.59, 2.31))) * env
+            else:
+                g = dsp.bandpass(rng.standard_normal(Lg), min(fc, 0.4 * sr), sr, q=0.9) * env
+            dsp.place(out, g, i, math.sqrt(e) * 0.45 ** b)
+            t += gap
+            gap *= 0.45
+    return out
+
+
+def _body_thump(out, i0, lvl, size, hardness, residual, sr, rng):
+    """A blow to a body: soft tissue over a heavy, lossy mass. Instant attack, then a short low-frequency thump
+    (low-passed noise under a decaying envelope: no modes, so no pitch) and a faint dull slap of skin or cloth.
+    Nothing rises after the onset (a long Hunt-Crossley pulse into flesh plus noise reads like reversed air)."""
+    ta = 1.0 / (2 * math.pi * (110.0 + 160.0 * hardness))       # pulse width sets how low the thump sits
+    tb = 4 * ta * (0.6 + 0.8 * min(size, 1.0))                     # the heavier mass behind it
+    tau = 0.012 + 0.025 * min(size, 1.0)
+    L = int(max(12 * tb, 7 * tau) * sr)
+    t = np.arange(L) / sr
+    body = (t / ta) * np.exp(1 - t / ta) + 0.6 * (t / tb) * np.exp(1 - t / tb)   # single smooth pulses: no pitch
+    tail = dsp.lowpass(dsp.lowpass(rng.standard_normal(L), 300.0, sr), 300.0, sr) * np.exp(-t / tau)
+    body = body / body.max() + 0.25 * tail / (np.abs(tail).max() + 1e-12)
+    dsp.place(out, body / (np.abs(body).max() + 1e-12), i0, lvl)
+    Ls = int(0.012 * sr)
+    slap = dsp.lowpass(dsp.highpass(rng.standard_normal(Ls), 500.0, sr), 2500.0, sr) * np.exp(-np.arange(Ls) / (0.0018 * sr))
+    dsp.place(out, slap / (np.abs(slap).max() + 1e-12), i0, lvl * 0.18 * residual * (0.4 + hardness))
+
+
 @model("material_impact", "sound",
        "One contact + resonance model for knocks, drops, bounces, footsteps, tool strikes, clashes, clinks, "
        "breaks and body hits. Pick a `material` (wood, metal, glass, ceramic, stone, plastic, rubber, flesh, "
@@ -241,7 +296,13 @@ def material_impact(ctx: Ctx, x, material, shape, size, at, velocity, striker, s
             amp = np.concatenate([amp, hollowness * 1.2 / np.arange(1, len(fc) + 1)])
             alpha = np.concatenate([alpha, np.full(len(fc), 25.0 + 60 * muffle + 20 * (1 - hollowness))])
         scatter = 0.0 if m.get("metal") else 0.02
-        ir = modal_ir(f, amp, alpha, sr, max_t60, m["cap"], rng, scatter)
+        cap = m["cap"]
+        if gesture == "footstep":   # the foot's weight stays on the floor and damps it: a thud, not a ring
+            alpha = alpha + 60.0
+            cap = min(cap or 0.15, 0.15 if m.get("metal") else 0.05)
+        if fracture > 0:            # the body breaks apart: its modes stop instead of ringing on as a ding
+            cap = min(cap or 1.0, 0.012 + 0.1 * (1 - fracture))
+        ir = modal_ir(f, amp, alpha, sr, max_t60, cap, rng, scatter)
         tir = np.arange(len(ir)) / sr
         ir_res = ir * np.exp(-tir / 0.004)                          # the object's spectrum, a few ms long
     if striker_ring > 0 and STRIKERS.get(striker):
@@ -257,18 +318,22 @@ def material_impact(ctx: Ctx, x, material, shape, size, at, velocity, striker, s
         p = pulse / (pulse.max() + 1e-12)
         i0 = int(t0 * sr)
         lvl = gain * min(1.0, v / 3.0) ** 0.8
-        if ground:
+        if material == "flesh":
+            _body_thump(out, i0, lvl, size, hardness, residual, sr, rng)
+        elif ground:
             g = m
             thud = dsp.lowpass(np.concatenate([p, np.zeros(int(0.08 * sr))]), g["thud_hz"] * (1.5 - muffle), sr, q=1.4)
             thud = thud / (np.abs(thud).max() + 1e-12)
             dsp.place(out, thud, i0, lvl)
             ne = g["n"] * grains * min(2.0, 0.4 + v / 2.0)
+            if gesture == "footstep":
+                ne *= 0.5
             gr = _grains(sr, rng, ne, g["spread"], g["grain"], g["grain_ms"], g["tonal"])
             gr = gr / (np.abs(gr).max() + 1e-12)
-            dsp.place(out, gr, i0 + len(p) // 3, lvl * g["resid"] * residual)
+            dsp.place(out, gr, i0 + len(p) // 3, lvl * g["resid"] * residual * (0.8 if gesture == "footstep" else 1.0))
         else:
             y = signal.fftconvolve(p, ir)
-            dsp.place(out, y / (np.abs(y).max() + 1e-12), i0, lvl)
+            dsp.place(out, y / (np.abs(y).max() + 1e-12), i0, lvl * (1 - 0.6 * fracture))
             if m["resid"] * residual > 0:
                 nb = rng.standard_normal(len(p) + int(0.003 * sr)) * np.concatenate([p, np.exp(-np.arange(int(0.003 * sr)) / (0.0008 * sr)) * p[-1]])
                 r = signal.fftconvolve(nb, ir_res)
@@ -281,11 +346,12 @@ def material_impact(ctx: Ctx, x, material, shape, size, at, velocity, striker, s
     if gesture == "footstep":
         heel_t = at
         one_contact(velocity, heel_t, 1.0)
-        one_contact(velocity * 0.55, heel_t + rng.uniform(0.06, 0.11), 0.6)        # ball of the foot
+        one_contact(velocity * 0.4, heel_t + rng.uniform(0.07, 0.12), 0.25)       # ball of the foot, rolled onto
         L = int(0.12 * sr)
         sc = dsp.bandpass(rng.standard_normal(L), 2500 if not ground else 4000, sr, q=0.7)
         sc *= np.sin(np.linspace(0, math.pi, L)) ** 2
-        dsp.place(out, sc / (np.abs(sc).max() + 1e-12), int((heel_t + 0.02) * sr), 0.12 * (1 - muffle) * residual)
+        dsp.place(out, sc / (np.abs(sc).max() + 1e-12), int((heel_t + 0.02) * sr), 0.03 * (1 - muffle) * residual)
+        out = dsp.highpass(dsp.lowpass(out, 10000.0 if ground else 6000.0, sr), 50.0, sr)   # sole: no hard click
     else:
         t, v = float(at), float(velocity)
         for b in range(int(bounces)):
@@ -296,10 +362,16 @@ def material_impact(ctx: Ctx, x, material, shape, size, at, velocity, striker, s
             t += 2 * v / G + 0.002
 
     if fracture > 0 and not ground:
-        ne = 6 + 60 * fracture * grains
-        sh = _grains(sr, rng, ne, 0.05 + 0.4 * fracture, (m["shard"] * 0.5, min(m["shard"] * 2.2, 0.42 * sr)),
-                     2.0 if m.get("cap") and m["cap"] < 0.5 else 6.0, 0.9 if m["resid"] < 0.3 else 0.4)
-        dsp.place(out, sh / (np.abs(sh).max() + 1e-12), int((at + 0.004) * sr), 0.8 * fracture)
+        i0 = int(at * sr)
+        # the crack: a broadband snap of 1-2 ms (no pitch), and the floor's short low thud under it
+        Ls = int(0.004 * sr)
+        snap = rng.standard_normal(Ls) * np.exp(-np.arange(Ls) / (0.0007 * sr))
+        dsp.place(out, dsp.highpass(snap, 800.0, sr), i0, 1.2 * fracture)
+        Lt = int(0.12 * sr)
+        thud = dsp.lowpass(dsp.lowpass(rng.standard_normal(Lt) * np.exp(-np.arange(Lt) / (0.018 * sr)), 160.0, sr), 160.0, sr)
+        dsp.place(out, thud / (np.abs(thud).max() + 1e-12), i0, 0.7 * fracture)
+        sh = _shards(sr, rng, int(4 + 26 * fracture * grains), m, ctx.duration - at, material)
+        dsp.place(out, sh / (np.abs(sh).max() + 1e-12), i0 + int(0.006 * sr), 0.6 * fracture)
     if muffle > 0:
         out = dsp.lowpass(out, 16000 * (1 - muffle) + 1500 * muffle, sr)
     return dsp.highpass(out, 30.0, sr)          # a compact body radiates no DC (the bare force pulse has some)

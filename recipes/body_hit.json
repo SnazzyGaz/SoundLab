@@ -270,112 +270,44 @@
    "params": {
     "curve": [
      [
-      50,
-      -6.0
-     ],
-     [
       63,
-      -6.0
-     ],
-     [
-      80,
-      -6.0
-     ],
-     [
-      100,
-      -1.4
+      0.0
      ],
      [
       125,
-      6.0
-     ],
-     [
-      160,
-      6.0
-     ],
-     [
-      200,
-      6.0
+      0.0
      ],
      [
       250,
-      1.8
-     ],
-     [
-      315,
-      -0.5
-     ],
-     [
-      400,
-      -2.0
+      0.0
      ],
      [
       500,
-      -1.3
-     ],
-     [
-      630,
-      -1.7
-     ],
-     [
-      800,
-      -1.1
+      0.0
      ],
      [
       1000,
-      -1.6
-     ],
-     [
-      1250,
-      -2.0
-     ],
-     [
-      1600,
-      -1.9
+      0.0
      ],
      [
       2000,
-      -3.1
-     ],
-     [
-      2500,
-      -3.0
-     ],
-     [
-      3150,
-      -2.6
+      0.0
      ],
      [
       4000,
-      -0.7
-     ],
-     [
-      5000,
-      -1.6
-     ],
-     [
-      6300,
-      -1.1
+      0.0
      ],
      [
       8000,
-      -1.0
-     ],
-     [
-      10000,
-      -2.8
-     ],
-     [
-      12500,
-      6.0
+      0.0
      ],
      [
       16000,
-      6.0
+      0.0
      ]
     ]
    }
   }
  ],
- "notes": "v0.26: controls fitted to one of the CC0 recorded punches (outside the repo), residual eq limited to +-6 dB; loss on that take 0.733 -> 0.464, on held-out takes [1.251] -> [1.116]."
+ "notes": "v0.26: controls fitted to one of the CC0 recorded punches (outside the repo). v0.26.1: flesh is now an instant-attack, untuned thump (smooth pulses plus a decaying low tail) with a faint slap; no modes, nothing rising after the onset. The v0.26 residual eq (a +6 dB bump at 125-200 Hz) rang like a tone and was removed."
 }

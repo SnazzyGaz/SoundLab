@@ -7,7 +7,8 @@
  "seed": 26,
  "master": {
   "normalize_db": -1.0,
-  "fade_out": 0.03
+  "fade_out": 0.03,
+  "gain_db": -10.0
  },
  "macros": {
   "size": {
@@ -172,7 +173,7 @@
   },
   "distance": {
    "default": 0.0,
-   "doc": "near .. far (level)",
+   "doc": "near .. far (level; footsteps already sit 10 dB under full scale)",
    "map": [
     {
      "to": "master.gain_db",
@@ -184,11 +185,11 @@
       ],
       [
        0.5,
-       -6
+       -3
       ],
       [
        1,
-       -18
+       -8
       ]
      ],
      "clamp": [
@@ -274,8 +275,8 @@
     "gesture": "footstep",
     "striker": "shoe",
     "striker_mass_g": 6000,
-    "velocity": 1.2,
-    "hardness": 0.5,
+    "velocity": 0.9,
+    "hardness": 0.45,
     "residual": 1.0,
     "material": "grass",
     "shape": "plate",
@@ -328,5 +329,6 @@
     ]
    }
   }
- ]
+ ],
+ "notes": "v0.26.1: normal walking, not stomping: heel ~1 m/s, the foot damps the floor (no ring), ball of the foot and scuff much quieter, sole low-pass, master level -10 dB."
 }

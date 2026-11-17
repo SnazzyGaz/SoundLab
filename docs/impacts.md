@@ -48,6 +48,24 @@ The one general model is about level with the older hand-built recipes: better o
 slightly worse on held-out ones, and worse than `sword_clash` (whose dispersive blade ring the bar modes lack).
 Its value is coverage: one set of controls for every material, shape and gesture.
 
+## v0.26.1 fixes
+
+- **Footsteps are normal walking, not stomping.** Heel speed ~1 m/s, a softer heel, the foot's weight damps the
+  floor (+60 1/s on every mode, ring capped at 50 ms on non-metals, 150 ms on metal), the ball of the foot comes
+  in at 40 % speed and a quarter of the level, the scuff is a quarter of before, a sole low-pass (6 kHz hard floors,
+  10 kHz ground) and a 50 Hz high-pass, and the recipes sit 10 dB under full scale. Tests: every footstep peaks at
+  least 9 dB under a knock, nothing rings 150 ms after the heel.
+- **A break is a crack, not a ding.** With `fracture` the body's modes stop within ~12-110 ms (less the harder the
+  break), a 1-2 ms broadband snap and a short low floor thud mark the crack, and shards land 20-250 ms later,
+  bounce 1-4 times with shrinking gaps and levels, and settle. Shard character is per material: ceramic and stone
+  are dull, short and partly noisy; glass and metal ring. Test: no partial stands more than 20 dB above its
+  neighbours after 50 ms (a glass clink scores above 40).
+- **A body hit is an untuned thump.** Flesh no longer goes through modes or a long contact pulse with rising
+  noise: two smooth pulses (an instant ~1 ms attack and the heavier mass behind it), a short decaying low tail
+  and a faint slap. Tests: the envelope peaks within 5 ms and never swells afterwards; no spectral peak stands
+  more than 11 dB above its neighbours (a blade clash scores above 25). The v0.26 residual eq on `body_hit`
+  (a +6 dB bump at 125-200 Hz) rang like a tone and was removed.
+
 ## Known gaps
 
 - Inflated balls (membrane tension) and wooden doors' low boom need larger, tension-aware models; knock fits push

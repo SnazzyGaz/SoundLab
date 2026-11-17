@@ -77,7 +77,7 @@ def test_footstep_gesture_has_heel_and_ball():
     h = int(0.004 * SR)
     e = np.sqrt(np.convolve(y ** 2, np.ones(h) / h, "same"))
     from scipy.signal import find_peaks
-    pk, _ = find_peaks(e, height=0.15 * e.max(), distance=int(0.04 * SR))
+    pk, _ = find_peaks(e, height=0.04 * e.max(), distance=int(0.04 * SR))
     assert len(pk) >= 2 and 0.04 < (pk[1] - pk[0]) / SR < 0.16
 
 
@@ -87,10 +87,10 @@ def test_ground_is_not_tonal_and_fracture_adds_debris():
         return float(np.max(Y) - np.median(Y[100:8000]))
     assert peakiness(run("material_impact", material="dirt")) < peakiness(run("material_impact", material="steel",
                                                                                   shape="bar", striker="steel"))
+    from test_v0261_impact_fixes import sustained_partial_db
     whole = run("material_impact", dur=1.0, material="ceramic", shape="shell", size=0.12, fracture=0.0, seed=4)
     broke = run("material_impact", dur=1.0, material="ceramic", shape="shell", size=0.12, fracture=0.8, seed=4)
-    late = slice(int(0.08 * SR), int(0.6 * SR))
-    assert np.sum(broke[late] ** 2) / np.sum(broke ** 2) > np.sum(whole[late] ** 2) / np.sum(whole ** 2)
+    assert sustained_partial_db(broke) < sustained_partial_db(whole) - 10     # a break stops the ring
 
 
 @pytest.mark.parametrize("name", NEW)
