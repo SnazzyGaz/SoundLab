@@ -1,2 +1,2 @@
 """Importing this package registers every block and sound model."""
-from . import excitation, resonator, radiation, propagation, room, sounds, synth, foley, library  # noqa: F401
+from . import excitation, resonator, radiation, propagation, room, sounds, synth, foley, library, resynth_blocks  # noqa: F401

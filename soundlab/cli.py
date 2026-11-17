@@ -1,4 +1,4 @@
-"""soundlab command line: render, batch, audition, models, describe, materials, analyze, match, compare, validate, gui, blindtest."""
+"""soundlab command line: render, batch, audition, models, describe, materials, analyze, match, resynth, compare, validate, gui, blindtest."""
 from __future__ import annotations
 
 import argparse
@@ -98,6 +98,19 @@ def main(argv=None) -> int:
     mm.add_argument("--holdout", action="append", default=[], metavar="AUDIO[:START[:END]]",
                     help="second recording of the same sound to score the fit on (repeatable; strongly advised)")
     mm.add_argument("--no-ear", action="store_true", help="skip the listening renders")
+
+    rs = sub.add_parser("resynth", help="analyse a recording and build + fit an editable layered recipe for it")
+    rs.add_argument("ref", help="reference audio (kept outside the repo)")
+    rs.add_argument("--kind", choices=("auto", "impact", "texture", "voice", "choir"), default="auto")
+    rs.add_argument("--fit-start", type=float, help="start of the section to fit on (s)")
+    rs.add_argument("--fit-end", type=float, help="end of the section to fit on (s)")
+    rs.add_argument("--holdout-section", metavar="START:END", help="section of the same clip to check the fit on")
+    rs.add_argument("--holdout", action="append", default=[], metavar="AUDIO[:START[:END]]",
+                    help="another recording of the same sound to check the recipe on (repeatable)")
+    rs.add_argument("--clean-tonal", action="store_true",
+                    help="remove narrow tonal peaks (birdsong, whistles) above 1.5 kHz before analysing")
+    rs.add_argument("--budget", type=int, default=80, help="renders for the fit (default 80)")
+    rs.add_argument("-o", "--out", required=True, help="output folder (outside the repo)")
 
     c = sub.add_parser("compare", help="distance between a reference and one or more renders")
     c.add_argument("ref")
@@ -266,6 +279,36 @@ def main(argv=None) -> int:
                                             "after": h["after"]["total"]} for h in res["holdouts"]],
                               "params": [{k: p[k] for k in ("key", "before", "after")} for p in res["params"]]},
                              indent=1, default=float))
+        elif args.cmd == "resynth":
+            from . import resynth as RS
+            from . import fit as F
+            from .audio_io import read_audio, write_wav
+            x, sr = read_audio(args.ref)
+            hold = []
+            for h in args.holdout:
+                parts = h.split(":")
+                hx, hsr = read_audio(parts[0])
+                a = float(parts[1]) if len(parts) > 1 and parts[1] else 0.0
+                b = float(parts[2]) if len(parts) > 2 and parts[2] else len(hx) / hsr
+                hold.append((Path(parts[0]).name, hx, hsr, a, b, "fresh"))
+            hs = tuple(float(v) for v in args.holdout_section.split(":")) if args.holdout_section else None
+            fs = None
+            if args.fit_start is not None or args.fit_end is not None:
+                fs = (args.fit_start or 0.0, args.fit_end or len(x) / sr)
+            res = RS.run(x, sr, args.kind, Path(args.ref).stem, fs, hold, hs, args.clean_tonal, args.budget)
+            out = Path(args.out)
+            out.mkdir(parents=True, exist_ok=True)
+            (out / "recipe.json").write_text(json.dumps(res["recipe"], indent=1))
+            y, ysr = soundlab.render(res["recipe"])
+            write_wav(out / "resynth.wav", y, ysr)
+            rep = {k: res[k] for k in ("kind", "fit_section", "fit_before", "fit_after", "full", "full_other_seed",
+                                       "holdout", "pitch_error_cents", "params", "tonal_removed_fraction",
+                                       "features")}
+            (out / "report.json").write_text(json.dumps(rep, indent=1, default=float))
+            print(json.dumps({"out": str(out), "kind": res["kind"], "fit_after": res["fit_after"]["total"],
+                              "full": res["full"]["total"], "other_seed": res["full_other_seed"]["total"],
+                              "holdout": [(h["name"], h["total"]) for h in res["holdout"]],
+                              "pitch_error_cents": res["pitch_error_cents"]}, indent=1, default=float))
         elif args.cmd == "compare":
             from . import fit as F
             from .audio_io import read_audio

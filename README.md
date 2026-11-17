@@ -112,6 +112,8 @@ soundlab validate recipes/duck.json
 soundlab analyze sample.wav -o sample_stems/   # harmonic / transient / noise / sines stems + features.json + plot
 soundlab match ref.wav --recipe recipes/fit/duck_fit.json -p 0.f0:120:350 -p 0.rasp -o duck_fit/
                                         # fit controls to a recording: fitted.json + report.md + comparison.png
+soundlab resynth ref.wav --kind auto --holdout-section 1.2:2.0 -o ../fits/ref
+                                        # recording -> editable layered recipe + fit + hold-out check
 soundlab compare ref.wav a.wav b.wav    # distance of renders to a reference (lower = closer)
 ```
 
@@ -170,6 +172,8 @@ matched to the reference recordings, the starting points for `soundlab match`). 
 - [docs/synth-blocks.md](docs/synth-blocks.md): the generic synthesis blocks (non-physical sounds, layering).
 - [docs/fitting.md](docs/fitting.md): fitting recipes to recordings (`soundlab match`), the loss, and how to read
   a fit report.
+- [docs/resynthesis.md](docs/resynthesis.md): analysis and resynthesis (`soundlab resynth`), the recording
+  -> layered recipe pipeline, its new blocks (`bandnoise`, `harmonic`) and first results.
 - [docs/architecture.md](docs/architecture.md): code layout and how AIDAW plugs in.
 - [docs/licensing.md](docs/licensing.md): what we may copy, what is reference-only.
 - [docs/checkpoint.md](docs/checkpoint.md): the blind test: browser "real or synthesised?" page with your own

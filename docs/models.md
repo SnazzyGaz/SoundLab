@@ -161,6 +161,29 @@ Irregular pulse train from a vibrating valve that closes sharply (bird syrinx la
 
 Sources: Titze 1994, Principles of Voice Production; Fletcher 1988 (bird song syrinx model); Herzel et al. 1995 (subharmonics and chaos in voice); Our reference analysis: mallard quacks are irregular ~150-250 Hz pulse trains through a ~2 kHz resonance (refs/SOURCES.md)
 
+### `harmonic`
+
+Voiced source for resynthesis: harmonics of an f0 curve shaped by a fixed formant envelope (so the vowel stays put while the pitch moves, as in a voice), a source slope `tilt_db`, breath noise through the same formants, vibrato, slow pitch wander, and `voices` detuned unison copies (a choir). Formants are [[Hz, bandwidth Hz, dB], ...].
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `f0` | `220.0` | Hz | 30 .. 2000 | fundamental (automatable; interpolated on a log scale) (automatable) |
+| `pitch_st` | `0.0` | semitones | -24 .. 24 | transpose |
+| `formants` | `[[700, 130, 0], [1200, 150, -6], [2600, 200, -12]]` | [[Hz, bw Hz, dB], ...] |  | formant envelope |
+| `formant_shift` | `1.0` |  | 0.5 .. 2.0 | scale all formant frequencies (size of the vocal tract) |
+| `tilt_db` | `-3.0` | dB/oct | -24 .. 6 | source slope (- = darker, softer voice) |
+| `breath` | `0.1` |  | 0 .. 1 | breath noise through the formants |
+| `vibrato_hz` | `5.0` | Hz | 0 .. 12 | vibrato rate |
+| `vibrato_cents` | `0.0` | cents | 0 .. 200 | vibrato depth |
+| `wander_cents` | `0.0` | cents | 0 .. 200 | slow random pitch drift |
+| `voices` | `1` |  | 1 .. 8 | unison voices |
+| `detune_cents` | `10.0` | cents | 0 .. 60 | spread of the unison voices |
+| `eq` | `[]` | [[Hz, dB], ...] |  | fine spectral correction (interpolated in log frequency; the resynthesis builder fills it from the remaining 1/3-octave difference) |
+| `max_hz` | `8000.0` | Hz | 1000 .. 20000 | highest harmonic |
+| `level` | `1.0` |  | 0 .. 4 | amplitude (automatable: the loudness envelope) (automatable) |
+
+Sources: Fant 1960 source-filter theory; Serra & Smith 1990 (sinusoidal modelling); Ternstrom 1991 (choir unison spread)
+
 ## Stage: resonator
 
 ### `modal`
@@ -869,6 +892,22 @@ Random grains (granular cloud, 'Dust'-style timing): short windowed sine, noise 
 | `level` | `1.0` |  | 0 .. 4 | output level (automatable) (automatable) |
 
 Sources: Roads 2001, Microsound (MIT Press); Farnell 2010, Designing Sound (Dust)
+
+### `bandnoise`
+
+Noise shaped by a band x time level grid: `bands` (Hz centres) and `frames` [[t, [dB per band]], ...]. Levels are interpolated between frames (in time) and between band centres (in log frequency). `tilt_db` brightens or darkens around 1 kHz, `stretch` scales the timeline, `grain` adds an independent random level wobble per band (burbling, sloshing, gusting texture) at about `grain_hz`. The resynthesis builder fills the grid from a recording's band energies; edit it like an EQ that changes over time.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `bands` | `[50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000]` | Hz |  | band centre frequencies |
+| `frames` | `[[0.0, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]]` | [[s, [dB, ...]], ...] |  | level of each band at each time (held after the last frame) |
+| `tilt_db` | `0.0` | dB/oct | -12 .. 12 | spectral tilt around 1 kHz (+ = brighter) |
+| `stretch` | `1.0` |  | 0.25 .. 4.0 | time scale of the frame timeline (2 = twice as slow) |
+| `grain` | `0.0` |  | 0 .. 1 | random per-band level wobble (0 = smooth, 1 = about 12 dB swings) |
+| `grain_hz` | `8.0` | Hz | 0.5 .. 80 | wobble rate |
+| `level` | `1.0` |  | 0 .. 4 | output level (automatable) (automatable) |
+
+Sources: Dudley 1939 channel vocoder; Serra & Smith 1990 (stochastic residual as filtered noise); McDermott & Simoncelli 2011 (sound texture statistics)
 
 ## Stage: fx
 

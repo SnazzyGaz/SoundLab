@@ -16,6 +16,9 @@ Writes `fits/duck/`:
 - `comparison.png`: long-term spectrum and onset-aligned envelope, reference vs before vs after.
 - `fitted_preview.wav`: the fitted render at 24 kHz.
 
+To build a recipe from a recording rather than fit an existing one, see [resynthesis.md](resynthesis.md)
+(`soundlab resynth`, v0.17).
+
 ## Rules
 
 1. **Pitch first** (default). The reference's fundamental is measured; every pitch control in the fit set

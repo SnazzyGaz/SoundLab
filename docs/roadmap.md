@@ -9,6 +9,16 @@ Ground rules:
   ...). Deeper physics only comes after the checkpoint, and only for sounds a game steers live.
 - Offline render to WAV is the main use.
 
+## Now: analysis and resynthesis (v0.17, first version)
+
+`soundlab resynth` turns a recording into an editable layered recipe (see [resynthesis.md](resynthesis.md)).
+New generic blocks: `bandnoise` (band x time noise grid) and `harmonic` (formant/vocal source). Next:
+- Moving formants for voices (meows, growls, vowels): automatable `formant_shift` or per-formant curves.
+- Water textures: individual bubble and gurgle events on top of the stationary noise (`stft` is the weakest part).
+- Impacts: fit the physical detail layer more and the copied grid less, so a recipe generalises to other
+  recordings of the same kind of sound (hold-out on a second recording, not just a later section).
+- Choirs: vowel changes, several melodic lines, and a measured hall instead of Freeverb.
+
 ## Next: the blind checkpoint
 
 Run the blind listening test ([checkpoint.md](checkpoint.md)) with real library samples for every physical
