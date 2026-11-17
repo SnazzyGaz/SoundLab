@@ -163,26 +163,48 @@ Sources: Titze 1994, Principles of Voice Production; Fletcher 1988 (bird song sy
 
 ### `harmonic`
 
-Voiced source for resynthesis: harmonics of an f0 curve shaped by a fixed formant envelope (so the vowel stays put while the pitch moves, as in a voice), a source slope `tilt_db`, breath noise through the same formants, vibrato, slow pitch wander, and `voices` detuned unison copies (a choir). Formants are [[Hz, bandwidth Hz, dB], ...].
+Voiced source for resynthesis (harmonic + noise model): harmonics of an f0 curve shaped by a spectral envelope, plus aperiodic (breath) noise. The envelope is either fixed formants [[Hz, bandwidth Hz, dB], ...] or, for moving vowels, `env_frames` [[t, [dB per band]], ...] on `bands` (a time-varying envelope, as in the WORLD vocoder). `ap_frames` sets how noisy each band is over time (aperiodicity). The noise is modulated by the glottal cycle (`pulse_noise`) so it fuses with the voice instead of hissing beside it, as turbulence follows glottal flow in articulatory models (Klatt 1990; Pink Trombone; CHIMERA). Also source slope `tilt_db`, vibrato, slow pitch wander, `voices` detuned unison copies (a choir), a fine `eq`.
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
 | `f0` | `220.0` | Hz | 30 .. 2000 | fundamental (automatable; interpolated on a log scale) (automatable) |
 | `pitch_st` | `0.0` | semitones | -24 .. 24 | transpose |
-| `formants` | `[[700, 130, 0], [1200, 150, -6], [2600, 200, -12]]` | [[Hz, bw Hz, dB], ...] |  | formant envelope |
-| `formant_shift` | `1.0` |  | 0.5 .. 2.0 | scale all formant frequencies (size of the vocal tract) |
+| `formants` | `[[700, 130, 0], [1200, 150, -6], [2600, 200, -12]]` | [[Hz, bw Hz, dB], ...] |  | fixed formant envelope (ignored when env_frames is given) |
+| `bands` | `[50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000]` | Hz |  | band centres for env_frames / ap_frames |
+| `env_frames` | `[]` | [[s, [dB, ...]], ...] |  | time-varying spectral envelope (moving vowels) |
+| `ap_frames` | `[]` | [[s, [dB, ...]], ...] |  | aperiodicity: noise level per band over time (0 dB = the noisiest band; empty = shaped like the envelope) |
+| `formant_shift` | `1.0` |  | 0.5 .. 2.0 | scale all formant / envelope frequencies (vocal tract size) |
 | `tilt_db` | `-3.0` | dB/oct | -24 .. 6 | source slope (- = darker, softer voice) |
-| `breath` | `0.1` |  | 0 .. 1 | breath noise through the formants |
+| `breath` | `0.1` |  | 0 .. 1 | aperiodic (breath) noise level, relative to the harmonics |
+| `pulse_noise` | `0.7` |  | 0 .. 1 | how much the noise follows the glottal cycle (0 = steady hiss) |
 | `vibrato_hz` | `5.0` | Hz | 0 .. 12 | vibrato rate |
 | `vibrato_cents` | `0.0` | cents | 0 .. 200 | vibrato depth |
 | `wander_cents` | `0.0` | cents | 0 .. 200 | slow random pitch drift |
 | `voices` | `1` |  | 1 .. 8 | unison voices |
 | `detune_cents` | `10.0` | cents | 0 .. 60 | spread of the unison voices |
-| `eq` | `[]` | [[Hz, dB], ...] |  | fine spectral correction (interpolated in log frequency; the resynthesis builder fills it from the remaining 1/3-octave difference) |
+| `eq` | `[]` | [[Hz, dB], ...] |  | fine spectral correction (interpolated in log frequency) |
 | `max_hz` | `8000.0` | Hz | 1000 .. 20000 | highest harmonic |
 | `level` | `1.0` |  | 0 .. 4 | amplitude (automatable: the loudness envelope) (automatable) |
 
-Sources: Fant 1960 source-filter theory; Serra & Smith 1990 (sinusoidal modelling); Ternstrom 1991 (choir unison spread)
+Sources: Fant 1960 source-filter theory; Serra & Smith 1990 (sinusoidal + noise modelling); Morise et al. 2016 (WORLD: f0, spectral envelope, aperiodicity); Klatt & Klatt 1990 (noise modulated by the glottal cycle); Ternstrom 1991 (choir unison spread)
+
+### `bubble_cloud`
+
+Many bubbles at once, fast: the sound of flowing, splashing and pouring water. Each bubble rings at its Minnaert frequency f = 3.26/r with van den Doel's damping and pitch rise; radii follow a power law between r_min and r_max; amplitude grows as r^amp_exponent. Bubbles are grouped into radius bins and each bin is one Poisson impulse train convolved with that radius's ringing, so thousands of bubbles per second render quickly. `rate` and `level` can follow an envelope (a splash's bubble burst).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `rate` | `2000.0` | bubbles/s | 0 .. 50000 | bubble formation rate (automatable) |
+| `r_min_mm` | `0.5` | mm | 0.1 .. 20 | smallest radius (6.5 kHz at 0.5 mm) |
+| `r_max_mm` | `6.0` | mm | 0.2 .. 60 | largest radius (540 Hz at 6 mm) |
+| `size_exponent` | `2.5` |  | 0.5 .. 5 | power-law exponent of the radius distribution (more small ones) |
+| `amp_exponent` | `0.5` |  | 0 .. 2 | bubble amplitude ~ r^amp_exponent |
+| `xi` | `0.1` |  | 0 .. 20 | pitch-rise constant (bubbles rising, shrinking pressure) |
+| `damping` | `1.0` |  | 0.3 .. 4 | scale van den Doel's damping (more = shorter, drier blips) |
+| `bins` | `40` |  | 8 .. 120 | radius bins (quality vs speed) |
+| `level` | `1.0` |  | 0 .. 4 | level (automatable) |
+
+Sources: Minnaert 1933; van den Doel 2005, ACM TAP 2(4) (liquid sounds from bubble populations); Moss et al. 2010 (sounding liquids: bubble-based fluid sound); Zheng & James 2009 (harmonic fluids)
 
 ## Stage: resonator
 
@@ -1003,3 +1025,14 @@ Level change with optional tremolo (automatable gain in dB). Use it to duck or s
 | `gain_db` | `0.0` | dB | -80 .. 24 | gain (automatable) (automatable) |
 | `tremolo_hz` | `0.0` | Hz | 0 .. 40 | tremolo rate (0 = off) |
 | `tremolo_depth` | `0.0` |  | 0 .. 1 | tremolo depth |
+
+### `eq`
+
+Graphic EQ curve [[Hz, dB], ...], interpolated in log frequency (zero phase). The resynthesis builder puts the remaining long-term spectral difference here.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `curve` | `[]` | [[Hz, dB], ...] |  | gain points |
+| `gain_db` | `0.0` | dB | -40 .. 40 | overall gain |
+
+Sources: Graphic equaliser (standard)

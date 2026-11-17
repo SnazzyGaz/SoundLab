@@ -29,10 +29,10 @@ that median, keeping their phase.
 
 | kind | layers | macros |
 |---|---|---|
-| `impact` | `bandnoise` body whose band x time grid follows the recording (breakpoints kept only where linear interpolation would be off by more than 2.5 dB), plus a `splash` model at each main onset (up to two) | level, brightness, length |
-| `texture` | stationary `bandnoise` (mean spectrum of the fit section plus a random per-band wobble) and a `bubbles` layer. It does not copy the timeline, so it loops and varies | level, brightness, churn |
-| `voice` | `harmonic` on the measured f0 curve (breakpoints within 20 cents), with formants read from the harmonic peaks and the loudness envelope as automation, plus a `bandnoise` breath/noise layer from the residual | level, pitch, size |
-| `choir` | `harmonic` with 4 detuned unison voices on the harmonic-sum pitch track, a breath layer and a `reverb` post block | level, pitch, size |
+| `impact` | (v0.18) `bubble_cloud` following the recording's level, quiet `bandnoise` bed, gated `slap`, `splash` at each main onset, post `eq` | level, bubble_size, churn |
+| `texture` | (v0.18) `bubble_cloud` plus a spray `bandnoise` bed and post `eq`. It does not copy the timeline, so it loops and varies | level, bubble_size, churn |
+| `voice` | `harmonic` on the measured f0 curve (breakpoints within 20 cents), with a time-varying envelope and aperiodicity (v0.18) and the loudness envelope as automation | level, pitch, size |
+| `choir` | `harmonic` with 4 detuned unison voices on the harmonic-sum pitch track, through `reverb`, plus a `hall_air` layer | level, pitch, size |
 
 `--kind auto` guesses: pitched and voiced is `voice`; tonal with no clear pitch and no onsets is `choir`; long
 and steady is `texture`; anything else is `impact`.
@@ -64,7 +64,43 @@ and steady is `texture`; anything else is `impact`.
 Distances are `fit.compare_signals` (the same measure as `soundlab compare`; about 1.0 means clearly
 different).
 
-## First results (private reference recordings, kept outside the repo)
+## v0.18: liquids as bubbles, voices as harmonic + envelope + aperiodicity
+
+The v0.17 recipes scored well, but they told us what the distance misses. Water built from band-shaped noise
+sounds like air, and a splash body made of noise sounds rushy or muddy. Real liquid sound is bubbles (van den
+Doel 2005; the liquids models of the Sound Design Toolkit; Moss et al. 2010). v0.18 rebuilds the water kinds on
+them, following methods from open-source projects and papers (credits in [THIRD_PARTY.md](../THIRD_PARTY.md)):
+
+- **`bubble_cloud`** (excitation): thousands of Minnaert bubbles per second (f = 3.26/r, van den Doel damping
+  and pitch rise, power-law radii, amplitude ~ r^`amp_exponent`), vectorised by radius bins. `rate` and `level`
+  can follow an envelope.
+- **`impact`** recipes: a `bubble_cloud` whose level follows the recording, a quiet `bandnoise` bed (fit range
+  capped at 12 dB under the bubbles), a `slap` noise layer gated to about 70 ms after each onset, the `splash`
+  model at each onset, and a post `eq`.
+- **`texture`** recipes: `bubble_cloud` (at least 1,000 bubbles/s) plus a spray bed capped at -12 dB, and a
+  post `eq`.
+- **`harmonic`** now takes `env_frames` (a time-varying spectral envelope: moving vowels) and `ap_frames` (band
+  aperiodicity), as in the WORLD vocoder. Its breath noise is modulated by the glottal cycle (`pulse_noise`;
+  Klatt 1990, Pink Trombone, CHIMERA). Voice recipes no longer have a separate, always-on breath layer.
+- **`eq`** (fx): a graphic EQ curve. The spectral fine-tune now writes to the recipe's post `eq`, for every kind.
+- `choir` adds a `hall_air` layer (the diffuse residual of the hall) and uses a steady vowel colour.
+
+Distances, v0.17 -> v0.18 (whole clip; hold-out in brackets):
+
+| clip | v0.17 | v0.18 | notes |
+|---|---|---|---|
+| medium splash | 0.197 (tail 0.235) | 0.190 (tail 0.383) | bubbles instead of a noise body; tail section worse |
+| big heavy splash | 0.126 (0.277) | 0.225 (0.360) | the noise copy scored better; v0.18 trades distance for liquid character |
+| double splash | 0.229 (0.278) | 0.208 (0.732) | whole clip closer, sparse tail droplets do not match (hold-out much worse) |
+| stream | 0.170 (second half 0.177) | 0.203 (0.197) | now bubble-dominated by design; the distance prefers noise |
+| cat meow | 0.204 (other meow 0.291) | 0.176 (0.309) | moving envelope, no separate breath layer; pitch error 15 cents |
+| chant | 0.263 (6-15 s 0.230) | 0.244 (0.240) | |
+
+Lesson: our distance rewards a noise copy of the spectrum over a liquid made of bubbles. For water, constrain
+the fit to the right physics and judge by ear. A bubble-aware term in the distance (spectral peakiness or
+event statistics) is on the roadmap.
+
+## First results, v0.17 (private reference recordings, kept outside the repo)
 
 | clip | kind | stock v0.16 recipe | fit section: before -> after | whole clip | other seed | hold-out |
 |---|---|---|---|---|---|---|

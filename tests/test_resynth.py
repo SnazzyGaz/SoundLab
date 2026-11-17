@@ -117,8 +117,9 @@ def test_build_impact_recipe_is_editable_and_close():
     x = _impact_ref()
     rec = RS.build_recipe(x, SR, "impact", "burst")
     assert validate(rec) == []
-    assert [l["model"] for l in rec["layers"]][:2] == ["bandnoise", "splash"]
-    assert set(rec["macros"]) >= {"level", "brightness", "length"}
+    assert [l["model"] for l in rec["layers"]][:4] == ["bubble_cloud", "bandnoise", "bandnoise", "splash"]
+    assert set(rec["macros"]) >= {"level", "bubble_size", "churn"}
+    assert rec["post"][0]["model"] == "eq"
     y = RS.render(rec)
     assert F.compare_signals(x, SR, y, F.FIT_SR)["total"] < 0.35
 
@@ -142,7 +143,9 @@ def test_voice_resynthesis_gets_pitch_first():
     assert validate(rec) == []
     res = RS.fit_and_check(rec, ref, SR, "voice", budget=6)
     assert res["pitch_error_cents"] is not None and res["pitch_error_cents"] < 30
-    assert res["recipe"]["layers"][0]["params"].get("eq") is not None or res["full"]["total"] < 0.4
+    p = res["recipe"]["layers"][0]["params"]
+    assert len(p["env_frames"]) >= 2 and p["ap_frames"]  # moving envelope + aperiodicity, no extra noise layer
+    assert len(res["recipe"]["layers"]) == 1
 
 
 def test_auto_kind():
@@ -164,3 +167,52 @@ def test_cli_resynth(tmp_path):
     assert rep["kind"] == "impact" and rep["holdout"]
     assert validate(json.loads((out / "recipe.json").read_text())) == []
     assert (out / "resynth.wav").exists()
+
+
+def test_bubble_cloud_rings_at_minnaert_pitch():
+    # one radius: 3 mm -> f = 3.26 / 0.003 = 1087 Hz
+    y = _r([{"model": "bubble_cloud", "params": {"rate": 400, "r_min_mm": 2.99, "r_max_mm": 3.01, "xi": 0,
+                                                 "bins": 8}}], dur=2.0)
+    S = np.abs(np.fft.rfft(y))
+    f = np.fft.rfftfreq(len(y), 1 / SR)
+    assert abs(f[np.argmax(S)] - 3.26 / 0.003) < 40
+    small = _r([{"model": "bubble_cloud", "params": {"rate": 3000, "r_min_mm": 0.4, "r_max_mm": 1.0}}])
+    big = _r([{"model": "bubble_cloud", "params": {"rate": 3000, "r_min_mm": 4.0, "r_max_mm": 10.0}}])
+    assert _centroid(small) > 2 * _centroid(big)
+
+
+def test_bubble_cloud_is_tonal_not_noise():
+    # bubbles are damped sines: a sparse cloud has a far peakier spectrum than noise of the same band
+    y = _r([{"model": "bubble_cloud", "params": {"rate": 300, "r_min_mm": 1.0, "r_max_mm": 4.0}}], dur=2.0)
+    S = np.abs(np.fft.rfft(y)) ** 2
+    from scipy.stats import kurtosis
+    assert kurtosis(S) > 20
+
+
+def test_eq_block():
+    flat = [{"model": "noisegen", "params": {}}]
+    y0 = _r(flat)
+    y1 = render({"layers": flat, "duration": 1.0, "seed": 3, "post": [{"model": "eq", "params": {
+        "curve": [[100, -30], [2000, -30], [4000, 0], [12000, 0]]}}]}, SR)[0]
+    assert _centroid(y1) > _centroid(y0) * 1.3
+
+
+def test_harmonic_moving_vowel_and_pulsed_noise():
+    lo = [-40.0] * 26
+    lo[THIRD_OCTAVES.index(500)] = 0.0
+    hi = [-40.0] * 26
+    hi[THIRD_OCTAVES.index(2500)] = 0.0
+    y = _r([{"model": "harmonic", "params": {"f0": 125.0, "env_frames": [[0, lo], [1, hi]], "breath": 0}}])
+    a, b = y[:SR // 5], y[-SR // 5:]
+    assert _centroid(b) > 2.5 * _centroid(a)
+    # noise follows the glottal cycle: its envelope is modulated at f0
+    p = {"f0": 100.0, "breath": 1.0, "formants": [[1000, 2000, 0]], "max_hz": 1000}
+    def mod_depth(y):
+        e = np.abs(signal_hilbert(y))
+        E = np.abs(np.fft.rfft(e - e.mean()))
+        f = np.fft.rfftfreq(len(e), 1 / SR)
+        return E[np.argmin(np.abs(f - 100))] / np.median(E[(f > 20) & (f < 400)])
+    from scipy.signal import hilbert as signal_hilbert
+    steady = _r([{"model": "harmonic", "params": {**p, "pulse_noise": 0.0, "level": 1.0}}])
+    pulsed = _r([{"model": "harmonic", "params": {**p, "pulse_noise": 1.0}}])
+    assert mod_depth(pulsed) >= mod_depth(steady)

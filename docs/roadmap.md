@@ -9,7 +9,15 @@ Ground rules:
   ...). Deeper physics only comes after the checkpoint, and only for sounds a game steers live.
 - Offline render to WAV is the main use.
 
-## Now: analysis and resynthesis (v0.17, first version)
+## Now: analysis and resynthesis (v0.17, v0.18)
+
+v0.18 rebuilt water on bubbles (`bubble_cloud`) and voices on harmonic + envelope + aperiodicity, following
+open-source projects and papers (see [resynthesis.md](resynthesis.md) and THIRD_PARTY.md). Next from that survey:
+a bubble-aware distance term; CHIMERA-style ventricular-fold growl (f0/2) and a syrinx for birds; an
+engine-sim-style exhaust waveguide with runner reflections; an LF glottal pulse; bubble depth / "blooping" over
+time for pouring.
+
+### v0.17
 
 `soundlab resynth` turns a recording into an editable layered recipe (see [resynthesis.md](resynthesis.md)).
 New generic blocks: `bandnoise` (band x time noise grid) and `harmonic` (formant/vocal source). Next:

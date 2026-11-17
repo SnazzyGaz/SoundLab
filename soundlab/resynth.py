@@ -185,8 +185,11 @@ def _curve(t, v, tol, max_points=40, log=False):
     return [[round(float(t[k]), 3), round(float(v[k]), 2 if log else 4)] for k in ks]
 
 
-def _level_curve(x, sr, hop_s=0.02, tol_db=2.0, floor_db=-50.0, max_points=40):
+def _level_curve(x, sr, hop_s=0.02, tol_db=2.0, floor_db=-50.0, max_points=40, smooth_s=0.0):
     env = A.envelope(x, sr)
+    if smooth_s > 0:  # RMS over smooth_s, so beating between voices does not become level dips
+        k = max(1, int(round(smooth_s / (len(x) / sr) * len(env))))
+        env = np.sqrt(ndimage.uniform_filter1d(env ** 2, k, mode="nearest"))
     n = len(x)
     t_env = np.linspace(0, n / sr, len(env))
     step = max(1, int(round(len(env) / (n / sr / hop_s))))
@@ -201,20 +204,72 @@ def _macros(kind):
     m = {"level": {"default": 0.5, "doc": "quiet .. loud", "map": [{"to": "master.gain_db", "op": "add",
                                                                      "points": [[0, -12], [0.5, 0], [1, 0]]}]}}
     if kind in ("impact", "texture"):
-        m["brightness"] = {"default": 0.5, "doc": "darker .. brighter",
-                           "map": [{"to": "0.tilt_db", "op": "add", "points": [[0, -4], [0.5, 0], [1, 4]]}]}
-    if kind == "impact":
-        m["length"] = {"default": 0.5, "doc": "shorter .. longer",
-                       "map": [{"to": "0.stretch", "op": "mul", "points": [[0, 0.6], [0.5, 1], [1, 1.6]]}]}
-    if kind == "texture":
-        m["churn"] = {"default": 0.5, "doc": "smooth .. churning",
-                      "map": [{"to": "0.grain", "op": "mul", "points": [[0, 0.3], [0.5, 1], [1, 2]]}]}
+        m["bubble_size"] = {"default": 0.5, "doc": "small bright bubbles .. big deep bubbles",
+                            "map": [{"to": "0.r_max_mm", "op": "mul", "points": [[0, 0.5], [0.5, 1], [1, 2]]},
+                                    {"to": "0.r_min_mm", "op": "mul", "points": [[0, 0.7], [0.5, 1], [1, 1.4]]}]}
+        m["churn"] = {"default": 0.5, "doc": "few bubbles .. many bubbles",
+                      "map": [{"to": "0.rate", "op": "mul", "points": [[0, 0.3], [0.5, 1], [1, 3]]}]}
     if kind in ("voice", "choir"):
         m["pitch"] = {"default": 0.5, "doc": "lower .. higher",
                       "map": [{"to": "0.pitch_st", "op": "add", "points": [[0, -7], [0.5, 0], [1, 7]]}]}
-        m["size"] = {"default": 0.5, "doc": "bigger .. smaller (formants)",
+        m["size"] = {"default": 0.5, "doc": "bigger .. smaller (vocal tract)",
                      "map": [{"to": "0.formant_shift", "op": "mul", "points": [[0, 0.8], [0.5, 1], [1, 1.25]]}]}
     return m
+
+
+def voice_frames(x, sr, f0_t, f0_v, stems, hop_s=0.02, fmax=10000.0):
+    """WORLD-style decomposition for the `harmonic` block (Morise et al. 2016, method only):
+    env_frames = harmonic amplitudes at k*f0 per frame, interpolated to 1/3-octave centres and normalised to
+    0 dB per frame (the vowel; loudness goes to `level`); ap_frames = noise-to-harmonic ratio per band over time
+    (aperiodicity), normalised to 0 dB at the noisiest point."""
+    nfft = AN_NFFT
+    hop = max(1, int(hop_s * sr))
+    f, t, Z = signal.stft(stems["harmonic"], sr, nperseg=nfft, noverlap=nfft - hop)
+    S = np.abs(Z)
+    f0 = np.interp(t, f0_t, f0_v)
+    lb = np.log2(THIRD_OCTAVES)
+    rows = []
+    for j, fj in enumerate(f0):
+        ks = np.arange(1, int(min(fmax, sr / 2 - 1) // fj) + 1)
+        bins = np.round(ks * fj / f[1]).astype(int)
+        amp = np.array([S[max(0, b - 2):b + 3, j].max() for b in bins])
+        d = 20 * np.log10(amp + 1e-9)
+        row = np.interp(lb, np.log2(ks * fj), d)
+        rows.append(row - row.max())
+    E = ndimage.uniform_filter1d(np.array(rows), 3, axis=0, mode="nearest")
+    env = simplify_frames(t, np.maximum(E, -60), tol_db=3.0, max_frames=40)
+    _, Gh = band_grid(stems["harmonic"], sr, hop_s=hop_s)
+    _, Gn = band_grid(stems["noise"] + stems["transient"], sr, hop_s=hop_s)
+    m = min(len(Gh), len(Gn))
+    tt = np.linspace(0, len(x) / sr, m)
+    AP = np.clip(Gn[:m] - Gh[:m], -40, 20)
+    AP = ndimage.uniform_filter1d(AP, 5, axis=0, mode="nearest")
+    AP -= AP.max()
+    ap = simplify_frames(tt, np.maximum(AP, -40), tol_db=4.0, max_frames=25)
+    return env, ap
+
+
+def _gated_attack(x, sr, onsets, keep_s=0.07, cut_db=30.0):
+    """Band grid of only the first keep_s after each onset (the slap/crack); elsewhere cut_db lower."""
+    t, G = band_grid(x, sr, hop_s=0.01, smooth=1, nfft=1024)
+    near = np.zeros(len(t), bool)
+    for o in onsets:
+        near |= (t >= o - 0.01) & (t <= o + keep_s)
+    gate = np.where(near, 0.0, -cut_db)
+    gate = ndimage.uniform_filter1d(gate, 3, mode="nearest")
+    return simplify_frames(t, np.maximum(G + gate[:, None], G.max() - 100), tol_db=3.0, max_frames=60)
+
+
+def _strong_onsets(x, sr, feats, min_gap=0.25, within_db=12.0):
+    env = A.envelope(x, sr)
+    strong = []
+    for o in feats["onsets_s"]:
+        i = min(len(env) - 1, int(o / (len(x) / sr) * len(env)))
+        seg = env[i:i + max(1, len(env) // 20)]
+        if seg.size and 20 * np.log10(seg.max() / env.max() + 1e-12) > -within_db and \
+                all(abs(o - s) > min_gap for s in strong):
+            strong.append(o)
+    return strong[:2] or [0.03]
 
 
 def build_recipe(x, sr, kind, name="resynth", detail_model="splash", feats=None):
@@ -223,47 +278,51 @@ def build_recipe(x, sr, kind, name="resynth", detail_model="splash", feats=None)
     feats = feats or analyse_clip(x, sr)
     dur = round(len(x) / sr, 3)
     rec = {"soundlab": 1, "name": f"Resynthesis: {name}", "category": "resynth", "sample_rate": 48000,
-           "duration": dur, "seed": 17, "layers": [], "post": [],
+           "duration": dur, "seed": 17, "layers": [], "post": [{"model": "eq", "params": {"curve": []}}],
            "master": {"normalize_db": -1.0, "fade_out": 0.02}, "macros": _macros(kind)}
+    # bubble sizes from the spectrum: Minnaert f = 3.26 / r, so the band holding most energy sets the radii
+    bl = feats["band_levels_db"]
+    fc = np.array([float(k) for k in bl])
+    lv = np.array(list(bl.values()))
+    live = fc[(lv > lv.max() - 15) & (fc >= 300)]
+    f_lo, f_hi = (float(live.min()), float(live.max())) if live.size else (500.0, 6000.0)
+    r_min, r_max = round(max(0.2, 3.26 / f_hi * 1e3), 2), round(min(40.0, 3.26 / f_lo * 1e3), 2)
     if kind == "impact":
-        t, G = band_grid(x, sr, hop_s=0.01, smooth=1, nfft=1024)  # short window: keep the transients sharp
-        floor = G.max() - 100
-        frames = simplify_frames(t, G, tol_db=2.5, max_frames=120, floor_db=floor)
-        rec["layers"].append({"name": "body", "model": "bandnoise",
-                              "params": {"frames": frames, "tilt_db": 0.0, "grain": 0.1, "grain_hz": 12.0}})
-        env = A.envelope(x, sr)
-        on = [o for o in feats["onsets_s"]]
-        # main onsets: rises that reach within 12 dB of the clip's peak, at least 0.25 s apart
-        strong = []
-        for o in on:
-            i = min(len(env) - 1, int(o / (len(x) / sr) * len(env)))
-            seg = env[i:i + max(1, len(env) // 20)]
-            if seg.size and 20 * np.log10(seg.max() / env.max() + 1e-12) > -12 and \
-                    all(abs(o - s) > 0.25 for s in strong):
-                strong.append(o)
+        strong = _strong_onsets(x, sr, feats)
+        lvl = _level_curve(x, sr, hop_s=0.01, tol_db=2.0, floor_db=-60.0, max_points=60)
+        rec["layers"].append({"name": "bubbles", "model": "bubble_cloud",
+                              "params": {"rate": 4000.0, "r_min_mm": r_min, "r_max_mm": r_max, "size_exponent": 2.5,
+                                         "amp_exponent": 0.5, "xi": 0.5, "damping": 1.0, "level": lvl}})
+        # a quiet noise body (kept at least 12 dB under the bubbles: noise in front is what makes water rushy)
+        t, G = band_grid(x, sr, hop_s=0.01, smooth=1, nfft=1024)
+        body = simplify_frames(t, G, tol_db=3.0, max_frames=60, floor_db=G.max() - 100)
+        rec["layers"].append({"name": "body", "model": "bandnoise", "gain_db": -18.0,
+                              "params": {"frames": body, "grain": 0.0}})
+        rec["layers"].append({"name": "slap", "model": "bandnoise", "gain_db": -6.0,
+                              "params": {"frames": _gated_attack(x, sr, strong), "grain": 0.0}})
         if detail_model == "splash":
-            for k, o in enumerate(strong[:2] or [0.03]):
-                rec["layers"].append({"name": f"splash{k + 1}", "model": "splash", "gain_db": -12.0,
+            for k, o in enumerate(strong):
+                rec["layers"].append({"name": f"splash{k + 1}", "model": "splash", "gain_db": -18.0,
+                                      "start": round(max(0.0, o - 0.01), 3),
                                       "params": {"size": 0.15, "speed": 4.0, "bloop": 0.5, "droplets": 0.6,
-                                                 "slosh": 0.5, "at": round(max(0.0, o - 0.01), 3)}})
+                                                 "slosh": 0.5, "at": 0.0}})
     elif kind == "texture":
         t, G = band_grid(x, sr, hop_s=0.05)
         mean = 10 * np.log10(np.mean(10 ** (G / 10), 0))
-        rec["layers"].append({"name": "flow", "model": "bandnoise",
-                              "params": {"frames": [[0.0, [round(float(v), 1) for v in mean]]], "tilt_db": 0.0,
-                                         "grain": 0.3, "grain_hz": 6.0}})
-        rec["layers"].append({"name": "bubbles", "model": "bubbles", "gain_db": -18.0,
-                              "params": {"rate": 60.0, "r_min_mm": 0.5, "r_max_mm": 4.0}})
-        rec["loop"] = True
+        rec["layers"].append({"name": "bubbles", "model": "bubble_cloud",
+                              "params": {"rate": 3000.0, "r_min_mm": r_min, "r_max_mm": r_max, "size_exponent": 2.5,
+                                         "amp_exponent": 0.5, "xi": 0.5, "damping": 1.0}})
+        rec["layers"].append({"name": "spray", "model": "bandnoise", "gain_db": -20.0,
+                              "params": {"frames": [[0.0, [round(float(v), 1) for v in mean]]], "grain": 0.2,
+                                         "grain_hz": 6.0}})
     elif kind in ("voice", "choir"):
-        h = feats["stems"]["harmonic"]
+        stems = feats["stems"]
         if kind == "voice":
             ft, f0 = A.f0_track(x, sr, fmin=150.0, fmax=1500.0)[:2]
             ok = np.isfinite(f0) & (f0 > 0)
             ft, f0 = np.asarray(ft)[ok], np.asarray(f0)[ok]
             f0 = ndimage.median_filter(f0, 5, mode="nearest")
             f0_pts = _curve(ft, f0, tol=20 / 1200, max_points=30, log=True)
-            fref = float(np.median(f0))
         else:
             # two passes: a wide search for the overall pitch, then a narrow one around it (stops octave jumps)
             _, f0w, sw = harmonic_sum_f0(x, sr)
@@ -271,23 +330,29 @@ def build_recipe(x, sr, kind, name="resynth", detail_model="splash", feats=None)
             ft, f0, s = harmonic_sum_f0(x, sr, fmin=med / 1.5, fmax=med * 1.5)
             f0 = ndimage.median_filter(f0, 5, mode="nearest")
             f0_pts = _curve(ft, f0, tol=30 / 1200, max_points=40, log=True)
-            fref = float(np.median(f0))
-        forms = estimate_formants(h, sr, fref, n=4 if kind == "voice" else 3)
-        lv = _level_curve(h, sr, hop_s=0.02 if kind == "voice" else 0.1)
-        lay = {"name": "voice" if kind == "voice" else "choir", "model": "harmonic",
-               "params": {"f0": f0_pts, "formants": forms, "tilt_db": -3.0, "breath": 0.1, "level": lv,
-                          "vibrato_hz": 5.0, "vibrato_cents": 10.0 if kind == "voice" else 15.0,
-                          "wander_cents": 10.0, "voices": 1 if kind == "voice" else 4, "detune_cents": 15.0,
-                          "max_hz": 10000.0 if kind == "voice" else 5000.0}}
-        rec["layers"].append(lay)
-        r = feats["stems"]["noise"] + feats["stems"]["transient"]
-        t, G = band_grid(r, sr, hop_s=0.02)
-        frames = simplify_frames(t, G, tol_db=4.0, max_frames=30, floor_db=G.max() - 60)
-        rec["layers"].append({"name": "breath", "model": "bandnoise", "gain_db": -12.0,
-                              "params": {"frames": frames, "grain": 0.0}})
-        if kind == "choir":
-            rec["post"].append({"model": "reverb", "params": {"size": 0.9, "damp": 0.5, "predelay_ms": 20.0,
-                                                              "mix": 0.5}})
+        fref = float(np.median(f0))
+        env, ap = voice_frames(x, sr, ft, f0, stems, hop_s=0.02 if kind == "voice" else 0.1,
+                               fmax=10000.0 if kind == "voice" else 5000.0)
+        if kind == "choir":  # one sung line through a hall: a steady vowel colour is safer than tracking it
+            env = [[0.0, [round(float(v), 1) for v in np.mean([fr[1] for fr in env], 0)]]]
+        lv = _level_curve(x, sr, hop_s=0.02 if kind == "voice" else 0.1, floor_db=-60.0,
+                          smooth_s=0.0 if kind == "voice" else 0.4)
+        hb = {"model": "harmonic",
+              "params": {"f0": f0_pts, "formants": [], "env_frames": env, "ap_frames": ap, "tilt_db": 0.0,
+                         "breath": 0.1, "pulse_noise": 0.7, "level": lv, "vibrato_hz": 5.0,
+                         "vibrato_cents": 5.0 if kind == "voice" else 15.0, "wander_cents": 0.0 if kind == "voice"
+                         else 10.0, "voices": 1 if kind == "voice" else 4, "detune_cents": 15.0,
+                         "max_hz": 10000.0 if kind == "voice" else 5000.0}}
+        if kind == "voice":
+            rec["layers"].append({"name": "voice", **hb})
+        else:
+            rec["layers"].append({"name": "choir", "chain": [hb, {"model": "reverb", "params": {
+                "size": 0.9, "damp": 0.5, "predelay_ms": 20.0, "mix": 0.5}}]})
+            # the hall's diffuse, noisy part (the residual after the harmonic split) as its own layer
+            r = stems["noise"] + stems["transient"]
+            t, G = band_grid(r, sr, hop_s=0.1)
+            rec["layers"].append({"name": "hall_air", "model": "bandnoise", "gain_db": -12.0, "params": {
+                "frames": simplify_frames(t, G, tol_db=4.0, max_frames=30, floor_db=G.max() - 60), "grain": 0.2}})
         rec["f0_reference_hz"] = round(fref, 2)
     else:
         raise ValueError(f"unknown kind {kind!r}")
@@ -295,15 +360,17 @@ def build_recipe(x, sr, kind, name="resynth", detail_model="splash", feats=None)
 
 
 FIT_PARAMS = {
-    "impact": ["0.tilt_db:-4:4", "0.grain:0:0.3", "0.grain_hz:3:40", "1.size:0.05:0.6", "1.speed:1:10",
-               "1.bloop:0:1", "1.droplets:0:1", "1.gain_db:-30:0"],
-    "texture": ["0.tilt_db:-3:3", "0.grain:0:1", "0.grain_hz:1:40", "1.rate:5:2000", "1.r_max_mm:1:15",
-                "1.gain_db:-40:-3"],
-    "voice": ["0.tilt_db:-12:3", "0.breath:0:0.6", "0.formant_shift:0.8:1.25", "0.vibrato_cents:0:60",
-              "1.gain_db:-30:0"],
-    "choir": ["0.tilt_db:-12:3", "0.breath:0:0.6", "0.detune_cents:0:40", "1.gain_db:-30:0"],
+    "impact": ["0.rate:200:30000", "0.r_min_mm:0.2:4", "0.r_max_mm:1:20", "0.size_exponent:1:4",
+               "0.damping:0.5:3", "0.xi:0:3", "1.gain_db:-30:-12", "2.gain_db:-30:0", "3.gain_db:-40:-6",
+               "3.size:0.05:0.6"],
+    "texture": ["0.rate:1000:30000", "0.r_min_mm:0.2:4", "0.r_max_mm:1:20", "0.size_exponent:1:4",
+                "0.amp_exponent:0:1.5", "0.damping:0.5:3", "0.xi:0:3", "1.gain_db:-40:-12"],
+    "voice": ["0.tilt_db:-6:6", "0.breath:0:0.6", "0.pulse_noise:0:1", "0.formant_shift:0.9:1.1",
+              "0.vibrato_cents:0:40"],
+    "choir": ["0.0.tilt_db:-6:6", "0.0.breath:0:0.6", "0.0.detune_cents:0:40", "0.1.size:0.5:0.99",
+              "0.1.mix:0.1:0.9", "0.1.damp:0:0.9", "1.gain_db:-30:0"],
 }
-CHOIR_POST = ["size", "mix", "damp"]
+
 
 
 # ----------------------------------------------------------------------------- fit and check
@@ -340,15 +407,17 @@ def pitch_error_cents(ref, sr_ref, y, sr_y, method="yin"):
 
 
 def eq_correct(rec, x, sr, fit_section=None, passes=2, max_db=18.0):
-    """Spectral fine-tune of layer 0: for a `harmonic` layer, set its `eq` to the remaining long-term 1/3-octave difference
-    between the reference (fit section) and the render, smoothed over neighbouring bands (for a `bandnoise`
-    layer the same offset is added to every frame of its grid). Kept only if the
+    """Spectral fine-tune: put the remaining long-term 1/3-octave difference between the reference (fit section)
+    and the render, smoothed over neighbouring bands, into the recipe's post `eq` block. Kept only if the
     distance on the fit section improves."""
     s0, s1 = fit_section or (0.0, len(x) / sr)
     seg = x[int(s0 * sr):int(s1 * sr)]
     _, Gr = band_grid(seg, sr, hop_s=0.05)
     lr = 10 * np.log10(np.mean(10 ** (Gr / 10), 0))
     best = copy.deepcopy(rec)
+    eqb = next((b for b in best.get("post", []) if b["model"] == "eq"), None)
+    if eqb is None:
+        return best
     yb = render(best, duration=round(s1 - s0, 3))
     dbest = F.compare_signals(x, sr, yb, F.FIT_SR, s0 if s0 > 0 else None, s1)["total"]
     cur = copy.deepcopy(rec)
@@ -356,17 +425,11 @@ def eq_correct(rec, x, sr, fit_section=None, passes=2, max_db=18.0):
         y = render(cur, duration=round(s1 - s0, 3))
         _, Gy = band_grid(y, F.FIT_SR, hop_s=0.05)
         ly = 10 * np.log10(np.mean(10 ** (Gy / 10), 0))
-        diff = (lr - lr.max()) - (ly - ly.max())
-        diff = ndimage.uniform_filter1d(diff, 3, mode="nearest")
-        lay = cur["layers"][0]
-        p = lay["params"]
-        if lay["model"] == "bandnoise":  # shift every frame of the band grid
-            p["frames"] = [[t, [round(v + float(np.clip(0.8 * d, -max_db, max_db)), 1) for v, d in zip(row, diff)]]
-                           for t, row in p["frames"]]
-        else:
-            old = dict((int(a), b) for a, b in p.get("eq", [])) or {b: 0.0 for b in THIRD_OCTAVES}
-            p["eq"] = [[b, round(float(np.clip(old.get(b, 0.0) + 0.8 * d, -max_db, max_db)), 1)]
-                       for b, d in zip(THIRD_OCTAVES, diff)]
+        diff = ndimage.uniform_filter1d((lr - lr.max()) - (ly - ly.max()), 3, mode="nearest")
+        p = next(b for b in cur["post"] if b["model"] == "eq").setdefault("params", {})
+        old = dict((int(a), b) for a, b in p.get("curve", []))
+        p["curve"] = [[b, round(float(np.clip(old.get(b, 0.0) + 0.8 * d, -max_db, max_db)), 1)]
+                      for b, d in zip(THIRD_OCTAVES, diff)]
         d = F.compare_signals(x, sr, render(cur, duration=round(s1 - s0, 3)), F.FIT_SR, s0 if s0 > 0 else None,
                               s1)["total"]
         if d < dbest:
@@ -381,29 +444,16 @@ def fit_and_check(rec, x, sr, kind, fit_section=None, holdout=None, budget=80, l
     start, end, mode) where mode 'timeline' crops the full render at the same times (one-shots, fixed
     timelines) and 'fresh' renders the recipe from t=0 for the section length (stationary textures, or another
     recording of the same sound). Returns dict with the fitted recipe and every distance."""
-    work = copy.deepcopy(rec)
     dur = len(x) / sr
     s0, s1 = fit_section or (0.0, dur)
-    params = list(FIT_PARAMS[kind])
-    work = copy.deepcopy(work)
+    work = copy.deepcopy(rec)
     work["duration"] = round(s1 - s0, 3)
-    if kind == "choir":  # reverb is a post block: fit it by moving it into the voice layer's chain for the fit
-        lay = work["layers"][0]
-        lay["chain"] = [{"model": lay.pop("model"), "params": lay.pop("params")}, work["post"].pop(0)]
-        params += ["0.1.size:0.5:0.99", "0.1.mix:0.1:0.9", "0.1.damp:0:0.9"]
-        params = [p.replace("0.tilt_db", "0.0.tilt_db").replace("0.breath", "0.0.breath")
-                  .replace("0.detune_cents", "0.0.detune_cents") for p in params]
+    params = [p for p in FIT_PARAMS[kind] if int(p.split(".")[0]) < len(work["layers"])]
     res = F.fit(work, x, sr, params=params, ref_start=s0 if s0 > 0 else None, ref_end=s1, budget=budget,
                 log=lambda *a, **k: None)
     fitted = copy.deepcopy(res["recipe"])
-    if kind == "choir":
-        lay = fitted["layers"][0]
-        ch = lay.pop("chain")
-        lay["model"], lay["params"] = ch[0]["model"], ch[0]["params"]
-        fitted["post"] = [ch[1]]
     fitted["duration"] = rec["duration"]
-    if kind in ("voice", "choir", "impact", "texture"):
-        fitted = eq_correct(fitted, x, sr, fit_section=(s0, s1))
+    fitted = eq_correct(fitted, x, sr, fit_section=(s0, s1))
     out = {"recipe": fitted, "fit_before": res["before"], "fit_after": res["after"],
            "fit_section": [round(s0, 3), round(s1, 3)], "params": res["params"], "evaluations": res["evaluations"]}
     y = render(fitted)
@@ -420,6 +470,7 @@ def fit_and_check(rec, x, sr, kind, fit_section=None, holdout=None, budget=80, l
     out["pitch_error_cents"] = (pitch_error_cents(x, sr, y, F.FIT_SR, "yin" if kind == "voice" else "hsum")
                                 if kind in ("voice", "choir") else None)
     return out
+
 
 
 def auto_kind(feats):

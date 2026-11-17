@@ -93,33 +93,62 @@ def eq_gain(f, eq):
     return 10 ** (np.interp(np.log2(np.maximum(f, 1.0)), np.log2([p[0] for p in pts]), [p[1] for p in pts]) / 20)
 
 
+def _grid_db(times, frames, n_bands):
+    """Interpolate frames [[t, [dB per band]], ...] to `times` -> array [len(times), n_bands]."""
+    fr = sorted(frames, key=lambda p: float(p[0]))
+    ft = np.array([float(p[0]) for p in fr])
+    G = np.array([[float(v) for v in p[1]] for p in fr])
+    if G.shape[1] != n_bands:
+        raise ValueError(f"each frame needs {n_bands} levels, got {G.shape[1]}")
+    return np.stack([np.interp(times, ft, G[:, j]) for j in range(n_bands)], 1)
+
+
+def _lookup_db(E, lb, f):
+    """E [T, B] dB grid over log2 band centres lb; f [T] Hz -> dB [T] (linear in log frequency, edges held)."""
+    pos = np.interp(np.log2(np.maximum(f, 1.0)), lb, np.arange(len(lb)))
+    lo = np.clip(np.floor(pos).astype(int), 0, len(lb) - 2)
+    w = np.clip(pos - lo, 0, 1)
+    r = np.arange(len(f))
+    return E[r, lo] * (1 - w) + E[r, lo + 1] * w
+
+
 @model("harmonic", "excitation",
-       "Voiced source for resynthesis: harmonics of an f0 curve shaped by a fixed formant envelope (so the vowel "
-       "stays put while the pitch moves, as in a voice), a source slope `tilt_db`, breath noise through the same "
-       "formants, vibrato, slow pitch wander, and `voices` detuned unison copies (a choir). Formants are "
-       "[[Hz, bandwidth Hz, dB], ...].",
+       "Voiced source for resynthesis (harmonic + noise model): harmonics of an f0 curve shaped by a spectral "
+       "envelope, plus aperiodic (breath) noise. The envelope is either fixed formants [[Hz, bandwidth Hz, dB], ...] "
+       "or, for moving vowels, `env_frames` [[t, [dB per band]], ...] on `bands` (a time-varying envelope, as in "
+       "the WORLD vocoder). `ap_frames` sets how noisy each band is over time (aperiodicity). The noise is "
+       "modulated by the glottal cycle (`pulse_noise`) so it fuses with the voice instead of hissing beside it, "
+       "as turbulence follows glottal flow in articulatory models (Klatt 1990; Pink Trombone; CHIMERA). Also "
+       "source slope `tilt_db`, vibrato, slow pitch wander, `voices` detuned unison copies (a choir), a fine `eq`.",
        [
            Param("f0", 220.0, "Hz", 30, 2000, "fundamental (automatable; interpolated on a log scale)",
                  automatable=True),
            Param("pitch_st", 0.0, "semitones", -24, 24, "transpose"),
            Param("formants", [[700, 130, 0], [1200, 150, -6], [2600, 200, -12]], "[[Hz, bw Hz, dB], ...]",
-                 doc="formant envelope", is_list=True),
-           Param("formant_shift", 1.0, "", 0.5, 2.0, "scale all formant frequencies (size of the vocal tract)"),
+                 doc="fixed formant envelope (ignored when env_frames is given)", is_list=True),
+           Param("bands", THIRD_OCTAVES, "Hz", doc="band centres for env_frames / ap_frames", is_list=True),
+           Param("env_frames", [], "[[s, [dB, ...]], ...]", doc="time-varying spectral envelope (moving vowels)",
+                 is_list=True),
+           Param("ap_frames", [], "[[s, [dB, ...]], ...]", doc="aperiodicity: noise level per band over time "
+                 "(0 dB = the noisiest band; empty = shaped like the envelope)", is_list=True),
+           Param("formant_shift", 1.0, "", 0.5, 2.0, "scale all formant / envelope frequencies (vocal tract size)"),
            Param("tilt_db", -3.0, "dB/oct", -24, 6, "source slope (- = darker, softer voice)"),
-           Param("breath", 0.1, "", 0, 1, "breath noise through the formants"),
+           Param("breath", 0.1, "", 0, 1, "aperiodic (breath) noise level, relative to the harmonics"),
+           Param("pulse_noise", 0.7, "", 0, 1, "how much the noise follows the glottal cycle (0 = steady hiss)"),
            Param("vibrato_hz", 5.0, "Hz", 0, 12, "vibrato rate"),
            Param("vibrato_cents", 0.0, "cents", 0, 200, "vibrato depth"),
            Param("wander_cents", 0.0, "cents", 0, 200, "slow random pitch drift"),
            Param("voices", 1, "", 1, 8, "unison voices"),
            Param("detune_cents", 10.0, "cents", 0, 60, "spread of the unison voices"),
-           Param("eq", [], "[[Hz, dB], ...]", doc="fine spectral correction (interpolated in log frequency; "
-                 "the resynthesis builder fills it from the remaining 1/3-octave difference)", is_list=True),
+           Param("eq", [], "[[Hz, dB], ...]", doc="fine spectral correction (interpolated in log frequency)",
+                 is_list=True),
            Param("max_hz", 8000.0, "Hz", 1000, 20000, "highest harmonic"),
            Param("level", 1.0, "", 0, 4, "amplitude (automatable: the loudness envelope)", automatable=True),
-       ], ["Fant 1960 source-filter theory; Serra & Smith 1990 (sinusoidal modelling); "
-           "Ternstrom 1991 (choir unison spread)"])
-def harmonic(ctx: Ctx, x, f0, pitch_st, formants, formant_shift, tilt_db, breath, vibrato_hz, vibrato_cents,
-             wander_cents, voices, detune_cents, eq, max_hz, level):
+       ], ["Fant 1960 source-filter theory; Serra & Smith 1990 (sinusoidal + noise modelling); Morise et al. 2016 "
+           "(WORLD: f0, spectral envelope, aperiodicity); Klatt & Klatt 1990 (noise modulated by the glottal "
+           "cycle); Ternstrom 1991 (choir unison spread)"])
+def harmonic(ctx: Ctx, x, f0, pitch_st, formants, bands, env_frames, ap_frames, formant_shift, tilt_db, breath,
+             pulse_noise, vibrato_hz, vibrato_cents, wander_cents, voices, detune_cents, eq, max_hz, level):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     base = ctrl(ctx, f0, "exp") * 2 ** (float(pitch_st) / 12)
     tt = ctx.t
@@ -128,7 +157,16 @@ def harmonic(ctx: Ctx, x, f0, pitch_st, formants, formant_shift, tilt_db, breath
     nyq = min(float(max_hz), 0.45 * sr)
     out = np.zeros(n)
     voices = max(1, int(voices))
-    env_fn = lambda ff: formant_gain(ff, formants, formant_shift) * eq_gain(ff, eq)  # noqa: E731
+    lb = np.log2(np.asarray(bands, float) * float(formant_shift))
+    E = _grid_db(idx / sr, env_frames, len(lb)) if env_frames else None
+
+    def env_k(fk):  # linear gain of the envelope at per-control-frame frequencies fk
+        g = eq_gain(fk, eq)
+        if E is not None:
+            return g * 10 ** (_lookup_db(E, lb, fk) / 20)
+        return g * formant_gain(fk, formants, formant_shift)
+
+    glot = None
     for v in range(voices):
         det = 0.0 if voices == 1 else (v / (voices - 1) - 0.5) * float(detune_cents)
         cents = det + float(vibrato_cents) * np.sin(2 * np.pi * float(vibrato_hz) * tt + rng.uniform(0, 2 * np.pi))
@@ -137,20 +175,96 @@ def harmonic(ctx: Ctx, x, f0, pitch_st, formants, formant_shift, tilt_db, breath
             cents = cents + float(wander_cents) * np.interp(np.arange(n), idx, wn)
         fv = base * 2 ** (cents / 1200)
         phi = 2 * np.pi * np.cumsum(fv) / sr + rng.uniform(0, 2 * np.pi)
+        if glot is None:
+            glot = ((1 + np.cos(phi)) / 2) ** 3
+            glot /= glot.mean() + 1e-12
         fmin = max(20.0, float(np.min(fv)))
         kmax = int(nyq // fmin)
         fc = fv[idx]
         for k in range(1, kmax + 1):
             fk = k * fc
-            a = env_fn(fk) * k ** (float(tilt_db) / 6.02) * (fk < nyq)
+            a = env_k(fk) * k ** (float(tilt_db) / 6.02) * (fk < nyq)
             if not np.any(a):
                 continue
             out += np.interp(np.arange(n), idx, a) * np.sin(k * phi)
     out /= voices ** 0.5
     if breath > 0:
-        nz = dsp_noise = rng.standard_normal(n)
-        nz = np.fft.irfft(np.fft.rfft(dsp_noise) * env_fn(np.fft.rfftfreq(n, 1 / sr)),
-                          n)
+        nfft, nh = BN_NFFT, BN_NFFT // 4
+        f, t, Z = signal.stft(rng.standard_normal(n + nfft), sr, nperseg=nfft, noverlap=nfft - nh)
+        if E is not None:
+            Et = _grid_db(t, env_frames, len(lb))
+            D = np.stack([np.interp(np.log2(np.maximum(f, 1.0)), lb, row) for row in Et], 1)
+        else:
+            D = 20 * np.log10(formant_gain(f, formants, formant_shift))[:, None] + np.zeros((1, len(t)))
+        if ap_frames:
+            At = _grid_db(t, ap_frames, len(lb))
+            D = D + np.stack([np.interp(np.log2(np.maximum(f, 1.0)), lb, row) for row in At], 1)
+        D += 20 * np.log10(eq_gain(f, eq))[:, None]
+        _, nz = signal.istft(Z * 10 ** (D / 20), sr, nperseg=nfft, noverlap=nfft - nh)
+        nz = np.pad(nz[:n], (0, max(0, n - len(nz[:n]))))
+        pn = float(pulse_noise)
+        nz = nz * ((1 - pn) + pn * glot)
         nz *= (np.std(out) + 1e-9) / (np.std(nz) + 1e-12)
         out = out + float(breath) * 2.0 * nz
     return out * ctrl(ctx, level)
+
+
+@model("bubble_cloud", "excitation",
+       "Many bubbles at once, fast: the sound of flowing, splashing and pouring water. Each bubble rings at its "
+       "Minnaert frequency f = 3.26/r with van den Doel's damping and pitch rise; radii follow a power law between "
+       "r_min and r_max; amplitude grows as r^amp_exponent. Bubbles are grouped into radius bins and each bin is one "
+       "Poisson impulse train convolved with that radius's ringing, so thousands of bubbles per second render "
+       "quickly. `rate` and `level` can follow an envelope (a splash's bubble burst).",
+       [
+           Param("rate", 2000.0, "bubbles/s", 0, 50000, "bubble formation rate", automatable=True),
+           Param("r_min_mm", 0.5, "mm", 0.1, 20, "smallest radius (6.5 kHz at 0.5 mm)"),
+           Param("r_max_mm", 6.0, "mm", 0.2, 60, "largest radius (540 Hz at 6 mm)"),
+           Param("size_exponent", 2.5, "", 0.5, 5, "power-law exponent of the radius distribution (more small ones)"),
+           Param("amp_exponent", 0.5, "", 0, 2, "bubble amplitude ~ r^amp_exponent"),
+           Param("xi", 0.1, "", 0, 20, "pitch-rise constant (bubbles rising, shrinking pressure)"),
+           Param("damping", 1.0, "", 0.3, 4, "scale van den Doel's damping (more = shorter, drier blips)"),
+           Param("bins", 40, "", 8, 120, "radius bins (quality vs speed)"),
+           Param("level", 1.0, "", 0, 4, "level", automatable=True),
+       ], ["Minnaert 1933; van den Doel 2005, ACM TAP 2(4) (liquid sounds from bubble populations)",
+           "Moss et al. 2010 (sounding liquids: bubble-based fluid sound)", "Zheng & James 2009 (harmonic fluids)"])
+def bubble_cloud(ctx: Ctx, x, rate, r_min_mm, r_max_mm, size_exponent, amp_exponent, xi, damping, bins, level):
+    sr, n, rng = ctx.sr, ctx.n, ctx.rng
+    rmin, rmax = sorted((r_min_mm * 1e-3, max(r_max_mm, r_min_mm * 1.01) * 1e-3))
+    rmin = max(rmin, 3.26 / (0.45 * sr))
+    if rmax <= rmin:
+        return np.zeros(n)
+    edges = np.geomspace(rmin, rmax, int(bins) + 1)
+    a = 1 - size_exponent
+    cdf = (edges ** a - rmin ** a) / (rmax ** a - rmin ** a) if abs(a) > 1e-9 else np.log(edges / rmin) / np.log(rmax / rmin)
+    share = np.diff(cdf)
+    R = ctrl(ctx, rate)
+    lev = ctrl(ctx, level)
+    out = np.zeros(n)
+    for b in range(int(bins)):
+        if share[b] <= 0:
+            continue
+        r = float(np.sqrt(edges[b] * edges[b + 1]))
+        p = np.clip(R * share[b] / sr, 0, 1)
+        hits = rng.random(n) < p
+        if not hits.any():
+            continue
+        imp = hits * lev * rng.uniform(0.5, 1.0, n) * (r / 1e-3) ** amp_exponent
+        f0 = 3.26 / r
+        d = (0.13 / r + 0.0072 * r ** -1.5) * damping
+        L = min(int(sr * 7.0 / d), n, sr)
+        tg = np.arange(L) / sr
+        grain = np.sin(2 * np.pi * np.cumsum(f0 * (1 + xi * d * tg)) / sr) * np.exp(-d * tg)
+        out += signal.fftconvolve(imp, grain)[:n]
+    return out * 0.3
+
+
+@model("eq", "fx",
+       "Graphic EQ curve [[Hz, dB], ...], interpolated in log frequency (zero phase). The resynthesis builder "
+       "puts the remaining long-term spectral difference here.",
+       [Param("curve", [], "[[Hz, dB], ...]", doc="gain points", is_list=True),
+        Param("gain_db", 0.0, "dB", -40, 40, "overall gain")], ["Graphic equaliser (standard)"])
+def eq_fx(ctx: Ctx, x, curve, gain_db):
+    from .. import dsp
+    if not curve:
+        return x * 10 ** (gain_db / 20)
+    return dsp.fft_filter(x, ctx.sr, lambda f: eq_gain(f, curve)) * 10 ** (gain_db / 20)
