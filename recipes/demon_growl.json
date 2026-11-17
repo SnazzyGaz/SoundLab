@@ -1,0 +1,187 @@
+{
+ "soundlab": 1,
+ "name": "Demon growl: rough folds with a ventricular layer an octave below, long open throat",
+ "category": "creature",
+ "sample_rate": 48000,
+ "duration": 3.4,
+ "seed": 21,
+ "layers": [
+  {
+   "name": "voice",
+   "model": "creature_voice",
+   "params": {
+    "f0": [
+     [
+      0,
+      78
+     ],
+     [
+      1.5,
+      80
+     ],
+     [
+      3.0,
+      70
+     ]
+    ],
+    "chaos": 0.35,
+    "ventricular": 1.4,
+    "rasp": 0.6,
+    "breath": 0.1,
+    "jitter": 0.02,
+    "shimmer": 0.12,
+    "open_quotient": 0.6,
+    "sharpness": 0.4,
+    "tract_cm": 34,
+    "mouth": 0.6,
+    "bandwidth": 1.7,
+    "level": [
+     [
+      0,
+      0
+     ],
+     [
+      0.4,
+      1
+     ],
+     [
+      3.1,
+      0.85
+     ],
+     [
+      3.35,
+      0
+     ]
+    ]
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 60,
+    "absorption": 0.5,
+    "source_distance": 1.5
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "smaller .. bigger creature",
+   "map": [
+    {
+     "to": "0.tract_cm",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    }
+   ]
+  },
+  "rough": {
+   "default": 0.5,
+   "doc": "smoother .. more chaotic",
+   "map": [
+    {
+     "to": "0.chaos",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.25
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "pitch": {
+   "default": 0.5,
+   "doc": "lower .. higher",
+   "map": [
+    {
+     "to": "0.f0",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.f0": {
+   "rel": 0.08
+  },
+  "0.chaos": {
+   "abs": 0.05
+  }
+ }
+}

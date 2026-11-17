@@ -1,6 +1,6 @@
 {
  "soundlab": 1,
- "name": "Creature growl: rough low pulses through a large vocal tract",
+ "name": "Creature growl: rough low pulses through a large vocal tract, with a chaotic fold layer and an f0/2 ventricular layer (v0.21)",
  "category": "creature",
  "sample_rate": 48000,
  "duration": 3.0,
@@ -20,6 +20,60 @@
     "length_s": 2.6,
     "rise": 0.4,
     "at": 0.05
+   }
+  },
+  {
+   "name": "folds",
+   "model": "creature_voice",
+   "gain_db": -9.0,
+   "params": {
+    "f0": [
+     [
+      0.05,
+      60
+     ],
+     [
+      1.2,
+      56
+     ],
+     [
+      2.65,
+      50
+     ]
+    ],
+    "chaos": 0.35,
+    "ventricular": 1.2,
+    "rasp": 0.3,
+    "breath": 0.05,
+    "jitter": 0.02,
+    "shimmer": 0.15,
+    "open_quotient": 0.55,
+    "sharpness": 0.5,
+    "tract_cm": 35,
+    "mouth": 0.3,
+    "muffle_hz": 1500,
+    "level": [
+     [
+      0,
+      0
+     ],
+     [
+      0.05,
+      0
+     ],
+     [
+      0.45,
+      1
+     ],
+     [
+      2.4,
+      0.8
+     ],
+     [
+      2.65,
+      0
+     ]
+    ]
    }
   }
  ],

@@ -285,6 +285,39 @@ Wind blowing across a pipe, bottle neck, doorway gap or tunnel: turbulence excit
 
 Sources: Farnell 2010, Designing Sound (wind, pipes); Howe 1998, Acoustics of fluid-structure interactions (edge tones); Sound Design Toolkit (SDT) WindCavity, SkAT-VG: method only
 
+### `creature_voice`
+
+Creature and monster voices: a rough laryngeal pulse source (CHIMERA glottis port: jitter, shimmer, diplophonia, period doubling to chaos via `chaos`, vocal fry), an optional ventricular-fold layer pulsing at f0/2 (`ventricular`, the growl and kargyraa sound), rasp noise from the narrowed false folds, and a long vocal tract (`tract_cm`; `mouth` 0 = shut, sound through the nose and body) with a throat resonance. Pitch, chaos, mouth and level are automatable.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `f0` | `80.0` | Hz | 8 .. 1500 | vocal-fold rate (automatable, log) (automatable) |
+| `chaos` | `0.3` |  | 0 .. 1 | bifurcation: ~0.3 period doubling, ~0.55 period four, >0.62 chaos (automatable) |
+| `diplophonia` | `0.0` |  | 0 .. 1 | alternating strong/weak cycles (another route to f0/2) |
+| `jitter` | `0.01` |  | 0 .. 0.2 | cycle-to-cycle period perturbation (fraction) |
+| `shimmer` | `0.08` |  | 0 .. 0.8 | cycle-to-cycle amplitude perturbation (fraction) |
+| `fry` | `0.0` |  | 0 .. 1 | vocal fry: double pulses with a short open phase |
+| `open_quotient` | `0.5` |  | 0.25 .. 0.95 | open part of each cycle (lower = pressed, brighter) |
+| `skew` | `0.62` |  | 0.3 .. 0.9 | opening share of the open phase (higher = faster closing) |
+| `sharpness` | `0.8` |  | 0 .. 1 | abrupt closure (more high harmonics) |
+| `ventricular` | `0.0` |  | 0 .. 2 | ventricular-fold layer at f0/2, relative level |
+| `ventricular_oq` | `0.5` |  | 0.2 .. 0.9 | open quotient of the ventricular pulse (over 2 cycles) |
+| `rasp` | `0.0` |  | 0 .. 2 | turbulent noise from the narrowed false folds, pulsed with the cycles |
+| `breath` | `0.05` |  | 0 .. 2 | aspiration noise through the glottis |
+| `tract_cm` | `17.0` | cm | 4 .. 400 | vocal tract length (human 17, big dog 25, lion 35, elephant ~80) |
+| `mouth` | `0.7` |  | 0 .. 1 | mouth opening (0 = closed: nasal / body radiation) (automatable) |
+| `formant_shift` | `1.0` |  | 0.5 .. 2.0 | scale all tract resonances |
+| `bandwidth` | `1.0` |  | 0.3 .. 4.0 | tract losses: resonance width and high-frequency damping (more = softer, wetter walls) |
+| `throat_hz` | `0.0` | Hz | 0 .. 2000 | extra throat / chest resonance (0 = off) |
+| `throat_q` | `3.0` |  | 0.5 .. 20 | sharpness of the throat resonance |
+| `muffle_hz` | `0.0` | Hz | 0 .. 20000 | low-pass for sound radiated through skin and nose (0 = off) |
+| `drift_cents` | `8.0` | cents | 0 .. 200 | slow random pitch drift |
+| `vibrato_hz` | `0.0` | Hz | 0 .. 30 | vibrato / tremor rate |
+| `vibrato_cents` | `0.0` | cents | 0 .. 600 | vibrato depth |
+| `level` | `1.0` |  | 0 .. 4 | level (automatable envelope) (automatable) |
+
+Sources: CHIMERA vocal synth by Jameson Hodge (MIT): glottal source ported (see THIRD_PARTY.md); Bailly, Henrich & Pelorson 2010, JASA 127 (ventricular folds at f0/2 in growl); Fitch 1997, JASA 102; Riede & Fitch 1999 (vocal tract length and formant dispersion); Kelly & Lochbaum 1962; J. O. Smith, Physical Audio Signal Processing (lossy tube as a feedback comb)
+
 ## Stage: resonator
 
 ### `modal`

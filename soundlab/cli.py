@@ -101,7 +101,7 @@ def main(argv=None) -> int:
 
     rs = sub.add_parser("resynth", help="analyse a recording and build + fit an editable layered recipe for it")
     rs.add_argument("ref", help="reference audio (kept outside the repo)")
-    rs.add_argument("--kind", choices=("auto", "impact", "texture", "voice", "choir"), default="auto")
+    rs.add_argument("--kind", choices=("auto", "impact", "texture", "voice", "choir", "growl"), default="auto")
     rs.add_argument("--fit-start", type=float, help="start of the section to fit on (s)")
     rs.add_argument("--fit-end", type=float, help="end of the section to fit on (s)")
     rs.add_argument("--holdout-section", metavar="START:END", help="section of the same clip to check the fit on")

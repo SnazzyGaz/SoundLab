@@ -1,9 +1,51 @@
 # Third-party code
 
-None vendored as of 0.1.0. Runtime dependencies (installed, not copied): NumPy (BSD-3-Clause), SciPy
+No packages vendored (ported code is listed under "Ported code" below). Runtime dependencies (installed, not copied): NumPy (BSD-3-Clause), SciPy
 (BSD-3-Clause); optional: matplotlib (matplotlib licence, BSD-style), pytest (MIT), ffmpeg (external executable).
 
+## Ported code
+
+### CHIMERA vocal synth (MIT) -> `soundlab/models/creature_voice.py` (v0.21)
+
+The glottal source of `creature_voice` is ported (Rust to NumPy) from CHIMERA by Jameson Hodge,
+https://github.com/jamesondh/chimera-vocal-synth, file `crates/chimera/src/sources/glottis.rs` at commit
+24bd2e4: the area pulse `shape()` (raised-cosine opening, closure blended between soft and abrupt) and the
+per-cycle perturbations of `ParametricGlottis::next` (Gaussian jitter and shimmer, alternating diplophonia, the
+logistic-map bifurcation control `r = 2.9 + 1.1 chaos` that scales period and amplitude, vocal-fry double pulses).
+The alligator and elephant recipes take their pitch, chaos, jitter/shimmer and tract settings from CHIMERA's
+creature definitions. CHIMERA's airway network was not ported (SoundLab uses a lossy-tube comb). Licence:
+
+```
+MIT License
+
+Copyright (c) 2026 Jameson Hodge
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Methods adopted from other projects and papers (no code copied)
+
+v0.21 `creature_voice`, beyond the CHIMERA port: ventricular folds vibrating at half the vocal-fold rate in growl
+singing (L. Bailly, N. Henrich, X. Pelorson, "Vocal fold and ventricular fold vibration in period-doubled
+phonation", JASA 127, 2010); vocal tract length and formant spacing in animals (W. T. Fitch, JASA 102, 1997;
+T. Riede and W. T. Fitch, J. Exp. Biol. 1999); the tube as a lossy feedback comb (J. L. Kelly and C. Lochbaum,
+1962; J. O. Smith, *Physical Audio Signal Processing*).
 
 v0.20 choir voices: glottal pulse shape after A. E. Rosenberg, "Effect of glottal pulse shape on the quality of
 natural vowels", JASA 49 (1971), the pulse family also used by klatt-syn (https://github.com/chdh/klatt-syn, MIT)

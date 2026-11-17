@@ -100,6 +100,30 @@ Lesson: our distance rewards a noise copy of the spectrum over a liquid made of 
 the fit to the right physics and judge by ear. A bubble-aware term in the distance (spectral peakiness or
 event statistics) is on the roadmap.
 
+## v0.21: creature growls (`growl` kind)
+
+New block `creature_voice`: a rough laryngeal source ported from CHIMERA (MIT; see THIRD_PARTY.md) with jitter,
+shimmer, diplophonia, vocal fry and a logistic-map `chaos` control (period doubling near 0.3, period four near
+0.55, chaos above 0.62); an explicit ventricular-fold layer that pulses once every two cycles (the f0/2
+subharmonic of growl singing and kargyraa), rasp noise pulsed with it, aspiration, a lossy-tube vocal tract
+(`tract_cm`, `mouth` open/closed), an optional throat resonance and a muffling low-pass for closed-mouth calls.
+
+`soundlab resynth --kind growl` tracks the fold rate (searching from 60 Hz so it does not lock onto the f0/2
+subharmonic, which the ventricular layer provides), copies the level curve, and fits chaos, ventricular level,
+rasp, breath, tract length, mouth, open quotient, closure sharpness, shimmer and losses, then the spectral eq.
+
+On a demon-growl reference (fold rate ~78 Hz with a strong 40 Hz subharmonic), fitted on the first 70 %:
+
+| | whole clip | last 30 % (held out) |
+|---|---|---|
+| old `creature_growl` recipe, as shipped | 0.824 | |
+| old `growl` model, fitted the same way | 0.563 | |
+| v0.21 `growl` resynthesis | 0.277 (other seed 0.309) | 0.400 |
+
+The fit chose a 30 cm tract, a strong ventricular layer (0.55) and little chaos (0.12). Pitch error is about 50
+cents. New recipes: `demon_growl`, `monster_roar`, `dog_growl`, `alligator_bellow`, `elephant_rumble`;
+`creature_growl` gains a `folds` layer (chaotic folds plus the f0/2 ventricular layer) under the original growl.
+
 ## v0.20: hybrid splashes, human choirs
 
 v0.19 had two problems the numbers missed. With the sparsity term on the whole clip, splash onsets

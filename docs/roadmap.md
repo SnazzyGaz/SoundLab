@@ -9,7 +9,12 @@ Ground rules:
   ...). Deeper physics only comes after the checkpoint, and only for sounds a game steers live.
 - Offline render to WAV is the main use.
 
-## Now: interaction models and resynthesis (v0.17 to v0.20)
+## Now: interaction models and resynthesis (v0.17 to v0.21)
+
+v0.21: creature voices (`creature_voice`, CHIMERA glottis port + f0/2 ventricular layer + lossy-tube tract) and
+a `growl` resynthesis kind. Next for creatures: a moving tract (mouth automation is averaged today), a syrinx for
+birds, CHIMERA's pulsed seal calls and the elephant's trunk-valve trumpet.
+
 
 v0.20: splashes keep the v0.18 impact and get a separately fitted bubble tail; choirs lose the noise layer and gain
 per-singer jitter, shimmer, drift, glottal shape, vibrato onset, a drone and a convolution hall. Open: the choir's

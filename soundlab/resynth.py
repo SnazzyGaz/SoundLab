@@ -214,6 +214,13 @@ def _macros(kind):
                       "map": [{"to": "0.pitch_st", "op": "add", "points": [[0, -7], [0.5, 0], [1, 7]]}]}
         m["size"] = {"default": 0.5, "doc": "bigger .. smaller (vocal tract)",
                      "map": [{"to": "0.formant_shift", "op": "mul", "points": [[0, 0.8], [0.5, 1], [1, 1.25]]}]}
+    if kind == "growl":
+        m["size"] = {"default": 0.5, "doc": "smaller .. bigger creature",
+                     "map": [{"to": "0.tract_cm", "op": "mul", "points": [[0, 0.5], [0.5, 1], [1, 2]]},
+                             {"to": "0.f0", "op": "mul", "points": [[0, 1.6], [0.5, 1], [1, 0.65]]}]}
+        m["rough"] = {"default": 0.5, "doc": "smoother .. more chaotic",
+                      "map": [{"to": "0.chaos", "op": "add", "points": [[0, -0.3], [0.5, 0], [1, 0.3]],
+                               "clamp": [0, 1]}]}
     return m
 
 
@@ -401,6 +408,21 @@ def build_recipe(x, sr, kind, name="resynth", detail_model="splash", feats=None)
                 hd["params"].update({"f0": round(fd, 2), "level": dlev, "vibrato_cents": 12.0, "voices": 3})
                 rec["layers"].append({"name": "drone", "gain_db": -6.0, "chain": [hd, copy.deepcopy(hall)]})
         rec["f0_reference_hz"] = round(fref, 2)
+    elif kind == "growl":
+        # v0.21: rough creature voice (creature_voice: CHIMERA glottis port + f0/2 ventricular layer + long tract)
+        # the fold rate, not the f0/2 subharmonic (that is the ventricular layer's job): search from 60 Hz,
+        # then pull frames more than ~0.6 octave off the median back to it
+        ft, f0, _ = harmonic_sum_f0(x, sr, fmin=60.0, fmax=400.0)
+        med = float(np.median(f0))
+        f0 = np.where(np.abs(np.log2(f0 / med)) > 0.6, med, f0)
+        f0 = ndimage.median_filter(f0, 3, mode="nearest")
+        f0_pts = [[round(float(a), 3), round(float(b), 2)] for a, b in zip(ft, f0)]
+        lv = _level_curve(x, sr, hop_s=0.02, floor_db=-60.0, smooth_s=0.05)
+        rec["layers"].append({"name": "voice", "model": "creature_voice", "params": {
+            "f0": f0_pts, "chaos": 0.3, "ventricular": 0.5, "rasp": 0.3, "breath": 0.1, "jitter": 0.02,
+            "shimmer": 0.15, "open_quotient": 0.5, "sharpness": 0.8, "tract_cm": 30.0, "mouth": 0.5,
+            "bandwidth": 1.5, "level": lv}})
+        rec["f0_reference_hz"] = round(float(np.median(f0)), 2)
     else:
         raise ValueError(f"unknown kind {kind!r}")
     return rec
@@ -414,6 +436,8 @@ FIT_PARAMS = {
                 "0.amp_exponent:0:1.5", "0.damping:0.5:3", "0.xi:0:3", "1.gain_db:-40:-12"],
     "voice": ["0.tilt_db:-6:6", "0.breath:0:0.6", "0.pulse_noise:0:1", "0.formant_shift:0.9:1.1",
               "0.vibrato_cents:0:40"],
+    "growl": ["0.chaos:0:1", "0.ventricular:0:2", "0.rasp:0:1.5", "0.breath:0:1", "0.tract_cm:10:120",
+              "0.mouth:0:1", "0.open_quotient:0.3:0.9", "0.sharpness:0:1", "0.shimmer:0:0.5", "0.bandwidth:0.5:4"],
     "choir": ["0.0.tilt_db:-6:6", "0.0.breath:0:0.08", "0.0.detune_cents:0:30", "0.1.rt60:1:6",
               "0.1.mix:0.1:0.8", "0.1.hf_ratio:0.2:1", "1.gain_db:-20:6"],
 }
@@ -590,7 +614,8 @@ def add_bubble_tail(rec, x, sr, ts, budget=60, xfade=0.2, log=print):
 FIT_WEIGHTS = {"texture": {**F.DEFAULT_WEIGHTS},
                "impact": {**F.DEFAULT_WEIGHTS, "sparsity": 0.0},  # v0.20: sparsity only on the splash tail
                "voice": {**F.DEFAULT_WEIGHTS, "sparsity": 0.0},
-               "choir": {**F.DEFAULT_WEIGHTS, "sparsity": 0.0}}
+               "choir": {**F.DEFAULT_WEIGHTS, "sparsity": 0.0},
+               "growl": {**F.DEFAULT_WEIGHTS, "sparsity": 0.25}}
 
 
 def fit_and_check(rec, x, sr, kind, fit_section=None, holdout=None, budget=80, log=print):
@@ -632,7 +657,7 @@ def fit_and_check(rec, x, sr, kind, fit_section=None, holdout=None, budget=80, l
             d = F.compare_signals(hx, hsr, render(fitted, duration=round(b - a, 3)), F.FIT_SR, a, b)
         out["holdout"].append({"name": name, "section": [a, b], "mode": mode, **d})
     out["pitch_error_cents"] = (pitch_error_cents(x, sr, y, F.FIT_SR, "yin" if kind == "voice" else "hsum")
-                                if kind in ("voice", "choir") else None)
+                                if kind in ("voice", "choir", "growl") else None)
     return out
 
 

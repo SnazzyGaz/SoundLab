@@ -1,0 +1,209 @@
+{
+ "soundlab": 1,
+ "name": "Monster roar: pitch swoops up and breaks into chaos, ventricular rasp on top",
+ "category": "creature",
+ "sample_rate": 48000,
+ "duration": 3.0,
+ "seed": 21,
+ "layers": [
+  {
+   "name": "voice",
+   "model": "creature_voice",
+   "params": {
+    "f0": [
+     [
+      0,
+      70
+     ],
+     [
+      0.6,
+      140
+     ],
+     [
+      1.8,
+      120
+     ],
+     [
+      2.8,
+      55
+     ]
+    ],
+    "chaos": [
+     [
+      0,
+      0.2
+     ],
+     [
+      0.8,
+      0.5
+     ],
+     [
+      1.6,
+      0.85
+     ],
+     [
+      2.8,
+      0.6
+     ]
+    ],
+    "ventricular": 1.0,
+    "rasp": 1.0,
+    "breath": 0.2,
+    "jitter": 0.03,
+    "shimmer": 0.2,
+    "open_quotient": 0.45,
+    "sharpness": 0.9,
+    "tract_cm": 40,
+    "mouth": 0.9,
+    "bandwidth": 1.4,
+    "throat_hz": 180,
+    "level": [
+     [
+      0,
+      0
+     ],
+     [
+      0.2,
+      1
+     ],
+     [
+      2.4,
+      0.85
+     ],
+     [
+      2.95,
+      0
+     ]
+    ]
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 300,
+    "absorption": 0.3,
+    "source_distance": 4
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "smaller .. bigger creature",
+   "map": [
+    {
+     "to": "0.tract_cm",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.5
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2
+      ]
+     ]
+    }
+   ]
+  },
+  "rough": {
+   "default": 0.5,
+   "doc": "smoother .. more chaotic",
+   "map": [
+    {
+     "to": "0.chaos",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.3
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.25
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "pitch": {
+   "default": 0.5,
+   "doc": "lower .. higher",
+   "map": [
+    {
+     "to": "0.f0",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.6
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       1.6
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.f0": {
+   "rel": 0.08
+  },
+  "0.chaos": {
+   "abs": 0.05
+  }
+ }
+}
