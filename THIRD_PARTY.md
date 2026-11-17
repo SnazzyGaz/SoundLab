@@ -42,6 +42,12 @@ SOFTWARE.
 
 ## Methods adopted from other projects and papers (no code copied)
 
+v0.27 `friction_family`: elasto-plastic friction (P. Dupont, V. Hayward, B. Armstrong, F. Altpeter, "Single
+state elastoplastic friction models", IEEE TAC 47(5), 2002) as in the Sound Design Toolkit friction model
+(F. Avanzini, S. Serafin, D. Rocchesso, "Interactive simulation of rigid body interaction with friction-induced
+sound generation", IEEE TSAP 13(5), 2005; GPL-3.0: method only); friction sound categories (A. Akay, "Acoustics
+of friction", JASA 111(4), 2002); scraping through modal bodies (van den Doel, Kry, Pai 2001, as above).
+
 v0.26 `material_impact`: modal synthesis with material parameters (K. van den Doel, P. G. Kry, D. K. Pai,
 "FoleyAutomatic", SIGGRAPH 2001); material categories from frequency-dependent damping (M. Aramaki, M. Besson,
 R. Kronland-Martinet, S. Ystad, "Controlling the perceived material in an impact sound synthesizer", IEEE TASLP

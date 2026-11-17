@@ -1,0 +1,345 @@
+{
+  "soundlab": 1,
+  "name": "Rope creak: a loaded rope working against a wooden spar (ship rigging)",
+  "category": "foley",
+  "sample_rate": 48000,
+  "duration": 2.8,
+  "seed": 27,
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "material": {
+      "default": "wood_hard",
+      "doc": "wood_hard / wood_soft / steel",
+      "choices": {
+        "wood_hard": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "wood_hard"
+          }
+        ],
+        "wood_soft": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "wood_soft"
+          }
+        ],
+        "steel": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "steel"
+          }
+        ]
+      }
+    },
+    "pressure": {
+      "default": 0.5,
+      "doc": "light .. hard press",
+      "map": [
+        {
+          "to": "0.pressure",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.35
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        }
+      ]
+    },
+    "speed": {
+      "default": 0.5,
+      "doc": "slow .. fast",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.35
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.8
+            ]
+          ]
+        }
+      ]
+    },
+    "speed_change": {
+      "default": 0.5,
+      "doc": "slowing to a stop .. steady .. speeding up",
+      "map": [
+        {
+          "to": "0.speed_change",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.9
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.9
+            ]
+          ],
+          "clamp": [
+            -1,
+            1
+          ]
+        }
+      ]
+    },
+    "irregularity": {
+      "default": 0.5,
+      "doc": "smooth .. uneven, jerky",
+      "map": [
+        {
+          "to": "0.irregularity",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.5
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "size": {
+      "default": 0.5,
+      "doc": "small .. large (pitch ~ 1/size)",
+      "map": [
+        {
+          "to": "0.size",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        }
+      ]
+    },
+    "hollowness": {
+      "default": 0.5,
+      "doc": "solid .. hollow",
+      "map": [
+        {
+          "to": "0.hollowness",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.5
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.5
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "length": {
+      "default": 0.5,
+      "doc": "short .. long stroke",
+      "map": [
+        {
+          "to": "0.length_s",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.0
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.9
+            ]
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.0,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              -6
+            ],
+            [
+              1,
+              -18
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.speed": {
+      "rel": 0.15
+    },
+    "0.pressure": {
+      "rel": 0.15
+    },
+    "0.length_s": {
+      "rel": 0.1
+    }
+  },
+  "layers": [
+    {
+      "name": "friction",
+      "model": "friction_family",
+      "params": {
+        "at": 0.05,
+        "material": "wood_hard",
+        "shape": "bar",
+        "size": 2.0,
+        "hollowness": 0.0,
+        "length_s": 2.4,
+        "speed": 0.01,
+        "speed_change": 0.3,
+        "pressure": 25.0,
+        "irregularity": 0.7,
+        "drive_hz": 300,
+        "roughness": 0.8,
+        "residual": 1.5,
+        "body": 1.5
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            0
+          ],
+          [
+            125,
+            0
+          ],
+          [
+            250,
+            0
+          ],
+          [
+            500,
+            0
+          ],
+          [
+            1000,
+            0
+          ],
+          [
+            2000,
+            0
+          ],
+          [
+            4000,
+            0
+          ],
+          [
+            8000,
+            0
+          ],
+          [
+            16000,
+            0
+          ]
+        ]
+      }
+    }
+  ]
+}

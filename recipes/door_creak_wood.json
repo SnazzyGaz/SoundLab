@@ -1,0 +1,353 @@
+{
+  "soundlab": 1,
+  "name": "Door creak: a wooden door swinging on a dry hinge (stick-slip through the door's wood modes)",
+  "category": "foley",
+  "sample_rate": 48000,
+  "duration": 2.6,
+  "seed": 27,
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "material": {
+      "default": "wood_hard",
+      "doc": "wood_hard / wood_soft / plastic / steel",
+      "choices": {
+        "wood_hard": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "wood_hard"
+          }
+        ],
+        "wood_soft": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "wood_soft"
+          }
+        ],
+        "plastic": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "plastic"
+          }
+        ],
+        "steel": [
+          {
+            "to": "0.material",
+            "op": "set",
+            "value": "steel"
+          }
+        ]
+      }
+    },
+    "pressure": {
+      "default": 0.5,
+      "doc": "light .. hard press",
+      "map": [
+        {
+          "to": "0.pressure",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.35
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        }
+      ]
+    },
+    "speed": {
+      "default": 0.5,
+      "doc": "slow .. fast",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.35
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.8
+            ]
+          ]
+        }
+      ]
+    },
+    "speed_change": {
+      "default": 0.5,
+      "doc": "slowing to a stop .. steady .. speeding up",
+      "map": [
+        {
+          "to": "0.speed_change",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.9
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.9
+            ]
+          ],
+          "clamp": [
+            -1,
+            1
+          ]
+        }
+      ]
+    },
+    "irregularity": {
+      "default": 0.5,
+      "doc": "smooth .. uneven, jerky",
+      "map": [
+        {
+          "to": "0.irregularity",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.5
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "size": {
+      "default": 0.5,
+      "doc": "small .. large (pitch ~ 1/size)",
+      "map": [
+        {
+          "to": "0.size",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        }
+      ]
+    },
+    "hollowness": {
+      "default": 0.5,
+      "doc": "solid .. hollow",
+      "map": [
+        {
+          "to": "0.hollowness",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.5
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.5
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "length": {
+      "default": 0.5,
+      "doc": "short .. long stroke",
+      "map": [
+        {
+          "to": "0.length_s",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.0
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.9
+            ]
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.0,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              -6
+            ],
+            [
+              1,
+              -18
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.speed": {
+      "rel": 0.15
+    },
+    "0.pressure": {
+      "rel": 0.15
+    },
+    "0.length_s": {
+      "rel": 0.1
+    }
+  },
+  "layers": [
+    {
+      "name": "friction",
+      "model": "friction_family",
+      "params": {
+        "at": 0.05,
+        "material": "wood_hard",
+        "shape": "plate",
+        "size": 0.35,
+        "hollowness": 0.5,
+        "length_s": 2.2,
+        "speed": 0.03,
+        "speed_change": -0.3,
+        "pressure": 8.0,
+        "irregularity": 0.5,
+        "drive_hz": 600,
+        "contact_point": 0.1,
+        "body": 1.2,
+        "residual": 1.0
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            0
+          ],
+          [
+            125,
+            0
+          ],
+          [
+            250,
+            0
+          ],
+          [
+            500,
+            0
+          ],
+          [
+            1000,
+            0
+          ],
+          [
+            2000,
+            0
+          ],
+          [
+            4000,
+            0
+          ],
+          [
+            8000,
+            0
+          ],
+          [
+            16000,
+            0
+          ]
+        ]
+      }
+    }
+  ],
+  "notes": "v0.27: checked against CC0 door-creak recordings kept outside the repo: pulse rate ~250 Hz (recordings 190-590 Hz), centroid ~1.1 kHz (recordings 0.4-1.7 kHz), sustained-partial 19 dB (recordings 7-34 dB). On plain spectral distance it scores 1.08 / 1.13 / 0.76 on three recordings (the older door_creak: 0.94 / 0.97 / 0.79); automatic fits scored lower only by thinning the creak to a few clicks plus noise, so they were not used."
+}

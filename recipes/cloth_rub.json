@@ -1,0 +1,330 @@
+{
+  "soundlab": 1,
+  "name": "Cloth rub: fabric rubbed against fabric (a sleeve on a jacket)",
+  "category": "foley",
+  "sample_rate": 48000,
+  "duration": 1.5,
+  "seed": 27,
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "pressure": {
+      "default": 0.5,
+      "doc": "light .. hard press",
+      "map": [
+        {
+          "to": "0.pressure",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.35
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        }
+      ]
+    },
+    "speed": {
+      "default": 0.5,
+      "doc": "slow .. fast",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.35
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.8
+            ]
+          ]
+        }
+      ]
+    },
+    "speed_change": {
+      "default": 0.5,
+      "doc": "slowing to a stop .. steady .. speeding up",
+      "map": [
+        {
+          "to": "0.speed_change",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.9
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.9
+            ]
+          ],
+          "clamp": [
+            -1,
+            1
+          ]
+        }
+      ]
+    },
+    "irregularity": {
+      "default": 0.5,
+      "doc": "smooth .. uneven, jerky",
+      "map": [
+        {
+          "to": "0.irregularity",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.5
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "length": {
+      "default": 0.5,
+      "doc": "short .. long stroke",
+      "map": [
+        {
+          "to": "0.length_s",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.0
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.9
+            ]
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.0,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              -6
+            ],
+            [
+              1,
+              -18
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.speed": {
+      "rel": 0.15
+    },
+    "0.pressure": {
+      "rel": 0.15
+    },
+    "0.length_s": {
+      "rel": 0.1
+    }
+  },
+  "layers": [
+    {
+      "name": "friction",
+      "model": "friction_family",
+      "params": {
+        "at": 0.05,
+        "mode": "rub",
+        "material": "cloth",
+        "length_s": 1.19247,
+        "speed": 0.85413,
+        "pressure": 4.26906,
+        "irregularity": 0.19269,
+        "roughness": 0.03438,
+        "grain_mm": 0.0733
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            50,
+            6.0
+          ],
+          [
+            63,
+            6.0
+          ],
+          [
+            80,
+            6.0
+          ],
+          [
+            100,
+            6.0
+          ],
+          [
+            125,
+            6.0
+          ],
+          [
+            160,
+            6.0
+          ],
+          [
+            200,
+            6.0
+          ],
+          [
+            250,
+            6.0
+          ],
+          [
+            315,
+            6.0
+          ],
+          [
+            400,
+            5.8
+          ],
+          [
+            500,
+            3.9
+          ],
+          [
+            630,
+            2.4
+          ],
+          [
+            800,
+            0.3
+          ],
+          [
+            1000,
+            -0.8
+          ],
+          [
+            1250,
+            -1.2
+          ],
+          [
+            1600,
+            -1.4
+          ],
+          [
+            2000,
+            -1.0
+          ],
+          [
+            2500,
+            -1.4
+          ],
+          [
+            3150,
+            -1.3
+          ],
+          [
+            4000,
+            -2.0
+          ],
+          [
+            5000,
+            -2.0
+          ],
+          [
+            6300,
+            -1.9
+          ],
+          [
+            8000,
+            1.3
+          ],
+          [
+            10000,
+            6.0
+          ],
+          [
+            12500,
+            6.0
+          ],
+          [
+            16000,
+            6.0
+          ]
+        ]
+      }
+    }
+  ],
+  "notes": "v0.27: fitted to a CC0 cloth-handling recording kept outside the repo (1.42 -> 1.04); the older cloth_rustle recipe still scores closer (0.88)."
+}

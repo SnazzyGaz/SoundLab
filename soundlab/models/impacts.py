@@ -54,8 +54,8 @@ IMPACT_MATERIALS: dict[str, dict] = {
     "flesh":      dict(rho=1050, E=0.02e9, nu=0.45, eta=0.35, d0=90, h=2.0, k=4e5, resid=0.6, cap=0.08, shard=800),
     "dirt":       dict(ground=True, k=1e6, thud_hz=140, grain=(500, 4500), grain_ms=2.5, n=45, spread=0.07,
                        tonal=0.5, resid=0.5),        # packed soil: crumbs and small pebbles click
-    "gravel":     dict(ground=True, k=6e6, thud_hz=220, grain=(1500, 7000), grain_ms=3.0, n=70, spread=0.12,
-                       tonal=0.8, resid=0.3),
+    "gravel":     dict(ground=True, k=6e6, thud_hz=160, grain=(400, 2800), grain_ms=1.4, n=90, spread=0.14,
+                       tonal=0.0, resid=2.5),        # v0.27: dull stone-on-stone crunch, no ring (v0.26 was tonal and bright)
     "grass":      dict(ground=True, k=3e5, thud_hz=110, grain=(1200, 9000), grain_ms=6.0, n=60, spread=0.15,
                        tonal=0.0, resid=0.7),
     "leaves":     dict(ground=True, k=3e5, thud_hz=120, grain=(2500, 12000), grain_ms=1.5, n=110, spread=0.18,

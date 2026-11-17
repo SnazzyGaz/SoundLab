@@ -9,7 +9,11 @@ Ground rules:
   ...). Deeper physics only comes after the checkpoint, and only for sounds a game steers live.
 - Offline render to WAV is the main use.
 
-## Now: interaction models and resynthesis (v0.17 to v0.26)
+## Now: interaction models and resynthesis (v0.17 to v0.27)
+
+v0.27: friction as one model (`friction_family`: elasto-plastic stick-slip, scrape and rub driving the
+`material_impact` bodies) with 11 recipes; see [friction.md](friction.md). Gravel footsteps lost their ringing
+pebbles (dull stone grains). Next families: air and whooshes, liquids, machines, fire and electricity, creatures.
 
 v0.26: impacts and materials as one model (`material_impact`: Hunt-Crossley contact, shape x material modes,
 per-material damping laws, residual noise, ground grains, fracture) with 16 derived recipes; see

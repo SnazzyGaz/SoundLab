@@ -13,7 +13,9 @@ What's in it:
 - **One impact model for every material** (`material_impact`, v0.26): wood, metal, glass, ceramic, stone,
   plastic, rubber, flesh, dirt, gravel, grass, leaves on plate/bar/rod/beam/box/shell/ball/block shapes, with
   size, force, hardness, hollowness, muffle and contact-point sliders; see [docs/impacts.md](docs/impacts.md).
-- **37 hand-built recipes** for game sound (73 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind,
+- **Friction through the same materials** (`friction_family`, v0.27): creaks, squeaks, scrapes and rubs with
+  pressure, speed, speed-change, irregularity, size and hollowness sliders; see [docs/friction.md](docs/friction.md).
+- **37 hand-built recipes** for game sound (102 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind,
   rain, glass break, sword swing and clash, metal clang, door creak and slam, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splash, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.

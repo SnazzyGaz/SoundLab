@@ -1064,6 +1064,38 @@ One contact + resonance model for knocks, drops, bounces, footsteps, tool strike
 
 Sources: Hunt & Crossley 1975; Avanzini & Rocchesso 2001 (contact); van den Doel, Kry & Pai 2001, FoleyAutomatic (modal synthesis, SIGGRAPH); Aramaki, Besson, Kronland-Martinet & Ystad 2011, IEEE TASLP (material categories from damping laws); Klatzky, Pai & Krotkov 2000, Presence (perceived material from decay); Ren, Yeh & Lin 2013, ACM TOG (example-guided modal sound: residual compensation); Cremer & Heckl, Structure-Borne Sound (material data via vibrationdata); Leissa, Vibration of Plates / thin ring bending modes (shape formulas); Sethna et al. 2001; Bresin et al. 2010 (granular crackle, walking on surfaces); SDT: method only
 
+### `friction_family`
+
+Creaks, squeaks, scrapes, rubbing and bowing through the same material bodies as `material_impact`. `mode` stick_slip: elasto-plastic friction solved with the body's lowest modes (springy `drive_hz` > 0 creaks and ticks; rigid 0 squeals or bows), the slips also ringing the rest of the body and a fibre-noise residual. `mode` scrape: a fractal surface read at the contact speed drives the whole body. `mode` rub: the same surface force, no modes (cloth, padded sandpaper). One stroke of `length_s` with `speed`, `speed_change` (-1 slowing to a stop .. +1 speeding up), `pressure` and `irregularity`.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `mode` | `stick_slip` |  | stick_slip, scrape, rub |  |
+| `material` | `wood_hard` |  | wood_soft, wood_hard, steel, aluminium, iron, glass, ceramic, stone, plastic, rubber, flesh, cloth |  |
+| `shape` | `plate` |  | plate, bar, rod, beam, box, shell, ball, block |  |
+| `size` | `0.5` | m | 0.01 .. 5.0 | largest dimension of the rubbed body (pitch ~ 1/size) |
+| `hollowness` | `0.3` |  | 0 .. 1 | 0 = solid, 1 = thin-walled and hollow |
+| `contact_point` | `0.3` |  | 0 .. 1 | 0 = edge/end .. 1 = middle |
+| `at` | `0.05` | s | 0 .. None |  |
+| `length_s` | `1.5` | s | 0.05 .. 30 | stroke length |
+| `speed` | `0.08` | m/s | 0.001 .. 5.0 | rubbing speed |
+| `speed_change` | `0.0` |  | -1 .. 1 | -1 slows to a stop .. +1 speeds up (x0.5 .. x2 over the stroke) |
+| `pressure` | `4.0` | N | 0.05 .. 40 | pressing force |
+| `irregularity` | `0.4` |  | 0 .. 1 | wobble of speed and pressure (uneven slips) |
+| `drive_hz` | `500.0` | Hz | 0 .. 3000 | stick_slip: natural frequency of the springy rubbing contact; with a light contact the creak pulse rate rises with speed and falls with pressure (0 = rigid squeal) |
+| `mu_static` | `0.6` |  | 0.05 .. 1.5 | static friction |
+| `mu_dynamic` | `0.3` |  | 0.02 .. 1.2 | dynamic friction |
+| `stiffness` | `0.0` | N/m | 0 .. 1000000.0 | bristle stiffness (0 = auto: 1e5 springy, 3000 rigid) |
+| `roughness` | `0.5` |  | 0 .. 1 | surface roughness (scrape/rub, and grit in stick_slip) |
+| `grain_mm` | `0.5` | mm | 0.01 .. 20 | scrape/rub: bump spacing |
+| `loop_modes` | `0` | count | 0 .. 12 | stick_slip: body modes solved with the friction (0 = auto: 2 springy so the creak rate follows speed and pressure, 6 rigid) |
+| `body` | `0.6` |  | 0 .. 2 | level of the rest of the body (higher modes, cavity) |
+| `residual` | `1.0` |  | 0 .. 3 | fibre / grit noise level |
+| `muffle` | `0.0` |  | 0 .. 1 | damping (hand on the door, carpet, grease) |
+| `max_t60` | `3.0` | s | 0.02 .. 20 | cap on ring time |
+
+Sources: Dupont, Hayward, Armstrong & Altpeter 2002 (elasto-plastic friction); Avanzini, Serafin & Rocchesso 2005, IEEE TSAP (friction-induced sound); SDT: method only; van den Doel, Kry & Pai 2001 (scraping); Rath & Rocchesso 2004 (rolling/scraping control); Aramaki et al. 2011 (material damping laws); Ren, Yeh & Lin 2013 (residual); Akay 2002, JASA (acoustics of friction: stick-slip, squeal, creak)
+
 ## Stage: synth
 
 ### `osc`
