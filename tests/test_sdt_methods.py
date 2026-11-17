@@ -107,4 +107,4 @@ def test_sparsity_term_tells_bubbles_from_noise():
 def test_resynth_fit_weights_skip_sparsity_for_pitched_kinds():
     from soundlab import resynth as RS
     assert RS.FIT_WEIGHTS["voice"]["sparsity"] == 0 and RS.FIT_WEIGHTS["choir"]["sparsity"] == 0
-    assert RS.FIT_WEIGHTS["texture"]["sparsity"] > 0
+    assert RS.FIT_WEIGHTS["texture"]["sparsity"] > 0  # impacts: tail only (v0.20)

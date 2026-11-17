@@ -9,7 +9,12 @@ Ground rules:
   ...). Deeper physics only comes after the checkpoint, and only for sounds a game steers live.
 - Offline render to WAV is the main use.
 
-## Now: interaction models and resynthesis (v0.17 to v0.19)
+## Now: interaction models and resynthesis (v0.17 to v0.20)
+
+v0.20: splashes keep the v0.18 impact and get a separately fitted bubble tail; choirs lose the noise layer and gain
+per-singer jitter, shimmer, drift, glottal shape, vibrato onset, a drone and a convolution hall. Open: the choir's
+400 Hz-3 kHz region is still 8-12 dB thin; the double splash's tail droplets are sparser than the model.
+
 
 v0.19 went through every model in the Sound Design Toolkit (method only, see [sdt-methods.md](sdt-methods.md))
 and added Hunt-Crossley contact, elasto-plastic friction (squeaks and creaks), rolling and scraping, crumpling and

@@ -100,6 +100,48 @@ Lesson: our distance rewards a noise copy of the spectrum over a liquid made of 
 the fit to the right physics and judge by ear. A bubble-aware term in the distance (spectral peakiness or
 event statistics) is on the roadmap.
 
+## v0.20: hybrid splashes, human choirs
+
+v0.19 had two problems the numbers missed. With the sparsity term on the whole clip, splash onsets
+turned into a wooden knock plus a blow of air (the fit pushed the `slap` noise up to make the onset "sparse"),
+while the tails did sound more like water. Choirs had a hiss over everything and did not sound like people.
+
+**Splashes (`impact`).** Two stages. The impact and splash phase is fitted without the sparsity term, which gives
+the v0.18 recipe back unchanged. `tail_start` then finds where the splash ends (after the last strong onset,
+once the level has fallen 15 dB below the peak that followed it, at least 0.3 s later). From there, the bubbles,
+body and slap layers fade out over 0.2 s (equal power) and a new `tail_bubbles` bubble cloud fades in. Only that
+layer is fitted on the tail window with the sparsity term, and its level is matched to the recording's tail
+(`add_bubble_tail`).
+
+**Choirs.** The hiss was the `hall_air` layer: the residual noise of the recording, near full level, with a flat
+floor 60 dB down that filled 10-16 kHz. It is gone. Instead:
+- `harmonic` gained `glottal="rosenberg"` (the spectral ripple of a Rosenberg 1971 glottal pulse, own open
+  quotient per voice), `jitter_cents` and `shimmer_db` (fast pitch and level perturbation per voice),
+  `vibrato_onset` (vibrato grows in after each note) and `voice_spread` (each voice gets its own vocal tract
+  size, vibrato rate and pulse shape). All default to off, so other recipes render as before.
+- Breath is tied to the glottal cycle (`pulse_noise` 0.95) and limited to 0-0.08.
+- The vowel colour moves again (envelope frames smoothed over ~0.5 s and normalised, so the level curve alone
+  carries loudness).
+- New `conv_reverb` fx: convolution with a synthetic hall response (octave-band decaying noise, early
+  reflections, predelay). It adds no noise of its own.
+- `drone_pitch` finds a held low note under the melody (the reference chant has one about an octave and a fifth
+  below the tune) and adds it as a `drone` layer with its own singers.
+- The spectral fine-tune for choirs aligns on the median band difference above 1.5 x f0, so the sparse low
+  harmonics of a low voice do not tilt the whole correction.
+
+Distances (v0.18 loss without sparsity; onset = start to tail start, tail = the rest):
+
+| clip | v0.18 onset / tail | v0.19 onset / tail | v0.20 onset / tail | tail sparsity v18 -> v20 |
+|---|---|---|---|---|
+| medium splash | 0.196 / 0.266 | 0.211 / 0.242 | 0.195 / 0.189 | 0.09 -> 0.07 |
+| big heavy splash | 0.337 / 0.178 | 0.479 / 0.303 | 0.337 / 0.282 | 1.57 -> 0.87 |
+| double splash | 0.347 / 0.457 | 0.245 / 0.581 | 0.347 / 0.515 | 2.0 -> 1.97 |
+
+Onsets are back to v0.18. The tails are bubblier (lower sparsity distance); on the other parts of the loss only
+the medium splash's tail is closer. The choir scores worse than v0.18 (0.36 against 0.19 whole clip): the loss
+liked the noise layer, which filled the 400 Hz-3 kHz region the harmonic voices still under-fill by about 8-12
+dB. This one has to be judged by ear.
+
 ## v0.19: a sparsity term in the fit loss
 
 The v0.18 notes said it: the distance prefers noise for water. v0.19 adds a `sparsity` part to the loss (see

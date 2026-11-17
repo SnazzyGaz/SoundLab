@@ -272,6 +272,37 @@ def _strong_onsets(x, sr, feats, min_gap=0.25, within_db=12.0):
     return strong[:2] or [0.03]
 
 
+def drone_pitch(x, sr, fref, rel_db=-12.0):
+    """v0.20: a sustained lower pitch under a sung line (a drone). Looks for the strongest long-term spectral peak
+    between 50 Hz and 0.85 x the melody's median f0 that is present in most 1 s frames. Returns (Hz, level curve)
+    or None."""
+    f, P = signal.welch(x, sr, nperseg=16384)
+    m = (f >= 50) & (f <= 0.85 * fref)
+    if m.sum() < 5:
+        return None
+    L = 10 * np.log10(P[m] + 1e-20)
+    pk, _ = signal.find_peaks(L, prominence=6)
+    if not len(pk):
+        return None
+    i = pk[np.argmax(L[pk])]
+    if L[i] < 10 * np.log10(P[(f >= 50) & (f <= 2000)].max()) + rel_db:
+        return None
+    fd = float(f[m][i])
+    # present in most frames? band energy around fd vs the frame's strongest peak
+    h = sr
+    sos = signal.butter(2, [fd * 0.94, fd * 1.06], "bandpass", fs=sr, output="sos")
+    xb = signal.sosfiltfilt(sos, x)
+    n = len(x) // h
+    if n < 2:
+        return None
+    eb = np.sqrt(np.mean(xb[:n * h].reshape(n, h) ** 2, 1))
+    ea = np.sqrt(np.mean(x[:n * h].reshape(n, h) ** 2, 1)) + 1e-12
+    if np.mean(20 * np.log10(eb / ea + 1e-12) > -20) < 0.6:
+        return None
+    lv = _level_curve(xb, sr, hop_s=0.1, floor_db=-60.0, smooth_s=0.4)
+    return fd, lv
+
+
 def build_recipe(x, sr, kind, name="resynth", detail_model="splash", feats=None):
     """Layered recipe for `kind` in impact | texture | voice | choir (see module doc)."""
     x = np.asarray(x, float)
@@ -289,6 +320,7 @@ def build_recipe(x, sr, kind, name="resynth", detail_model="splash", feats=None)
     r_min, r_max = round(max(0.2, 3.26 / f_hi * 1e3), 2), round(min(40.0, 3.26 / f_lo * 1e3), 2)
     if kind == "impact":
         strong = _strong_onsets(x, sr, feats)
+        rec["strong_onsets_s"] = [round(float(o), 3) for o in strong]
         lvl = _level_curve(x, sr, hop_s=0.01, tol_db=2.0, floor_db=-60.0, max_points=60)
         rec["layers"].append({"name": "bubbles", "model": "bubble_cloud",
                               "params": {"rate": 4000.0, "r_min_mm": r_min, "r_max_mm": r_max, "size_exponent": 2.5,
@@ -333,8 +365,12 @@ def build_recipe(x, sr, kind, name="resynth", detail_model="splash", feats=None)
         fref = float(np.median(f0))
         env, ap = voice_frames(x, sr, ft, f0, stems, hop_s=0.02 if kind == "voice" else 0.1,
                                fmax=10000.0 if kind == "voice" else 5000.0)
-        if kind == "choir":  # one sung line through a hall: a steady vowel colour is safer than tracking it
-            env = [[0.0, [round(float(v), 1) for v in np.mean([fr[1] for fr in env], 0)]]]
+        if kind == "choir":  # v0.20: moving vowels again, smoothed over ~0.5 s so beating does not become flutter
+            M = np.array([fr[1] for fr in env], float)
+            M = ndimage.uniform_filter1d(M, 5, axis=0, mode="nearest")
+            M = M - 10 * np.log10(np.sum(10 ** (M / 10), 1, keepdims=True))  # colour only; level carries loudness
+            env = simplify_frames(np.array([fr[0] for fr in env], float), M, tol_db=2.0, max_frames=30,
+                                  floor_db=M.max() - 80)
         lv = _level_curve(x, sr, hop_s=0.02 if kind == "voice" else 0.1, floor_db=-60.0,
                           smooth_s=0.0 if kind == "voice" else 0.4)
         hb = {"model": "harmonic",
@@ -346,13 +382,24 @@ def build_recipe(x, sr, kind, name="resynth", detail_model="splash", feats=None)
         if kind == "voice":
             rec["layers"].append({"name": "voice", **hb})
         else:
-            rec["layers"].append({"name": "choir", "chain": [hb, {"model": "reverb", "params": {
-                "size": 0.9, "damp": 0.5, "predelay_ms": 20.0, "mix": 0.5}}]})
-            # the hall's diffuse, noisy part (the residual after the harmonic split) as its own layer
-            r = stems["noise"] + stems["transient"]
-            t, G = band_grid(r, sr, hop_s=0.1)
-            rec["layers"].append({"name": "hall_air", "model": "bandnoise", "gain_db": -12.0, "params": {
-                "frames": simplify_frames(t, G, tol_db=4.0, max_frames=30, floor_db=G.max() - 60), "grain": 0.2}})
+            # v0.20: several human singers rather than one buzzy line plus hiss. Each voice gets its own pitch
+            # drift, jitter and shimmer, vocal tract size and vibrato rate; a Rosenberg glottal pulse; vibrato that
+            # grows in after each note; breath tied to the glottal cycle and kept low; a convolution hall instead
+            # of the old noise layer (which was the hiss).
+            hb["params"].update({"glottal": "rosenberg", "open_quotient": 0.6, "jitter_cents": 6.0,
+                                 "shimmer_db": 0.6, "vibrato_cents": 25.0, "vibrato_onset": 0.5,
+                                 "voice_spread": 0.05, "wander_cents": 12.0, "breath": 0.03, "pulse_noise": 0.95,
+                                 "tilt_db": 0.0})
+            hall = {"model": "conv_reverb", "params": {"rt60": 2.5, "hf_ratio": 0.5, "lf_ratio": 1.2,
+                                                       "predelay_ms": 25.0, "early_ms": 80.0, "mix": 0.45}}
+            rec["layers"].append({"name": "choir", "chain": [hb, hall]})
+            # a held drone under the melody (common in chant and organum): its own singers, same hall
+            dr = drone_pitch(x, sr, fref)
+            if dr is not None:
+                fd, dlev = dr
+                hd = copy.deepcopy(hb)
+                hd["params"].update({"f0": round(fd, 2), "level": dlev, "vibrato_cents": 12.0, "voices": 3})
+                rec["layers"].append({"name": "drone", "gain_db": -6.0, "chain": [hd, copy.deepcopy(hall)]})
         rec["f0_reference_hz"] = round(fref, 2)
     else:
         raise ValueError(f"unknown kind {kind!r}")
@@ -367,8 +414,8 @@ FIT_PARAMS = {
                 "0.amp_exponent:0:1.5", "0.damping:0.5:3", "0.xi:0:3", "1.gain_db:-40:-12"],
     "voice": ["0.tilt_db:-6:6", "0.breath:0:0.6", "0.pulse_noise:0:1", "0.formant_shift:0.9:1.1",
               "0.vibrato_cents:0:40"],
-    "choir": ["0.0.tilt_db:-6:6", "0.0.breath:0:0.6", "0.0.detune_cents:0:40", "0.1.size:0.5:0.99",
-              "0.1.mix:0.1:0.9", "0.1.damp:0:0.9", "1.gain_db:-30:0"],
+    "choir": ["0.0.tilt_db:-6:6", "0.0.breath:0:0.08", "0.0.detune_cents:0:30", "0.1.rt60:1:6",
+              "0.1.mix:0.1:0.8", "0.1.hf_ratio:0.2:1", "1.gain_db:-20:6"],
 }
 
 
@@ -406,7 +453,7 @@ def pitch_error_cents(ref, sr_ref, y, sr_y, method="yin"):
     return round(float(np.median(np.abs(1200 * np.log2(fy_on[ok] / fr[ok])))), 1)
 
 
-def eq_correct(rec, x, sr, fit_section=None, passes=2, max_db=18.0):
+def eq_correct(rec, x, sr, fit_section=None, passes=2, max_db=18.0, align="max", lo_hz=0.0):
     """Spectral fine-tune: put the remaining long-term 1/3-octave difference between the reference (fit section)
     and the render, smoothed over neighbouring bands, into the recipe's post `eq` block. Kept only if the
     distance on the fit section improves."""
@@ -425,7 +472,14 @@ def eq_correct(rec, x, sr, fit_section=None, passes=2, max_db=18.0):
         y = render(cur, duration=round(s1 - s0, 3))
         _, Gy = band_grid(y, F.FIT_SR, hop_s=0.05)
         ly = 10 * np.log10(np.mean(10 ** (Gy / 10), 0))
-        diff = ndimage.uniform_filter1d((lr - lr.max()) - (ly - ly.max()), 3, mode="nearest")
+        if align == "median":  # v0.20 (choir): align on the median band difference above lo_hz, so a few
+            # spiky low bands (a low voice's sparse harmonics) do not tilt the whole correction
+            raw = lr - ly
+            use = np.array(THIRD_OCTAVES) >= lo_hz
+            raw = np.where(use, raw - np.median(raw[use]), 0.0)
+            diff = ndimage.uniform_filter1d(raw, 5, mode="nearest")
+        else:
+            diff = ndimage.uniform_filter1d((lr - lr.max()) - (ly - ly.max()), 3, mode="nearest")
         p = next(b for b in cur["post"] if b["model"] == "eq").setdefault("params", {})
         old = dict((int(a), b) for a, b in p.get("curve", []))
         p["curve"] = [[b, round(float(np.clip(old.get(b, 0.0) + 0.8 * d, -max_db, max_db)), 1)]
@@ -437,10 +491,104 @@ def eq_correct(rec, x, sr, fit_section=None, passes=2, max_db=18.0):
     return best
 
 
+# ----------------------------------------------------------------------------- v0.20 splash tail
+TAIL_PARAMS = ["0.rate:200:30000", "0.r_min_mm:0.2:4", "0.r_max_mm:1:20", "0.size_exponent:1:4",
+               "0.damping:0.5:3", "0.xi:0:3"]
+
+
+def tail_start(x, sr, onsets, min_after=0.3, drop_db=15.0, xfade=0.2):
+    """Where the splash phase ends: after the last strong onset, once the level has fallen drop_db below the
+    peak that followed it (at least min_after s later). None if too little tail is left."""
+    dur = len(x) / sr
+    last = max(onsets) if onsets else 0.0
+    t, env = _env_db(x, sr)
+    after = t >= last
+    if not after.any():
+        return None
+    peak = env[after].max()
+    cand = np.nonzero(after & (t >= last + min_after) & (env < peak - drop_db))[0]
+    ts = float(t[cand[0]]) if cand.size else last + min_after
+    return round(ts, 3) if ts < dur - 0.3 - xfade else None
+
+
+def _env_db(x, sr, hop_s=0.01):
+    h = int(hop_s * sr)
+    m = len(x) // h
+    e = np.sqrt(np.mean(np.asarray(x[:m * h], float).reshape(m, h) ** 2, 1)) + 1e-9
+    e = ndimage.uniform_filter1d(e, 5, mode="nearest")
+    return (np.arange(m) + 0.5) * hop_s, 20 * np.log10(e)
+
+
+def _curve_at(pts, t):
+    if not isinstance(pts, list):
+        return np.full(len(t), float(pts))
+    a = np.array(pts, float)
+    return np.interp(t, a[:, 0], a[:, 1])
+
+
+def _fade_out_points(pts, ts, xf):
+    """Level automation `pts` faded to 0 (equal-power) between ts and ts + xf."""
+    tk = sorted(set([p[0] for p in pts] if isinstance(pts, list) else [0.0]) | {ts, ts + xf / 2, ts + xf})
+    tk = np.array(tk)
+    g = np.cos(0.5 * np.pi * np.clip((tk - ts) / xf, 0, 1))
+    v = _curve_at(pts, tk) * g
+    return [[round(float(a), 4), round(float(b), 5)] for a, b in zip(tk, v) if a <= ts + xf] + [[round(ts + xf + 0.01, 4), 0.0]]
+
+
+def _fade_out_frames(frames, ts, xf, floor=-60.0):
+    """bandnoise frames ramped down by -floor dB between ts and ts + xf (and held down after)."""
+    t = np.array([f[0] for f in frames], float)
+    G = np.array([f[1] for f in frames], float)
+    at = lambda tt: [round(float(np.interp(tt, t, G[:, b])), 1) for b in range(G.shape[1])] if len(t) > 1 else list(G[0])
+    out = [f for f in frames if f[0] < ts]
+    out.append([round(ts, 3), at(ts)])
+    out.append([round(ts + xf, 3), [round(v + floor, 1) for v in at(ts + xf)]])
+    return out
+
+
+def add_bubble_tail(rec, x, sr, ts, budget=60, xfade=0.2, log=print):
+    """v0.20 hybrid splash: the fitted splash recipe keeps the impact and splash phase; from `ts` its bubbles,
+    body and slap layers cross-fade (over `xfade` s) into a separate `tail_bubbles` bubble cloud fitted on the
+    tail only, with the sparsity part of the loss (so the onset is never pulled towards a gentle bubble)."""
+    dur = len(x) / sr
+    out = copy.deepcopy(rec)
+    L = out["layers"]
+    L[0]["params"]["level"] = _fade_out_points(L[0]["params"].get("level", 1.0), ts, xfade)
+    for lay in L[1:3]:
+        lay["params"]["frames"] = _fade_out_frames(lay["params"]["frames"], ts, xfade)
+    seg = x[int(ts * sr):]
+    lvl = _level_curve(seg, sr, hop_s=0.01, tol_db=2.0, floor_db=-60.0, max_points=40)
+    tk = sorted({p[0] for p in lvl} | {0.0, xfade / 2, xfade})
+    gin = np.sin(0.5 * np.pi * np.clip(np.array(tk) / xfade, 0, 1))
+    lvl = [[round(float(a), 4), round(float(b), 5)] for a, b in zip(tk, _curve_at(lvl, np.array(tk)) * gin)]
+    p0 = L[0]["params"]
+    tail = {"name": "tail_bubbles", "model": "bubble_cloud", "start": round(ts, 3), "gain_db": -6.0,
+            "params": {"rate": 3000.0, "r_min_mm": p0.get("r_min_mm", 1.0), "r_max_mm": max(p0.get("r_max_mm", 8.0), 2.0),
+                       "size_exponent": 2.5, "amp_exponent": 0.5, "xi": 0.5, "damping": 1.0, "level": lvl}}
+    solo = {k: copy.deepcopy(v) for k, v in out.items() if k not in ("layers", "macros")}
+    solo["duration"] = round(dur - ts, 3)
+    solo["layers"] = [dict(tail, start=0.0)]
+    res = F.fit(solo, x, sr, params=TAIL_PARAMS, ref_start=ts, ref_end=dur, budget=budget,
+                weights=FIT_WEIGHTS["texture"], log=lambda *a, **k: None)
+    tail["params"].update({k: v for k, v in res["recipe"]["layers"][0]["params"].items() if k != "level"})
+    L.append(tail)
+    # level: match the tail's RMS (relative to the whole clip's peak) to the recording
+    i0 = int(ts * sr)
+    want = np.sqrt(np.mean(x[i0:] ** 2)) / (np.max(np.abs(x)) + 1e-12)
+    for _ in range(3):
+        y = render(out)
+        j0 = int(ts * F.FIT_SR)
+        got = np.sqrt(np.mean(y[j0:] ** 2)) / (np.max(np.abs(y)) + 1e-12)
+        tail["gain_db"] = round(float(np.clip(tail["gain_db"] + 20 * np.log10(want / (got + 1e-12)), -40, 6)), 2)
+    out["tail_start_s"] = round(ts, 3)
+    return out
+
+
 # v0.19: the sparsity part (bubbles vs noise) matters most for liquid textures; pitched kinds leave it out
-# (on voices it traded timbre for grain statistics).
+# (on voices it traded timbre for grain statistics). v0.20: impacts leave it out too (it turned splashes into a
+# wood knock and a blow of air); add_bubble_tail uses it on the tail window only.
 FIT_WEIGHTS = {"texture": {**F.DEFAULT_WEIGHTS},
-               "impact": {**F.DEFAULT_WEIGHTS},
+               "impact": {**F.DEFAULT_WEIGHTS, "sparsity": 0.0},  # v0.20: sparsity only on the splash tail
                "voice": {**F.DEFAULT_WEIGHTS, "sparsity": 0.0},
                "choir": {**F.DEFAULT_WEIGHTS, "sparsity": 0.0}}
 
@@ -461,7 +609,15 @@ def fit_and_check(rec, x, sr, kind, fit_section=None, holdout=None, budget=80, l
                 weights=FIT_WEIGHTS.get(kind), log=lambda *a, **k: None)
     fitted = copy.deepcopy(res["recipe"])
     fitted["duration"] = rec["duration"]
-    fitted = eq_correct(fitted, x, sr, fit_section=(s0, s1))
+    if kind == "choir":
+        fitted = eq_correct(fitted, x, sr, fit_section=(s0, s1), max_db=12.0, align="median",
+                            lo_hz=1.5 * float(rec.get("f0_reference_hz", 100.0)))
+    else:
+        fitted = eq_correct(fitted, x, sr, fit_section=(s0, s1))
+    if kind == "impact" and s0 == 0:
+        ts = tail_start(x, sr, rec.get("strong_onsets_s", []))
+        if ts is not None:
+            fitted = add_bubble_tail(fitted, x, sr, ts, budget=max(20, budget // 2), log=log)
     out = {"recipe": fitted, "fit_before": res["before"], "fit_after": res["after"],
            "fit_section": [round(s0, 3), round(s1, 3)], "params": res["params"], "evaluations": res["evaluations"]}
     y = render(fitted)

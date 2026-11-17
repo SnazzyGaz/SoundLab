@@ -185,8 +185,14 @@ Voiced source for resynthesis (harmonic + noise model): harmonics of an f0 curve
 | `eq` | `[]` | [[Hz, dB], ...] |  | fine spectral correction (interpolated in log frequency) |
 | `max_hz` | `8000.0` | Hz | 1000 .. 20000 | highest harmonic |
 | `level` | `1.0` |  | 0 .. 4 | amplitude (automatable: the loudness envelope) (automatable) |
+| `glottal` | `none` |  | none, rosenberg | v0.20: shape the harmonics with a Rosenberg glottal pulse (its spectral ripple; the envelope still sets the overall slope). Each unison voice gets its own open quotient |
+| `open_quotient` | `0.6` |  | 0.3 .. 0.9 | glottal open quotient (lower = pressed, brighter voice) |
+| `jitter_cents` | `0.0` | cents | 0 .. 50 | v0.20: fast random pitch perturbation per voice (~30 Hz) |
+| `shimmer_db` | `0.0` | dB | 0 .. 6 | v0.20: fast random amplitude perturbation per voice |
+| `vibrato_onset` | `0.0` | s | 0 .. 2 | v0.20: vibrato fades in over this time after each new note |
+| `voice_spread` | `0.0` |  | 0 .. 0.15 | v0.20: per-voice differences: vocal tract size (formant scale), vibrato rate and glottal shape, so a unison sounds like several singers |
 
-Sources: Fant 1960 source-filter theory; Serra & Smith 1990 (sinusoidal + noise modelling); Morise et al. 2016 (WORLD: f0, spectral envelope, aperiodicity); Klatt & Klatt 1990 (noise modulated by the glottal cycle); Ternstrom 1991 (choir unison spread)
+Sources: Fant 1960 source-filter theory; Serra & Smith 1990 (sinusoidal + noise modelling); Morise et al. 2016 (WORLD: f0, spectral envelope, aperiodicity); Klatt & Klatt 1990 (noise modulated by the glottal cycle); Ternstrom 1991 (choir unison spread); Rosenberg 1971, JASA 49 (glottal pulse shape); Titze 1994, Principles of Voice Production (jitter, shimmer, vibrato)
 
 ### `bubble_cloud`
 
@@ -1161,3 +1167,18 @@ Graphic EQ curve [[Hz, dB], ...], interpolated in log frequency (zero phase). Th
 | `gain_db` | `0.0` | dB | -40 .. 40 | overall gain |
 
 Sources: Graphic equaliser (standard)
+
+### `conv_reverb`
+
+v0.20 diffuse hall by convolution with a synthetic impulse response: Gaussian noise in octave bands, each decaying with its own reverberation time (`rt60` at 500 Hz-1 kHz, high bands shortened by `hf_ratio`, lows lengthened by `lf_ratio`), early part thinned to sparse reflections, after `predelay_ms`. Smooth and dense like a real hall, and it adds no noise of its own: silence in gives silence out.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `rt60` | `2.5` | s | 0.2 .. 10 | reverberation time at mid frequencies |
+| `hf_ratio` | `0.5` |  | 0.1 .. 1.5 | RT at 8 kHz relative to rt60 (air and wall absorption) |
+| `lf_ratio` | `1.2` |  | 0.5 .. 2.0 | RT at 125 Hz relative to rt60 |
+| `predelay_ms` | `25.0` | ms | 0 .. 200 | gap before the reverberation |
+| `early_ms` | `80.0` | ms | 0 .. 300 | length of the sparse early-reflection part |
+| `mix` | `0.4` |  | 0 .. 1 | wet share (dry 1 - mix, wet scaled to the dry level) |
+
+Sources: Moorer 1979, 'About this reverberation business' (exponentially decaying noise as a hall response); Jot & Chaigne 1991 (frequency-dependent decay); Valimaki et al. 2012, 'Fifty years of artificial reverberation', IEEE TASLP
