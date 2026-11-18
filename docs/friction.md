@@ -1,4 +1,4 @@
-# Friction family (v0.27)
+# Friction family (v0.27, v0.27.1)
 
 `friction_family` makes creaks, squeaks, scrapes, rubbing and bowing out of the same material bodies as
 `material_impact` ([impacts.md](impacts.md)): the material table, shapes, damping laws and cavity modes are shared,
@@ -8,9 +8,10 @@ so a wooden door creaks through wood modes that die in a few tens of millisecond
 
 | `mode` | What happens | Used for |
 |---|---|---|
-| `stick_slip` | Elasto-plastic friction (bristle model) solved sample by sample with the body's lowest modes. A springy contact (`drive_hz` > 0) sticks, loads up and slips: a creak whose pulse rate rises with speed and falls with pressure. A rigid contact (`drive_hz` = 0) locks onto a body mode: a squeal or bowed tone. The slips also ring the rest of the body (FFT convolution) and a short fibre-noise residual. | door, floorboard, chair, rope creaks; hinge, shoe squeaks; glass rub |
+| `stick_slip` | Elasto-plastic friction (bristle model) solved sample by sample with the body's lowest modes. A springy contact (`drive_hz` > 0) sticks, loads up and slips: a creak whose pulse rate rises with speed and falls with pressure. A rigid contact (`drive_hz` = 0) locks onto a body mode: a squeal or bowed tone. The slips also ring the rest of the body (FFT convolution) and a short fibre-noise residual. | floorboard and chair creaks; glass rub |
 | `scrape` | A fractal surface profile read at the contact speed (the `surface` block) pushes the whole modal body. | metal and stone scrapes, sandpaper on wood |
 | `rub` | The same surface force band-limited, no modes. | cloth, padded rubbing |
+| `squeal` (v0.27.1) | The stick-slip excitation itself: a slip-by-slip relaxation oscillator (slow stick ramp, quick slip) whose rate follows speed and pressure (`pitch_hz` at 0.05 m/s and 5 N, `pitch_follow`), with per-cycle period and amplitude jitter, missed slips, slip noise (`roughness`) and optional fibre `crackle`. The body only colours it through a modal response cut to 40 ms, and the level follows the speed, so the stroke ends without a knock. | door creak (dry hinge pin), hinge squeak, shoe squeak, rope creak |
 
 ## Controls
 
@@ -28,9 +29,21 @@ hollowness, length (stroke and render length together) and distance (`cloth_rub`
 `metal_scrape`, `stone_scrape`, `sandpaper`, `cloth_rub`. The older `door_creak`, `creak_friction`,
 `squeak_friction` and `scrape_sdt` recipes stay as they were.
 
+## v0.27.1 changes
+
+- A door creak is a dry hinge pin, not the wood: `door_creak_wood`, `hinge_squeak`, `shoe_squeak` and
+  `rope_creak` moved to `squeal`, where the sound comes from the excitation rather than a ringing body.
+- The contact now stays pressed after the motion stops (a door at rest still bears on its hinge). Releasing it
+  at the stroke end let the wound-up contact slip once more and knock the body, which was audible at the end of
+  every creak. `ep_friction`'s grit noise also stops with the motion.
+- Tests: no knock after the stroke (the end is never the loudest part, squeals 30 dB down 50 ms later), squeals
+  harmonic-rich and rough (5+ harmonics within 30 dB, HNR 0.5-12 dB, rope -3-12 dB; a pure sine fails both),
+  squeal pitch follows speed, and the shoe squeak starts tonal (spectral flatness of the first 15 ms under 0.2).
+- The rope creak has no recorded reference to check against.
+
 ## Checks
 
-- Wood creaks keep their strongest sustained partial under 26 dB above the local spectrum (recorded door creaks:
+- (v0.27, stick_slip creaks) Wood creaks keep their strongest sustained partial under 26 dB above the local spectrum (recorded door creaks:
   7-34 dB, median about 14); the steel hinge and the glass rub sit 15 dB or more above every wood creak.
 - After the stroke a wood body is 45 dB down within 0.3 s; steel rings at least 15 dB longer.
 - The creak pulse rate of a springy contact is 150-600 Hz at walking-door speeds (recordings: about 190-590 Hz),

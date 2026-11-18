@@ -1,4 +1,5 @@
-"""v0.27: friction_family -- stick-slip / scrape / rub driving the material_impact modes, and dull gravel steps."""
+"""v0.27: friction_family -- stick-slip / scrape / rub driving the material_impact modes, and dull gravel steps.
+v0.27.1: squeal mode (hinge-pin, sole and rope stick-slip from the excitation, no body ring), no end-of-stroke knock."""
 from pathlib import Path
 
 import numpy as np
@@ -11,8 +12,10 @@ from conftest import SR, run
 from test_v0261_impact_fixes import sustained_partial_db
 
 R = Path(__file__).resolve().parents[1] / "recipes"
-WOOD_CREAKS = ["door_creak_wood", "floorboard_creak", "chair_creak", "rope_creak"]
-RECIPES = WOOD_CREAKS + ["hinge_squeak", "shoe_squeak", "glass_rub", "metal_scrape", "stone_scrape", "sandpaper", "cloth_rub"]
+WOOD_CREAKS = ["floorboard_creak", "chair_creak"]
+SQUEALS = ["door_creak_wood", "hinge_squeak", "shoe_squeak", "rope_creak"]
+F0_RANGE = {"door_creak_wood": (200, 1200), "hinge_squeak": (400, 2500), "shoe_squeak": (900, 3500), "rope_creak": (60, 450)}
+RECIPES = WOOD_CREAKS + SQUEALS + ["glass_rub", "metal_scrape", "stone_scrape", "sandpaper", "cloth_rub"]
 
 
 def render(name, k=0, **mac):
@@ -23,7 +26,7 @@ def rms(y):
     return float(np.sqrt(np.mean(y ** 2)))
 
 
-@pytest.mark.parametrize("mode", ["stick_slip", "scrape", "rub"])
+@pytest.mark.parametrize("mode", ["stick_slip", "scrape", "rub", "squeal"])
 def test_every_material_renders(mode):
     for mat in MATERIALS:
         y = run("friction_family", dur=0.4, mode=mode, material=mat, length_s=0.3, size=0.4)
@@ -48,8 +51,7 @@ def test_wood_creaks_have_no_long_metallic_partials(name):
 
 def test_metal_and_glass_stay_tonal():
     wood = max(sustained_partial_db(render(n), 0.1) for n in WOOD_CREAKS)
-    for n in ("hinge_squeak", "glass_rub"):
-        assert sustained_partial_db(render(n), 0.1) > wood + 15, n
+    assert sustained_partial_db(render("glass_rub"), 0.1) > wood + 15
 
 
 def test_rigid_drive_squeals_more_than_springy_creak():
@@ -115,3 +117,101 @@ def test_gravel_steps_are_dull_crunch_not_tinkling():
         crunch = X[(f >= 250) & (f < 4000)].sum() / tot
         sparkle = X[(f >= 4000) & (f < 16000)].sum() / tot
         assert crunch > 0.5 and sparkle < 0.25, (k, crunch, sparkle)
+
+
+# ---- v0.27.1 squeals -------------------------------------------------------------------------------------------
+
+def params(name):
+    import json
+    return json.loads((R / f"{name}.json").read_text())["layers"][0]["params"]
+
+
+def env10(y):
+    w = int(0.01 * SR)
+    return np.sqrt(np.convolve(y ** 2, np.ones(w) / w, "same"))
+
+
+_w = np.hanning(int(0.03 * SR))
+WAC = np.correlate(_w, _w, "full")[len(_w) - 1:] / np.sum(_w ** 2)
+
+
+def voice_stats(y, f_lo, f_hi, t0=0.0, t1=None):
+    """Median normalised-autocorrelation peak in the f0 range -> (f0, HNR dB), over loud 30 ms frames."""
+    y = y[int(t0 * SR):int(t1 * SR) if t1 else None]
+    W, H = int(0.03 * SR), int(0.01 * SR)
+    e0 = rms(y)
+    f0s, rs = [], []
+    for i in range(0, len(y) - W, H):
+        f = y[i:i + W] * np.hanning(W)
+        if rms(f) < 0.5 * e0:
+            continue
+        ac = np.correlate(f, f, "full")[W - 1:] / (WAC[:W] + 1e-9)   # Boersma: divide out the window's own lag
+        ac /= ac[0] + 1e-12
+        a, b = int(SR / f_hi), int(SR / f_lo)
+        k = a + int(np.argmax(ac[a:b]))
+        y0, y1, y2 = ac[k - 1], ac[k], ac[k + 1]                  # parabolic peak (non-integer periods)
+        d = 0.5 * (y0 - y2) / (y0 - 2 * y1 + y2 + 1e-12)
+        f0s.append(SR / (k + d))
+        rs.append(min(0.999, y1 - 0.25 * (y0 - y2) * d))
+    r = float(np.clip(np.median(rs), 1e-3, 0.999))
+    return float(np.median(f0s)), 10 * np.log10(r / (1 - r))
+
+
+def harmonic_count(y, f0, floor_db=30):
+    X = np.abs(np.fft.rfft(y * np.hanning(len(y))))
+    fr = np.fft.rfftfreq(len(y), 1 / SR)
+    hs = []
+    for k in range(1, 40):
+        if k * f0 > 16000:
+            break
+        m = (fr > k * f0 * 0.94) & (fr < k * f0 * 1.06)
+        hs.append(X[m].max())
+    hs = 20 * np.log10(np.array(hs) + 1e-12)
+    return int(np.sum(hs > hs.max() - floor_db))
+
+
+@pytest.mark.parametrize("name", SQUEALS + WOOD_CREAKS)
+def test_no_knock_after_the_stroke_ends(name):
+    p = params(name)
+    end = int((p.get("at", 0.05) + 1.15 * p["length_s"]) * SR)     # variations stretch the stroke by up to 10 %
+    for k in range(3):
+        e = env10(render(name, k))
+        before = e[:max(1, end - int(0.05 * SR))].max()
+        if name not in ("shoe_squeak", "hinge_squeak"):              # (those may swell to their end, then stop)
+            assert e[end - int(0.05 * SR):].max() < before, (name, k)  # the stroke's end is never its loudest part
+        if name in SQUEALS:
+            assert e[end + int(0.05 * SR):].max() < before * 10 ** (-30 / 20), (name, k)   # and nothing rings on
+
+
+@pytest.mark.parametrize("name", SQUEALS)
+def test_squeals_are_harmonic_and_rough_not_a_pure_sine(name):
+    y = render(name)
+    f0, hnr = voice_stats(y, *F0_RANGE[name])
+    assert F0_RANGE[name][0] < f0 < F0_RANGE[name][1]
+    assert harmonic_count(y, f0) >= 5, name                    # recorded door creaks: 3-10
+    lo = -3 if name == "rope_creak" else 0.5                   # the rope groan is the roughest
+    assert lo < hnr < 12, (name, hnr)                          # recorded door creaks: about 1-10 dB
+    t = np.arange(SR) / SR
+    sine = np.sin(2 * np.pi * f0 * t)                          # the measure itself: a pure tone is far outside both
+    assert harmonic_count(sine, f0) <= 2 and voice_stats(sine, 0.4 * f0, 2.5 * f0)[1] > 20
+
+
+def test_squeal_pitch_follows_speed():
+    kw = dict(dur=1.0, mode="squeal", material="steel", length_s=0.8, at=0.05, pitch_hz=800.0, irregularity=0.0)
+    lo = voice_stats(run("friction_family", speed=0.05, speed_change=-1.0, **kw), 550, 1600, 0.45, 0.7)[0]
+    hi = voice_stats(run("friction_family", speed=0.05, speed_change=1.0, **kw), 550, 1600, 0.45, 0.7)[0]
+    assert hi > 1.2 * lo
+
+
+def test_shoe_squeak_starts_tonal_not_with_a_noise_burst():
+    for k in range(3):
+        y = render("shoe_squeak", k)
+        e = env10(y)
+        on = int(np.argmax(e > 0.1 * e.max()))
+        seg = y[on:on + int(0.015 * SR)]
+        X = np.abs(np.fft.rfft(seg * np.hanning(len(seg)), 4096)) ** 2 + 1e-20
+        flat = np.exp(np.mean(np.log(X))) / np.mean(X)
+        assert flat < 0.2, (k, flat)                          # white noise ~0.5+, a harmonic chirp far lower
+        f0, hnr = voice_stats(y, *F0_RANGE["shoe_squeak"])
+        assert 1000 < f0 < 3000 and hnr > 0.5, (k, f0, hnr)
+        assert int(np.argmax(e > 0.5 * e.max())) - on < int(0.03 * SR)   # quick onset

@@ -283,17 +283,19 @@
         "at": 0.05,
         "material": "plastic",
         "shape": "plate",
-        "size": 0.12,
+        "size": 1.0,
         "hollowness": 0.0,
-        "length_s": 0.25,
+        "length_s": 0.22,
         "speed": 0.5,
-        "speed_change": -0.5,
+        "speed_change": 0.3,
         "pressure": 20.0,
-        "irregularity": 0.3,
-        "drive_hz": 0.0,
-        "mu_static": 1.0,
-        "mu_dynamic": 0.5,
-        "residual": 0.5
+        "irregularity": 0.2,
+        "mode": "squeal",
+        "pitch_hz": 237.5,
+        "pitch_follow": 1.0,
+        "body": 0.1,
+        "roughness": 0.25,
+        "slip_shape": 0.2
       }
     }
   ],
@@ -341,5 +343,6 @@
         ]
       }
     }
-  ]
+  ],
+  "notes": "v0.27.1: squeal mode -- a short rubbery stick-slip chirp sweeping up through ~1.2-2.2 kHz with harmonics, quick tonal onset (no noise burst), released with the slide."
 }

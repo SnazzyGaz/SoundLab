@@ -1070,7 +1070,7 @@ Creaks, squeaks, scrapes, rubbing and bowing through the same material bodies as
 
 | control | default | unit | range / choices | meaning |
 |---|---|---|---|---|
-| `mode` | `stick_slip` |  | stick_slip, scrape, rub |  |
+| `mode` | `stick_slip` |  | stick_slip, scrape, rub, squeal |  |
 | `material` | `wood_hard` |  | wood_soft, wood_hard, steel, aluminium, iron, glass, ceramic, stone, plastic, rubber, flesh, cloth |  |
 | `shape` | `plate` |  | plate, bar, rod, beam, box, shell, ball, block |  |
 | `size` | `0.5` | m | 0.01 .. 5.0 | largest dimension of the rubbed body (pitch ~ 1/size) |
@@ -1093,6 +1093,10 @@ Creaks, squeaks, scrapes, rubbing and bowing through the same material bodies as
 | `residual` | `1.0` |  | 0 .. 3 | fibre / grit noise level |
 | `muffle` | `0.0` |  | 0 .. 1 | damping (hand on the door, carpet, grease) |
 | `max_t60` | `3.0` | s | 0.02 .. 20 | cap on ring time |
+| `pitch_hz` | `600.0` | Hz | 20 .. 6000 | squeal: slip rate at 0.05 m/s and 5 N (rate ~ speed^follow x pressure^-0.2) |
+| `pitch_follow` | `0.6` |  | 0 .. 1.5 | squeal: how strongly the slip rate follows speed (rate ~ speed^follow) |
+| `slip_shape` | `0.15` |  | 0.02 .. 0.5 | squeal: fraction of each cycle spent slipping (small = buzzier) |
+| `crackle` | `0.0` |  | 0 .. 2 | squeal: sparse fibre crackle following the slip activity (ropes) |
 
 Sources: Dupont, Hayward, Armstrong & Altpeter 2002 (elasto-plastic friction); Avanzini, Serafin & Rocchesso 2005, IEEE TSAP (friction-induced sound); SDT: method only; van den Doel, Kry & Pai 2001 (scraping); Rath & Rocchesso 2004 (rolling/scraping control); Aramaki et al. 2011 (material damping laws); Ren, Yeh & Lin 2013 (residual); Akay 2002, JASA (acoustics of friction: stick-slip, squeal, creak)
 

@@ -13,6 +13,11 @@ Method (all original code):
 - Scrape: a fractal surface profile read at the contact speed (`surface`; van den Doel, Kry & Pai 2001; Rath &
   Rocchesso 2004) drives the full body. Rub: the same force with no modes (cloth, sandpaper on soft backing),
   band-limited by the material.
+- Squeal (v0.27.1): the sound of a dry pin turning in its knuckle, a rubber sole or a loaded rope comes from the
+  stick-slip excitation itself, not from a ringing body. A slip-by-slip relaxation oscillator (slow stick ramp,
+  quick slip) whose rate follows speed and pressure, with per-cycle period and amplitude jitter, missed slips
+  and slip noise for roughness; the body only colours it through a short (<= 40 ms) modal response, and the
+  level follows the speed smoothly, so the stroke ends without a knock.
 - Gesture: speed and pressure over `length_s` with a start/end ramp, a speed change (slowing to a stop ..
   speeding up), and irregularity (slow random wobble of speed and pressure, as a hand or a settling door gives).
 """
@@ -29,6 +34,7 @@ from .impacts import IMPACT_MATERIALS, SHAPES, cavity_modes, decay_rates, modal_
 
 MATERIALS = tuple(k for k, v in IMPACT_MATERIALS.items() if not v.get("ground")) + ("cloth",)
 # band of the rubbing noise for modeless materials: (high-pass, low-pass) Hz
+SQUEAL_V_REF, SQUEAL_N_REF = 0.05, 5.0   # m/s, N: `pitch_hz` is the slip rate at this speed and pressure
 RUB_BAND = {"cloth": (700, 7000), "rubber": (300, 3000), "flesh": (200, 2500)}
 
 
@@ -46,7 +52,9 @@ def _gesture(ctx, at, length_s, speed, speed_change, pressure, irregularity):
     on = (t >= at) & (t <= at + length_s)
     ramp = np.minimum(1, (t - at) / (0.08 * length_s + 1e-3)) * np.minimum(1, (at + length_s - t) / (0.1 * length_s + 1e-3))
     v = speed * np.exp(speed_change * math.log(4.0) * (u - 0.5)) * np.clip(ramp, 0, 1) * on
-    N = pressure * on.astype(float)
+    # v0.27.1: the contact stays pressed after the motion stops (a door coming to rest still bears on its hinge);
+    # releasing it at the stroke end let the wound-up contact slip once more and knock the body
+    N = pressure * np.clip((t - at) / (0.05 * length_s + 1e-3), 0, 1)
     if irregularity > 0:
         v = v * np.clip(1 + 0.7 * irregularity * _smooth_noise(rng, n, sr, 4.0), 0.05, None)
         N = N * np.clip(1 + 0.5 * irregularity * _smooth_noise(rng, n, sr, 6.0), 0.1, None)
@@ -60,6 +68,53 @@ def _bp(arr, sr, rate=400):
     return [[float(i / sr), float(arr[i])] for i in idx] + [[float((len(arr) - 1) / sr), float(arr[-1])]]
 
 
+def _squeal(ctx, V, N, speed, pressure, pitch_hz, follow, slip_shape, irregularity, roughness, crackle):
+    """Slip-by-slip stick-slip excitation: (force waveform, slip activity)."""
+    sr, n, rng = ctx.sr, ctx.n, ctx.rng
+    vs = np.maximum(V, 0.0) / max(speed, 1e-6)                  # stroke shape (level)
+    va = np.maximum(V, 0.0) / SQUEAL_V_REF                       # absolute speed and pressure (rate), so the
+    ns = np.maximum(N, 1e-6) / SQUEAL_N_REF                      # speed and pressure sliders move the pitch
+    # level: smooth in speed (the squeal fades as the motion dies, no step), one-pole 4 ms up / 40 ms down
+    lvl = np.clip((vs - 0.08) / 0.5, 0, 1) ** 1.5 * np.sqrt(np.clip(N / max(pressure, 1e-6), 0, 3))
+    lvl = signal.lfilter([1 - math.exp(-1 / (0.004 * sr))], [1, -math.exp(-1 / (0.004 * sr))], lvl)
+    f = pitch_hz * np.maximum(va, 0.02) ** follow * ns ** -0.2
+    f = f * np.exp(0.05 * irregularity * _smooth_noise(rng, n, sr, 7.0))
+    f = np.clip(f, 20, 0.4 * sr)
+    jit = 0.004 + 0.03 * roughness + 0.02 * irregularity
+    shim = 0.03 + 0.25 * roughness
+    miss = 0.12 * irregularity * roughness
+    out = np.zeros(n)
+    act = np.zeros(n)
+    on = np.nonzero(lvl > 1e-3)[0]
+    i = int(on[0]) if len(on) else n
+    end = int(on[-1]) + 1 if len(on) else 0
+    while i < end:
+        L = sr / f[i] * (1 + jit * rng.standard_normal())
+        if rng.random() < miss:                       # a slip that does not come: the next one is bigger and later
+            L *= 2
+        L = int(max(4, round(L)))
+        a = max(0.0, 1 + shim * rng.standard_normal())
+        d = max(2, int(round(slip_shape * L)))
+        seg = np.concatenate([np.linspace(-1, 1, L - d, endpoint=False), np.linspace(1, -1, d, endpoint=False)])
+        j = min(n, i + L)
+        out[i:j] += a * seg[:j - i] * lvl[i:j]                 # level per sample: a slow last cycle fades out
+        act[i:min(n, i + d)] += a * lvl[i:min(n, i + d)]
+        i += L
+    # slip noise (roughness): a short burst at every slip
+    nz = rng.standard_normal(n) * np.convolve(act, np.ones(int(0.0006 * sr)), "same")
+    out = dsp.highpass(out, 40.0, sr) + (0.05 + 0.45 * roughness) * dsp.highpass(nz, 1500.0, sr) * 0.3
+    # the pin, sole or fibre is soft at the slip: the upper harmonics roll off (two poles above ~5 f0)
+    f_on = f[lvl > 0.1 * lvl.max()] if lvl.max() > 0 else f
+    fc = min(0.45 * sr, 2500.0 + 5.0 * float(np.median(f_on)))
+    out = dsp.lowpass(dsp.lowpass(out, fc, sr), fc, sr)
+    if crackle > 0:                                   # fibres giving way: sparse clicks where the rope works
+        p = np.clip(lvl, 0, 1) * 60.0 * crackle / sr
+        clicks = (rng.random(n) < p) * rng.standard_normal(n)
+        cr = dsp.lowpass(dsp.highpass(np.convolve(clicks, np.hanning(int(0.0015 * sr)), "same"), 300, sr), 4000, sr)
+        out = out + crackle * 0.6 * cr / (np.abs(cr).max() + 1e-12) * np.abs(out).max()
+    return out, lvl
+
+
 @model("friction_family", "sound",
        "Creaks, squeaks, scrapes, rubbing and bowing through the same material bodies as `material_impact`. "
        "`mode` stick_slip: elasto-plastic friction solved with the body's lowest modes (springy `drive_hz` > 0 "
@@ -68,7 +123,7 @@ def _bp(arr, sr, rate=400):
        "same surface force, no modes (cloth, padded sandpaper). One stroke of `length_s` with `speed`, "
        "`speed_change` (-1 slowing to a stop .. +1 speeding up), `pressure` and `irregularity`.",
        [
-           Param("mode", "stick_slip", "", choices=("stick_slip", "scrape", "rub")),
+           Param("mode", "stick_slip", "", choices=("stick_slip", "scrape", "rub", "squeal")),
            Param("material", "wood_hard", "", choices=MATERIALS),
            Param("shape", "plate", "", choices=SHAPES),
            Param("size", 0.5, "m", 0.01, 5.0, "largest dimension of the rubbed body (pitch ~ 1/size)"),
@@ -91,6 +146,10 @@ def _bp(arr, sr, rate=400):
            Param("residual", 1.0, "", 0, 3, "fibre / grit noise level"),
            Param("muffle", 0.0, "", 0, 1, "damping (hand on the door, carpet, grease)"),
            Param("max_t60", 3.0, "s", 0.02, 20, "cap on ring time"),
+           Param("pitch_hz", 600.0, "Hz", 20, 6000, "squeal: slip rate at 0.05 m/s and 5 N (rate ~ speed^follow x pressure^-0.2)"),
+           Param("pitch_follow", 0.6, "", 0, 1.5, "squeal: how strongly the slip rate follows speed (rate ~ speed^follow)"),
+           Param("slip_shape", 0.15, "", 0.02, 0.5, "squeal: fraction of each cycle spent slipping (small = buzzier)"),
+           Param("crackle", 0.0, "", 0, 2, "squeal: sparse fibre crackle following the slip activity (ropes)"),
        ],
        ["Dupont, Hayward, Armstrong & Altpeter 2002 (elasto-plastic friction)",
         "Avanzini, Serafin & Rocchesso 2005, IEEE TSAP (friction-induced sound); SDT: method only",
@@ -99,9 +158,25 @@ def _bp(arr, sr, rate=400):
         "Akay 2002, JASA (acoustics of friction: stick-slip, squeal, creak)"])
 def friction_family(ctx: Ctx, x, mode, material, shape, size, hollowness, contact_point, at, length_s, speed,
                     speed_change, pressure, irregularity, drive_hz, mu_static, mu_dynamic, stiffness, roughness,
-                    grain_mm, loop_modes, body, residual, muffle, max_t60):
+                    grain_mm, loop_modes, body, residual, muffle, max_t60, pitch_hz, pitch_follow, slip_shape,
+                    crackle):
     sr, n, rng = ctx.sr, ctx.n, ctx.rng
     V, N = _gesture(ctx, at, length_s, speed, speed_change, pressure, irregularity)
+    if mode == "squeal":
+        y, _ = _squeal(ctx, V, N, speed, pressure, pitch_hz, pitch_follow, slip_shape, irregularity, roughness, crackle)
+        y = y / (np.abs(y).max() + 1e-12)
+        if body > 0 and material != "cloth":
+            m = IMPACT_MATERIALS[material]
+            fm, am, _ = mode_table(shape, m, size, hollowness, contact_point, 30, rng)
+            al = np.maximum(decay_rates(fm, m, muffle), 6.91 / 0.04)       # colour only: nothing rings past 40 ms
+            keep = (fm > 30) & (fm < 0.4 * sr)
+            if keep.any():
+                ir = modal_ir(fm[keep], am[keep], al[keep], sr, 0.04, m["cap"], rng, 0.0)
+                b = signal.fftconvolve(y, ir)[:n]
+                y = y + body * b / (np.abs(b).max() + 1e-12)
+        if muffle > 0:
+            y = dsp.lowpass(y, 12000 * (1 - muffle) + 1500 * muffle, sr)
+        return dsp.highpass(y, 40.0, sr)
     modeless = material == "cloth" or mode == "rub"
     if not modeless:
         m = IMPACT_MATERIALS[material]

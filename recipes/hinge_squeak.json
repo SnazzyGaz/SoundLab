@@ -297,10 +297,12 @@
         "speed_change": -0.2,
         "pressure": 6.0,
         "irregularity": 0.4,
-        "drive_hz": 0.0,
-        "mu_static": 0.8,
-        "mu_dynamic": 0.35,
-        "body": 0.4
+        "body": 0.15,
+        "mode": "squeal",
+        "pitch_hz": 463.4,
+        "pitch_follow": 0.8,
+        "roughness": 0.55,
+        "slip_shape": 0.12
       }
     }
   ],
@@ -348,5 +350,6 @@
         ]
       }
     }
-  ]
+  ],
+  "notes": "v0.27.1: squeal mode -- a rough, harmonic stick-slip squeal from the pin itself, no ringing body tail (HNR ~7 dB, ~9-10 harmonics)."
 }

@@ -11,6 +11,9 @@ Ground rules:
 
 ## Now: interaction models and resynthesis (v0.17 to v0.27)
 
+v0.27.1: door creak, hinge squeak, shoe squeak and rope creak rebuilt as stick-slip squeals from the excitation
+(no ringing body, no knock at the stroke end); see [friction.md](friction.md).
+
 v0.27: friction as one model (`friction_family`: elasto-plastic stick-slip, scrape and rub driving the
 `material_impact` bodies) with 11 recipes; see [friction.md](friction.md). Gravel footsteps lost their ringing
 pebbles (dull stone grains). Next families: air and whooshes, liquids, machines, fire and electricity, creatures.

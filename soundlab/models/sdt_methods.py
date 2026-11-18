@@ -149,7 +149,7 @@ def ep_friction(ctx: Ctx, x, velocity, normal_force, mu_static, mu_dynamic, stri
         vb = VB[i]
         N = max(NF[i], 0.0)
         fc, fs = mu_dynamic * N, mu_static * N
-        nz = noise * N * W[i] * 0.1
+        nz = noise * N * W[i] * 0.1 * min(1.0, abs(vb) / 0.002)   # v0.27.1: no grit once the motion stops
         for _ in range(sub):
             vr = 0.0
             for k in range(K):

@@ -1,9 +1,9 @@
 {
   "soundlab": 1,
-  "name": "Door creak: a wooden door swinging on a dry hinge (stick-slip through the door's wood modes)",
+  "name": "Door creak: a dry metal hinge pin squealing in its knuckle as the door swings (the door only colours it)",
   "category": "foley",
   "sample_rate": 48000,
-  "duration": 2.6,
+  "duration": 3.0,
   "seed": 27,
   "master": {
     "normalize_db": -1.0,
@@ -290,17 +290,19 @@
         "at": 0.05,
         "material": "wood_hard",
         "shape": "plate",
-        "size": 0.35,
+        "size": 1.0,
         "hollowness": 0.5,
         "length_s": 2.2,
         "speed": 0.03,
-        "speed_change": -0.3,
+        "speed_change": -0.5,
         "pressure": 8.0,
         "irregularity": 0.5,
-        "drive_hz": 600,
-        "contact_point": 0.1,
-        "body": 1.2,
-        "residual": 1.0
+        "body": 0.25,
+        "mode": "squeal",
+        "pitch_hz": 706.9,
+        "pitch_follow": 0.7,
+        "roughness": 0.6,
+        "slip_shape": 0.15
       }
     }
   ],
@@ -349,5 +351,5 @@
       }
     }
   ],
-  "notes": "v0.27: checked against CC0 door-creak recordings kept outside the repo: pulse rate ~250 Hz (recordings 190-590 Hz), centroid ~1.1 kHz (recordings 0.4-1.7 kHz), sustained-partial 19 dB (recordings 7-34 dB). On plain spectral distance it scores 1.08 / 1.13 / 0.76 on three recordings (the older door_creak: 0.94 / 0.97 / 0.79); automatic fits scored lower only by thinning the creak to a few clicks plus noise, so they were not used."
+  "notes": "v0.27.1: squeal mode -- the sound comes from the pin stick-slip, the door body only colours it (nothing rings past 40 ms) and the level follows the swing, so there is no knock at the end. Checked against CC0 door-creak recordings kept outside the repo: fundamental ~390-510 Hz (recordings: pulse rates ~190-590 Hz), HNR 5-6 dB (recordings ~1-10 dB), period jitter ~2 % (recordings ~2-3 %), 11-14 harmonics within 30 dB (recordings 3-10), centroid 0.7-0.9 kHz (recordings 0.4-1.7 kHz)."
 }
