@@ -21,7 +21,13 @@ What's in it:
   audio) and played as a gesture timeline of motions; macros brightness, stretch, pitch, motions, gaps, seed.
   The fitted physical `creak` model (v0.28) stays as a fallback in `recipes/creak_model/`; see
   [docs/friction.md](docs/friction.md).
-- **37 hand-built recipes** for game sound (109 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind,
+- **Wind, whooshes, arrow fly-bys and fans from recording stems** (`air_stems`, v0.30): `wind_gust`, `wind_trees`
+  (a gale by default; a `strength` macro takes it down to a breeze that barely registers), `whoosh` (speed, size,
+  pitch), `arrow_flyby` (count, spacing, speed, closeness: real passes re-flown with the Doppler re-drawn) and `fan`
+  (speed, size: blade rate and tip-speed brightness), rebuilt from band-noise envelopes, tonal tracks, onset
+  envelopes, colour and blade cycles of CC0 recordings (numbers only, no audio). The generic physical `wind`,
+  `wind_gale` and `sword_swing` recipes stay as fallbacks; see [docs/air.md](docs/air.md).
+- **42 hand-built recipes** for game sound (114 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind, whooshes, arrows, fans,
   rain, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splash, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.

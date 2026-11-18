@@ -1,0 +1,220 @@
+{
+  "soundlab": 1,
+  "name": "Arrow fly-by: arrows whizzing past (real passes re-flown, Doppler re-drawn)",
+  "category": "whoosh",
+  "sample_rate": 48000,
+  "duration": 7.0,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "air",
+      "model": "air_stems",
+      "params": {
+        "segment": "",
+        "mapping": "flyby",
+        "count": 3,
+        "spacing": 0.9,
+        "closeness": 1.25,
+        "seed": 41,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "count": {
+      "default": 0.5,
+      "doc": "1 .. 5 arrows",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.count",
+          "op": "set",
+          "range": [
+            1,
+            5
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.44
+            ],
+            [
+              0.25,
+              0.76
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              0.75,
+              1.25
+            ],
+            [
+              1,
+              1.53
+            ]
+          ]
+        }
+      ]
+    },
+    "spacing": {
+      "default": 0.5,
+      "doc": "close together .. far apart (0.3 .. 2.7 s)",
+      "map": [
+        {
+          "to": "0.spacing",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.3333333333333333
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              3
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.75
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.3
+            ]
+          ]
+        }
+      ]
+    },
+    "speed": {
+      "default": 0.5,
+      "doc": "slower .. faster arrows (shorter, steeper Doppler)",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              1.55
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              0.75
+            ]
+          ]
+        }
+      ]
+    },
+    "closeness": {
+      "default": 0.5,
+      "doc": "far .. close past the ear (level, brightness, Doppler)",
+      "map": [
+        {
+          "to": "0.closeness",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              1.8
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              0.75
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "doc": "another take: reseeds the noise (and for wind/fan picks another stored stretch of the recording)",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    },
+    "0.speed": {
+      "rel": 0.05
+    }
+  },
+  "notes": "v0.30 air_stems (docs/air.md): the five passes of flyby_675821 as separate stems; a take draws passes (never the same twice running) with +-8% speed, +-15% closeness and +-30% spacing. Geometry pooled from the recording: 71 m/s, closest 0.56 m."
+}

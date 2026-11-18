@@ -63,6 +63,7 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 
 | recipe | category | macros |
 |---|---|---|
+| `arrow_flyby.json` | whoosh | `count`, `spacing`, `speed`, `closeness`, `seed` |
 | `blaster.json` | scifi | `size`, `intensity`, `length` |
 | `bullet_impact.json` | weapon | `material` (concrete, wood, metal), `intensity`, `debris`, `ricochet`, `distance` |
 | `car_passby.json` | vehicle | `speed`, `distance` |
@@ -81,6 +82,7 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 | `engine_idle.json` | vehicle | `rpm`, `load`, `size`, `intensity`, `distance` (loopable) |
 | `explosion.json` | explosion | `size`, `intensity`, `debris`, `distance` |
 | `explosion_small.json` | explosion | `size`, `intensity`, `debris`, `distance` |
+| `fan.json` | ambience | `speed`, `size`, `seed` |
 | `fire.json` | ambience | `size`, `intensity`, `distance` |
 | `floorboard_creak.json` | floor | `brightness`, `stretch`, `pitch`, `motions`, `gaps`, `seed` |
 | `foghorn.json` | ambience | `size`, `intensity`, `length`, `distance` |
@@ -106,8 +108,11 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 | `sword_clash.json` | weapon | `object` (sword, pipe, plate, pan), `intensity`, `scrape`, `ring`, `distance` |
 | `sword_swing.json` | whoosh | `speed`, `object`, `zing`, `distance` |
 | `water.json` | water | `size`, `intensity`, `distance` |
+| `whoosh.json` | whoosh | `speed`, `size`, `pitch`, `seed` |
 | `wind.json` | ambience | `strength`, `gusts`, `trees`, `howl`, `distance` |
 | `wind_gap.json` | ambience | `strength`, `pitch`, `whistle`, `distance` |
+| `wind_gust.json` | ambience | `strength`, `air`, `seed` |
+| `wind_trees.json` | ambience | `strength` (gale at 1, the default .. breeze), `air`, `seed` |
 | `blocks/coin_pickup.json` | pickup | `pitch`, `length`, `brightness` |
 | `blocks/laser_zap.json` | scifi | `pitch`, `length`, `intensity` |
 | `blocks/magic_shimmer.json` | magic | `pitch`, `density`, `size` |

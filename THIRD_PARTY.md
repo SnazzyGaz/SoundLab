@@ -83,6 +83,20 @@ is resynthesised from the numbers. Which burst of which recording each recipe pl
 | 784964 | Squeaky Door | apintofmild | https://freesound.org/people/apintofmild/sounds/784964/ | CC0 1.0 |
 | 788701 | Soft_sqeuak_door_hinge | T.I.B | https://freesound.org/people/T.I.B/sounds/788701/ | CC0 1.0 |
 
+## Recordings decomposed into stems for `air_stems` (v0.30, numbers only, no audio included)
+
+`soundlab/models/air_stems.bin` holds analysis numbers (band-noise envelopes at 2.9 ms frames, tonal tracks,
+1 ms onset envelopes, a 1/6-octave spectrum, a fan's blade cycle, fly-by pass geometry) of stretches of these
+CC0 1.0 recordings on Freesound. No samples are stored; renders use new noise.
+
+| Freesound id | Title | Author | URL | Licence |
+|---|---|---|---|---|
+| 352421 | wind_gust.aif | joseph.larralde | https://freesound.org/people/joseph.larralde/sounds/352421/ | CC0 1.0 |
+| 507466 | Clean fast Swoosh.aiff | Danjocross | https://freesound.org/people/Danjocross/sounds/507466/ | CC0 1.0 |
+| 675821 | S27-05 Five arrows whoosh by.wav | craigsmith | https://freesound.org/people/craigsmith/sounds/675821/ | CC0 1.0 |
+| 760990 | 5. Wind in trees | mathiaslyhne1 | https://freesound.org/people/mathiaslyhne1/sounds/760990/ | CC0 1.0 |
+| 761929 | large indoor fan on low - 1 | FOSSarts | https://freesound.org/people/FOSSarts/sounds/761929/ | CC0 1.0 |
+
 ## Methods adopted from other projects and papers (no code copied)
 
 v0.28 `creak`: the creaking door as stick-slip events through a fixed wood formant bank (A. Farnell, *Designing

@@ -1,0 +1,120 @@
+{
+  "soundlab": 1,
+  "name": "Fan: a large fan running (blade cycle from a CC0 recording)",
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 6.0,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "air",
+      "model": "air_stems",
+      "params": {
+        "segment": "fan_761929@1",
+        "mapping": "fan",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "speed": {
+      "default": 0.5,
+      "doc": "slower .. faster (blade rate, brighter, louder)",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.6
+            ]
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -11.092
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              10.206
+            ]
+          ]
+        }
+      ]
+    },
+    "size": {
+      "default": 0.5,
+      "doc": "smaller .. bigger fan (lower, slower blades)",
+      "map": [
+        {
+          "to": "0.size",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.6
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "doc": "another take: reseeds the noise (and for wind/fan picks another stored stretch of the recording)",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    },
+    "0.speed": {
+      "rel": 0.04
+    }
+  },
+  "loop": {
+    "lead_s": 1.0,
+    "xfade_s": 0.5
+  },
+  "notes": "v0.30 air_stems (docs/air.md): fan_761929 from 1 s, faithful resynthesis; the blade rate (found from the envelope) and a 32-phase blade-cycle shape per band are stored. speed: blade rate and +1200 cents per doubling, level +15 dB per doubling (power ~ tip speed^5); size: -960 cents per doubling, blade rate / size."
+}

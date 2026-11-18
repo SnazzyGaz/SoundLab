@@ -1185,6 +1185,31 @@ Squeals, squeaks and creaks rebuilt from stems of CC0 recordings (numbers only, 
 
 Sources: Serra & Smith 1990 (spectral modelling synthesis: sinusoids + residual); McAulay & Quatieri 1986 (sinusoidal tracking); Akay 2002 (acoustics of friction); Woodhouse 2004 (bowed-string Helmholtz motion); Freesound CC0 recordings 766155, 563136, 575206, 455324, 268574, 124289, 535530, 429130, 788701, 784964, 204759, 88502, 397687, 483166, 207140 (analysed numbers only; THIRD_PARTY.md)
 
+### `air_stems`
+
+Wind gusts, wind in trees, whooshes, arrow fly-bys and fans rebuilt from stems of CC0 recordings (numbers only, no audio): a band-noise envelope smoothed across frequency, tonal tracks, onset envelopes, colour, a fan's blade cycle and a fly-by's passes with their Doppler geometry. Real segments, new noise, mild changes.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `segment` | `wind_352421@10` |  |  | stored segment key (family@start); variations pick others of the same family |
+| `mapping` | `wind` |  | wind, whoosh, fan, flyby | how speed/size act: wind/whoosh (time and spectrum), fan (blade rate, tip-speed brightness), flyby (passes) |
+| `stretch` | `1.0` |  | 0.5 .. 3.0 | time stretch (>1 slower) |
+| `pitch` | `0.0` | cents | -1200 .. 1200 | spectral shift of noise bands, tones and colour |
+| `speed` | `1.0` |  | 0.3 .. 3.0 | motion speed: faster = shorter and a little higher; fan: blade rate |
+| `size` | `1.0` |  | 0.3 .. 3.0 | bigger = lower and longer; fan: lower, slower blades |
+| `strength` | `1.0` |  | 0.0 .. 1.0 | wind strength re the recording (1): lower = darker, slower, shallower gusts (level via the recipe's master gain) |
+| `air_db` | `0.0` | dB | -24 .. 12 | high shelf on the colour (harshness / air) |
+| `air_hz` | `3500.0` | Hz | 1000 .. 12000 |  |
+| `mute_above_hz` | `0.0` | Hz | 0 .. 20000 | mute tonal tracks above this (0 = keep all) |
+| `count` | `3` |  | 1 .. 12 | fly-by: number of passes |
+| `spacing` | `0.9` | s | 0.1 .. 4.0 | fly-by: mean gap between passes |
+| `closeness` | `1.0` |  | 0.3 .. 3.0 | fly-by: >1 nearer (louder, shorter, steeper Doppler, brighter) |
+| `seed` | `0` |  | 0 .. 2147483647 | noise seed (the recipe default reproduces its reference) |
+| `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the reference; other values pick another real segment and reseed |
+| `at` | `0.0` | s | 0 .. None |  |
+
+Sources: Serra & Smith 1990 (sinusoids + residual); McAulay & Quatieri 1986 (sinusoidal tracking); Doppler for a straight pass: f' = f c / (c - v_r); fan law: sound power ~ tip speed^5; Freesound CC0 recordings 352421, 760990, 507466, 675821, 761929 (numbers only; THIRD_PARTY.md)
+
 ## Stage: synth
 
 ### `osc`

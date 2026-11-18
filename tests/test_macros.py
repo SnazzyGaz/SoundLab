@@ -55,7 +55,10 @@ def test_macro_extremes_render(path):
     for v in (0.0, 1.0):
         mv = {k: v for k, s in rec["macros"].items() if "choices" not in s}
         y, sr = soundlab.render(rec, sample_rate=16000, macros=mv)
-        assert np.all(np.isfinite(y)) and np.max(np.abs(y)) > 0.1
+        # a macro may lower the level on purpose (master.gain_db, e.g. wind strength): scale the floor with it
+        drop = sum(np.interp(v, *zip(*t["points"])) for s in rec["macros"].values() if "choices" not in s
+                   for t in s["map"] if t["to"] == "master.gain_db" and t.get("op") == "add" and "points" in t)
+        assert np.all(np.isfinite(y)) and np.max(np.abs(y)) > 0.1 * 10 ** (min(drop, 0) / 20)
 
 
 def test_macro_mapping_mul_add_clamp_choice():

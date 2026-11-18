@@ -1,0 +1,161 @@
+{
+  "soundlab": 1,
+  "name": "Whoosh: a fast swish past the ear (stems of a CC0 recording)",
+  "category": "whoosh",
+  "sample_rate": 48000,
+  "duration": 1.0,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "air",
+      "model": "air_stems",
+      "params": {
+        "segment": "whoosh_507466@0",
+        "mapping": "whoosh",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.02
+  },
+  "macros": {
+    "speed": {
+      "default": 0.5,
+      "doc": "slower .. faster (shorter, higher)",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.6
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              1.6666666666666667
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              0.625
+            ]
+          ]
+        }
+      ]
+    },
+    "size": {
+      "default": 0.5,
+      "doc": "smaller .. bigger object (lower, longer)",
+      "map": [
+        {
+          "to": "0.size",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.6
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.7745966692414834
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.2649110640673518
+            ]
+          ]
+        }
+      ]
+    },
+    "pitch": {
+      "default": 0.5,
+      "doc": "lower .. higher (-6 .. +6 semitones)",
+      "map": [
+        {
+          "to": "0.pitch",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -600
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              600
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "doc": "another take: reseeds the noise (and for wind/fan picks another stored stretch of the recording)",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    },
+    "0.speed": {
+      "rel": 0.08
+    },
+    "0.size": {
+      "rel": 0.08
+    }
+  },
+  "notes": "v0.30 air_stems (docs/air.md): whoosh_507466, faithful resynthesis. speed: time / speed, +600 cents per doubling; size: time * sqrt(size), -840 cents per doubling."
+}

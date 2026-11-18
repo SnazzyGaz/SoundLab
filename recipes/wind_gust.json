@@ -1,0 +1,208 @@
+{
+  "soundlab": 1,
+  "name": "Wind gust: a real gust rising and falling (stems of a CC0 recording)",
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 8.0,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "air",
+      "model": "air_stems",
+      "params": {
+        "segment": "wind_352421@10",
+        "mapping": "wind",
+        "mute_above_hz": 5000,
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "strength": {
+      "default": 1.0,
+      "jitter": 0.0,
+      "doc": "light breeze .. gale (the recording is a strong gust): lower = much quieter, darker, smaller and slower, shallower gusts",
+      "map": [
+        {
+          "to": "0.strength",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -36.124
+            ],
+            [
+              0.1,
+              -29.287
+            ],
+            [
+              0.2,
+              -23.876
+            ],
+            [
+              0.3,
+              -19.398
+            ],
+            [
+              0.4,
+              -15.578
+            ],
+            [
+              0.5,
+              -12.247
+            ],
+            [
+              0.6,
+              -9.294
+            ],
+            [
+              0.7,
+              -6.642
+            ],
+            [
+              0.8,
+              -4.235
+            ],
+            [
+              0.9,
+              -2.031
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.8
+            ],
+            [
+              0.1,
+              1.72
+            ],
+            [
+              0.2,
+              1.64
+            ],
+            [
+              0.3,
+              1.56
+            ],
+            [
+              0.4,
+              1.48
+            ],
+            [
+              0.5,
+              1.4
+            ],
+            [
+              0.6,
+              1.32
+            ],
+            [
+              0.7,
+              1.24
+            ],
+            [
+              0.8,
+              1.16
+            ],
+            [
+              0.9,
+              1.08
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ]
+        }
+      ]
+    },
+    "air": {
+      "default": 0.5,
+      "doc": "duller .. airier (high shelf -8 .. +6 dB)",
+      "map": [
+        {
+          "to": "0.air_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -8
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              6
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "doc": "another take: reseeds the noise (and for wind/fan picks another stored stretch of the recording)",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    },
+    "0.stretch": {
+      "rel": 0.04
+    },
+    "0.pitch": {
+      "abs": 30
+    }
+  },
+  "stereo": {
+    "mode": "decorrelate",
+    "width": 0.6,
+    "mono_below_hz": 150
+  },
+  "notes": "v0.30 air_stems (docs/air.md): wind_352421 from 10 s, faithful resynthesis of its stems with new noise. Tonal tracks above 5 kHz are muted (a bird in other stretches of the recording). Variations use the 2 s and 6 s stretches."
+}

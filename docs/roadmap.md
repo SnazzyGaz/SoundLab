@@ -11,6 +11,13 @@ Ground rules:
 
 ## Now: interaction models and resynthesis (v0.17 to v0.27)
 
+v0.30: air from recording stems (`air_stems`: band-noise envelopes smoothed across frequency, tonal tracks,
+onset envelopes, colour, a fan's blade cycle, fly-by passes with their Doppler geometry; numbers only); new recipes
+`wind_gust`, `wind_trees` (gale by default, `strength` down to a breeze), `whoosh`, `arrow_flyby`, `fan`; the
+generic `wind`, `wind_gale` and `sword_swing` recipes stay as physical fallbacks. Next for this family: calmer
+wind recordings for the low end of `strength` (it is extrapolated from a gale today), flags and cloth flapping
+from a better reference, howling gaps, stereo from paired takes; see [air.md](air.md).
+
 v0.29: squeals, squeaks and creaks rebuilt from stems of CC0 recordings (`squeal_stems`: partial tracks, the
 real wobble, noise layer, onsets and body colour per burst, stored as numbers, recombined across recordings and
 played as a gesture timeline of motions with pauses between them); new recipes `door_squeal`, `hinge_squeak_2`,

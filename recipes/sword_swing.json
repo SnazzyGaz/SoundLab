@@ -192,5 +192,6 @@
   "0.edge_mm": {
    "rel": 0.15
   }
- }
+ },
+ "notes": "Physical fallback since v0.30: for a recorded swish use `whoosh` (air_stems, docs/air.md)."
 }

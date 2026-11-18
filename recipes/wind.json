@@ -246,5 +246,5 @@
     "mono_below_hz": 150
   },
   "fitted": "v0.23: controls fitted to two real recordings of wind in trees and tall grass (BigSoundBank #0904, #0908) on third-octave spectrum and band texture (modulation depth, spikiness, fast flutter)",
-  "notes": "v0.24: leaf ticks are now sharp (instant attack, 0.3-4 ms decay) instead of soft 1-12 ms swells, and the controls were refitted: high-band 20-70 Hz roughness 0.18 vs real 0.19 (v0.23: 0.39, a mushy wash). The eq restores the 7-14 kHz air the fit left 4-7 dB short."
+  "notes": "Physical fallback since v0.30: for recorded wind use `wind_gust` / `wind_trees` (air_stems, docs/air.md); this generic model stays for scenes that steer wind speed live. v0.24: leaf ticks are now sharp (instant attack, 0.3-4 ms decay) instead of soft 1-12 ms swells, and the controls were refitted: high-band 20-70 Hz roughness 0.18 vs real 0.19 (v0.23: 0.39, a mushy wash). The eq restores the 7-14 kHz air the fit left 4-7 dB short."
 }
