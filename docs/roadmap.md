@@ -11,6 +11,13 @@ Ground rules:
 
 ## Now: interaction models and resynthesis (v0.17 to v0.27)
 
+v0.31: liquids from recording stems (`liquid_stems`: per-band noise envelopes on 1/8-octave bands at 2 ms imposed
+on band-limited noise, bubbles as chirps, onset envelopes and colour, with the `air_stems` STFT engine for the
+stream, boiling and slosh; numbers only); new recipes `splash_small`, `splash_medium`, `splash_large`, `drip_tub`,
+`pour_glass`, `stream`, `river`, `waterfall`, `boiling`, `slosh`, each with mild macros; variations remix the real
+stems. Next for this family: a smoother pour jet, cleaner references
+for the pour and the large splash, stereo from paired takes; see [liquids.md](liquids.md).
+
 v0.30: air from recording stems (`air_stems`: band-noise envelopes smoothed across frequency, tonal tracks,
 onset envelopes, colour, a fan's blade cycle, fly-by passes with their Doppler geometry; numbers only); new recipes
 `wind_gust`, `wind_trees` (gale by default, `strength` down to a breeze), `whoosh`, `arrow_flyby`, `fan`; the

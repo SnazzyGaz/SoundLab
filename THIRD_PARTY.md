@@ -97,6 +97,24 @@ CC0 1.0 recordings on Freesound. No samples are stored; renders use new noise.
 | 760990 | 5. Wind in trees | mathiaslyhne1 | https://freesound.org/people/mathiaslyhne1/sounds/760990/ | CC0 1.0 |
 | 761929 | large indoor fan on low - 1 | FOSSarts | https://freesound.org/people/FOSSarts/sounds/761929/ | CC0 1.0 |
 
+## Recordings decomposed into stems for `liquid_stems` (v0.31, numbers only, no audio included)
+
+`soundlab/models/liquid_stems.bin` holds analysis numbers (per-band noise envelopes at 2 ms on 1/8-octave bands,
+bubbles as chirp settings, STFT band envelopes, tonal tracks, onset envelopes, a 1/6-octave spectrum) of stretches
+of these public-domain, Public Domain Mark and CC0 recordings. No samples are stored; renders use new noise.
+
+| Source | Title | Author | Where | URL | Licence |
+|---|---|---|---|---|---|
+| splash_small (45.3-47.6 s), splash_medium (30.2-33.0 s) | Bathtub water splashes.ogg | gradha | Wikimedia Commons | https://commons.wikimedia.org/wiki/File:Bathtub_water_splashes.ogg | Public domain |
+| splash_large (whole) | WATRSplsh_Water Splash, Big, Dive Into Water, Person or Animal | Nicholas A. Judy (The Designer's Choice) | Internet Archive | https://archive.org/details/Designers-Choice-Collection-Water | CC0 1.0 |
+| drip (0-8 s) | WATRDrip_Bathtub Dripping | Nicholas A. Judy (The Designer's Choice) | Internet Archive | https://archive.org/details/Designers-Choice-Collection-Water | CC0 1.0 |
+| pour_glass (whole) | WATRPour_Water Pouring, Into Cup | Nicholas A. Judy (The Designer's Choice) | Internet Archive | https://archive.org/details/Designers-Choice-Collection-Water | CC0 1.0 |
+| stream (2-10 s) | 363120 fractalstudios water-trickle.wav | FractalStudios | Wikimedia Commons | https://commons.wikimedia.org/wiki/File:363120_fractalstudios_water-trickle.wav | CC0 |
+| river (10-18 s) | Georgia Rapids.ogg | Jarrod stanley | Wikimedia Commons | https://commons.wikimedia.org/wiki/File:Georgia_Rapids.ogg | CC0 |
+| waterfall (10-18 s) | 26081101391556.flac (radio aporee 73066) | t.fille (radio aporee) | Internet Archive | https://archive.org/details/aporee_73066_85299 | Public Domain Mark 1.0 |
+| boiling (0.5-8.5 s) | Boiling lentils.ogg | hugh | Wikimedia Commons | https://commons.wikimedia.org/wiki/File:Boiling_lentils.ogg | Public domain |
+| slosh (whole) | Sloshing canister of water.ogg | stephan | Wikimedia Commons | https://commons.wikimedia.org/wiki/File:Sloshing_canister_of_water.ogg | Public domain |
+
 ## Methods adopted from other projects and papers (no code copied)
 
 v0.28 `creak`: the creaking door as stick-slip events through a fixed wood formant bank (A. Farnell, *Designing

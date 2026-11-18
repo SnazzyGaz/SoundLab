@@ -27,9 +27,16 @@ What's in it:
   (speed, size: blade rate and tip-speed brightness), rebuilt from band-noise envelopes, tonal tracks, onset
   envelopes, colour and blade cycles of CC0 recordings (numbers only, no audio). The generic physical `wind`,
   `wind_gale` and `sword_swing` recipes stay as fallbacks; see [docs/air.md](docs/air.md).
-- **42 hand-built recipes** for game sound (114 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind, whooshes, arrows, fans,
+- **Splashes, drips, a pour, flowing water, boiling and sloshing from recording stems** (`liquid_stems`, v0.31):
+  `splash_small`, `splash_medium`, `splash_large` (size, distance, tail; size by band shift or tape speed),
+  `drip_tub` (rate, pitch: the real drops re-sequenced), `pour_glass` (fill, vessel), `stream`, `river`,
+  `waterfall` (strength: quieter, darker, slower, with no pitch shift), `boiling` (intensity) and `slosh` (amount),
+  rebuilt from per-band noise envelopes, bubble chirps, onset envelopes and colour of public-domain and CC0
+  recordings (numbers only, no audio). The procedural `drip`, `splash` and `water` recipes stay as fallbacks; see
+  [docs/liquids.md](docs/liquids.md).
+- **52 hand-built recipes** for game sound (124 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind, whooshes, arrows, fans,
   rain, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
-  (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splash, engines, explosions, fire, water,
+  (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splashes, drips, a pour, a stream, a river, a waterfall, boiling and sloshing, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.
 - **Macro sliders** on every recipe (size, distance, intensity, material, ...), **seeded variations** and
   **batch export** with sensible file names.

@@ -1,0 +1,172 @@
+{
+  "soundlab": 1,
+  "name": "Drips into a bathtub: single drops with a ~1 kHz ring",
+  "category": "water",
+  "sample_rate": 48000,
+  "duration": 8.0,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "liquid",
+      "model": "liquid_stems",
+      "params": {
+        "source": "drip",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "rate": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "slower .. faster drips (x1/3 .. x3, middle = the recording); the real drops are re-sequenced",
+      "map": [
+        {
+          "to": "0.rate",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.6667
+            ],
+            [
+              0.1,
+              -0.5848
+            ],
+            [
+              0.2,
+              -0.4827
+            ],
+            [
+              0.3,
+              -0.3556
+            ],
+            [
+              0.4,
+              -0.1973
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.2457
+            ],
+            [
+              0.7,
+              0.5518
+            ],
+            [
+              0.8,
+              0.9332
+            ],
+            [
+              0.9,
+              1.4082
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            0.3333333333333333,
+            3.0
+          ]
+        }
+      ]
+    },
+    "pitch": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "bigger (lower, longer ring) .. smaller drops (higher, shorter ring): -600 .. +600 cents",
+      "map": [
+        {
+          "to": "0.pitch",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -600.0
+            ],
+            [
+              0.1,
+              -480.0
+            ],
+            [
+              0.2,
+              -360.0
+            ],
+            [
+              0.3,
+              -240.0
+            ],
+            [
+              0.4,
+              -120.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              120.0
+            ],
+            [
+              0.7,
+              240.0
+            ],
+            [
+              0.8,
+              360.0
+            ],
+            [
+              0.9,
+              480.0
+            ],
+            [
+              1.0,
+              600.0
+            ]
+          ],
+          "clamp": [
+            -600.0,
+            600.0
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and remixes the real stems (flows reorder blocks, the drip re-sequences its drops)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "loop": {
+    "lead_s": 1.0,
+    "xfade_s": 0.5
+  },
+  "notes": "v0.31 liquid_stems (docs/liquids.md): source 'drip', rebuilt from stems of a public-domain / CC0 recording (THIRD_PARTY.md)."
+}

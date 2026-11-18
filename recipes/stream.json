@@ -1,0 +1,170 @@
+{
+  "soundlab": 1,
+  "name": "Stream: a bubbly trickling brook",
+  "category": "water",
+  "sample_rate": 48000,
+  "duration": 8.0,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "liquid",
+      "model": "liquid_stems",
+      "params": {
+        "source": "stream",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "strength": {
+      "default": 0.8,
+      "jitter": 0.0,
+      "doc": "gentle .. strong stream (strength 0.2 .. 1.5, 0.8 = the recording): lower is quieter, darker (shelf + soft low-pass), slower and gentler; no pitch shift",
+      "map": [
+        {
+          "to": "0.strength",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.8
+            ],
+            [
+              0.1,
+              -0.7
+            ],
+            [
+              0.2,
+              -0.6
+            ],
+            [
+              0.3,
+              -0.5
+            ],
+            [
+              0.4,
+              -0.4
+            ],
+            [
+              0.5,
+              -0.3
+            ],
+            [
+              0.6,
+              -0.2
+            ],
+            [
+              0.7,
+              -0.1
+            ],
+            [
+              0.8,
+              0.0
+            ],
+            [
+              0.9,
+              0.25
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ],
+          "clamp": [
+            0.2,
+            1.5
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -18.575
+            ],
+            [
+              0.1,
+              -13.896
+            ],
+            [
+              0.2,
+              -10.575
+            ],
+            [
+              0.3,
+              -8.0
+            ],
+            [
+              0.4,
+              -5.896
+            ],
+            [
+              0.5,
+              -4.117
+            ],
+            [
+              0.6,
+              -2.575
+            ],
+            [
+              0.7,
+              -1.216
+            ],
+            [
+              0.8,
+              0.0
+            ],
+            [
+              0.9,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and remixes the real stems (flows reorder blocks, the drip re-sequences its drops)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "stereo": {
+    "mode": "decorrelate",
+    "width": 0.6,
+    "mono_below_hz": 150
+  },
+  "loop": {
+    "lead_s": 1.0,
+    "xfade_s": 0.5
+  },
+  "notes": "v0.31 liquid_stems (docs/liquids.md): source 'stream', rebuilt from stems of a public-domain / CC0 recording (THIRD_PARTY.md). Strength has no pitch shift: lower is a high shelf plus a soft low-pass, an envelope stretch (the stems are read backwards past their end, never held), shallower modulation and a lower level."
+}

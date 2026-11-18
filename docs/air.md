@@ -21,8 +21,12 @@ speed live (the Godot demo uses both), and `sword_swing` for a swing with an edg
 Analysis runs at 44.1 kHz with an STFT of N = 1024 and hop 128 (2.9 ms frames).
 
 1. **Noise.** Band power on 49 log bands from 40 Hz to 20 kHz, measured after the tones are removed (a 31-bin
-   median spectrum baseline, with tone bins clamped to it). The envelope is smoothed over **7 bands across
-   frequency** and **only 10 ms in time**. Fans use one blade period in time instead.
+   median spectrum baseline, with tone bins clamped to it). The envelope is smoothed **only 10 ms in time**; fans
+   use one blade period in time instead. (Correction, v0.31: earlier versions of this page said the envelope was
+   also smoothed over 7 bands across frequency. The analysis meant to do that, but its time smoothing was applied
+   to the unsmoothed envelope and replaced the frequency-smoothed one, and the fan segments were analysed with
+   frequency smoothing off. No stored segment is smoothed across frequency. The fingerprints were measured on
+   the data as stored, so the renders are unchanged.)
 2. **Tonal tracks.** Partials from the sinusoidal tracker, kept if they last at least 60 ms and stand 10 dB above
    the local noise: whistles, blade tones, motor buzz. The stored stretch of the gust also contains a bird
    (about 6.9 kHz). Tracks above 5 kHz are muted by rule (`mute_above_hz`), and the tests check that no stray
@@ -71,10 +75,12 @@ the onset correction and the colour EQ.
 
 ## Lessons
 
-- **Smooth noise across frequency, not time.** The per-band estimation noise of a noise recording is independent
-  from band to band, while real flutter (leaves, gust swells, blade beats) is coherent across bands. Averaging 7
-  neighbouring bands removes the first and keeps the second. The first attempt smoothed over 70 ms in time and
-  wiped out the fan's blade beat and the leaf flutter.
+- **Do not smooth noise envelopes over long times.** The first attempt smoothed over 70 ms in time and wiped out
+  the fan's blade beat and the leaf flutter. The stored stems use 10 ms (one blade period for fans). (Correction,
+  v0.31: this lesson used to say "smooth across frequency, not time" and credit a 7-band average across
+  frequency; that average never reached the stored data, see Stems above. The liquid work in v0.31 found that
+  smoothing across frequency is not needed when the per-band envelopes are measured on narrow bands directly:
+  [liquids.md](liquids.md).)
 - **Tonal parts need a stray-tone check.** One tracked whistle the listener does not expect (a bird in a wind
   recording) ruins the take. Mute it by rule and test for narrow peaks.
 - **Time compression raises 8-30 Hz modulation.** Making a gust faster raises the envelope rate and reads as

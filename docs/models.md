@@ -1210,6 +1210,30 @@ Wind gusts, wind in trees, whooshes, arrow fly-bys and fans rebuilt from stems o
 
 Sources: Serra & Smith 1990 (sinusoids + residual); McAulay & Quatieri 1986 (sinusoidal tracking); Doppler for a straight pass: f' = f c / (c - v_r); fan law: sound power ~ tip speed^5; Freesound CC0 recordings 352421, 760990, 507466, 675821, 761929 (numbers only; THIRD_PARTY.md)
 
+### `liquid_stems`
+
+Splashes, drips, a pour, a stream, a river, a waterfall, boiling and sloshing rebuilt from stems of public-domain / CC0 recordings (numbers only, no audio): per-band noise envelopes or STFT band envelopes, bubbles as chirps, onset envelopes and colour. Variations remix the real stems.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `source` | `splash_large` |  | splash_small, splash_medium, splash_large, drip, pour_glass, stream, river, waterfall, boiling, slosh | stored source |
+| `size` | `1.0` |  | 0.5 .. 2.0 | splash: bigger = lower, longer |
+| `size_mode` | `shift` |  | shift, tape | splash size by band shift, or by tape speed (pitch and time together) |
+| `distance` | `1.0` |  | 0.5 .. 4.0 | splash: further = quieter, duller, softer onset |
+| `tail` | `1.0` |  | 0.5 .. 2.0 | splash: >1 slower tail, <1 faster fade |
+| `rate` | `1.0` |  | 0.3 .. 3.0 | drip: drop rate re the recording |
+| `pitch` | `0.0` | cents | -600 .. 600 | drip: smaller drop = higher, shorter ring |
+| `fill` | `1.0` |  | 0.5 .. 2.0 | pour: fill speed (resonance rises faster) |
+| `vessel` | `1.0` |  | 0.6 .. 1.6 | pour: bigger vessel = lower resonance, longer fill |
+| `strength` | `1.0` |  | 0.2 .. 1.5 | stream/river/waterfall: lower = quieter, darker, slower |
+| `intensity` | `1.0` |  | 0.3 .. 2.0 | boiling: fewer/softer .. denser bubbles |
+| `amount` | `1.0` |  | 0.5 .. 1.6 | slosh: gentler/slower .. harder/faster |
+| `seed` | `0` |  | 0 .. 2147483647 | noise seed (the recipe default reproduces its reference) |
+| `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the reference; others reseed and remix the real stems |
+| `at` | `0.0` | s | 0 .. None |  |
+
+Sources: McDermott & Simoncelli 2011 (sound texture statistics); Minnaert 1933 (bubble resonance); McAulay & Quatieri 1986 (sinusoidal tracking); Wikimedia Commons / Internet Archive public-domain and CC0 recordings (numbers only; THIRD_PARTY.md)
+
 ## Stage: synth
 
 ### `osc`

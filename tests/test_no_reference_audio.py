@@ -3,7 +3,7 @@
 Reference recordings are used for tuning during development only and live
 OUTSIDE the repository (soundlab-research/refs). This test fails if any audio file is tracked by git or sits
 anywhere in the working tree, except paths listed in tests/audio_allowlist.txt (empty: nothing is allowed).
-Analysis numbers of credited CC0 recordings are allowed (v0.28 creak_data.py, v0.29 squeal_stems.bin, v0.30 air_stems.bin:
+Analysis numbers of credited CC0 recordings are allowed (v0.28 creak_data.py, v0.29 squeal_stems.bin, v0.30 air_stems.bin, v0.31 liquid_stems.bin:
 partial tracks and band envelopes at frame rate, see THIRD_PARTY.md); no file may hold sample data, whatever its name.
 """
 import subprocess
@@ -89,3 +89,21 @@ def test_air_stem_data_has_no_sample_rate_arrays():
                 assert max(a["sh"]) <= s["n"] / 40, (k, name)      # never one value per sample
         assert s["E"]["sh"][1] <= nfr and s["fine"]["sh"][1] <= s["n"] / 44 + 2, k
         assert s["t_f"]["sh"][0] <= s["t_len"]["sh"][0] * nfr, k
+
+
+def test_liquid_stem_data_has_no_sample_rate_arrays():
+    """liquid_stems.bin (v0.31): band envelopes at 2 ms (or 2.9 ms STFT frames), onset envelopes at 1 ms, bubbles as
+    chirp settings with one amplitude per 1.45 ms frame, tracks per frame."""
+    import json, lzma, struct
+    raw = (ROOT / "soundlab" / "models" / "liquid_stems.bin").read_bytes()
+    p = lzma.decompress(raw[8:])
+    hdr = json.loads(p[4:4 + struct.unpack("<I", p[:4])[0]])
+    for k, s in hdr["sources"].items():
+        for name, a in s.items():
+            if isinstance(a, dict) and "sh" in a:
+                assert max(a["sh"]) <= s["n"] / 40, (k, name)      # never one value per sample
+        if s["engine"] == "env":
+            assert s["env"]["sh"][1] <= s["n"] / 88 + 2, k
+            assert s["c_db"]["sh"][0] <= max(1, s["c_len"]["sh"][0]) * (s["n"] / 64 + 16), k
+        else:
+            assert s["E"]["sh"][1] <= s["n"] / 128 + 16 and s["fine"]["sh"][1] <= s["n"] / 44 + 2, k
