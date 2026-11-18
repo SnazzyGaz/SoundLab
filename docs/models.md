@@ -1100,6 +1100,45 @@ Creaks, squeaks, scrapes, rubbing and bowing through the same material bodies as
 
 Sources: Dupont, Hayward, Armstrong & Altpeter 2002 (elasto-plastic friction); Avanzini, Serafin & Rocchesso 2005, IEEE TSAP (friction-induced sound); SDT: method only; van den Doel, Kry & Pai 2001 (scraping); Rath & Rocchesso 2004 (rolling/scraping control); Aramaki et al. 2011 (material damping laws); Ren, Yeh & Lin 2013 (residual); Akay 2002, JASA (acoustics of friction: stick-slip, squeal, creak)
 
+### `creak`
+
+Door creaks, hinge squeaks, shoe squeaks and floorboard creaks rebuilt from CC0 recordings. Bursts of slip clicks through fixed body resonances (groan) or a near-pure squeal locked to a resonance that glides with the motion and hops between bursts. Speed sets the regime (slow groans, fast squeals), the click rate and the squeal glide.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `at` | `0.05` | s | 0 .. None |  |
+| `length_s` | `1.5` | s | 0.05 .. 30 | length of the motion |
+| `speed` | `0.5` |  | 0.02 .. 2.0 | how fast it moves (slow groans .. fast squeals) |
+| `pitch` | `1.0` |  | 0.25 .. 4.0 | scales the squeal lock pitches and the click rate |
+| `speed_change` | `0.0` |  | -1 .. 1 | -1 slowing down .. +1 speeding up over the motion |
+| `irregularity` | `0.4` |  | 0 .. 1 | wobble of the motion |
+| `regime` | `auto` |  | auto, groan, squeal |  |
+| `squeal_above` | `0.6` |  | 0 .. 1.5 | auto: speed above which bursts squeal |
+| `body` | `door_heavy` |  | door_heavy, door_light, floor, gate |  |
+| `voice` | `door` |  | door, gate, hinge, shoe |  |
+| `burst_ms` | `250.0` | ms | 10 .. 3000 | median burst length |
+| `gap_ms` | `60.0` | ms | 0 .. 2000 | median gap between bursts |
+| `burst_spread` | `0.45` |  | 0 .. 1.5 | log-normal spread of burst lengths |
+| `squeal_burst_ms` | `0.0` | ms | 0 .. 5000 | median squeal burst length (0 = burst_ms) |
+| `squeal_gap_ms` | `-1.0` | ms | -1 .. 2000 | median gap after a squeal burst (-1 = gap_ms) |
+| `pulse_hz` | `145.0` | Hz | 2 .. 600 | groan click rate at speed 0.5 |
+| `pulse_jitter` | `0.3` |  | 0 .. 0.8 | groan click timing irregularity |
+| `slip_interval_s` | `0.115` | s | 0.02 .. 2 | groan: time between big slips |
+| `slip_jump_db` | `8.5` | dB | 0 .. 20 | groan: level jump of a big slip |
+| `slip_decay_db_s` | `120.0` | dB/s | 5 .. 1000 | groan: decay after a big slip |
+| `squeal_hz` | `0.0` | Hz | 0 .. 8000 | squeal lock pitch (0 = the voice's pitches) |
+| `hop` | `0.4` |  | 0 .. 1 | chance a new burst hops to another lock pitch |
+| `glide_follow` | `1.0` |  | 0 .. 3 | squeal pitch ~ speed^follow within a burst |
+| `rise_cents` | `-1.0` | cents | -1 .. 1200 | onset hook below the lock pitch (-1 = voice default) |
+| `drift_cents` | `0.0` | cents | -1200 .. 1200 | pitch drift over each squeal burst |
+| `tone_decay_db_s` | `0.0` | dB/s | 0 .. 1000 | squeal decays within a burst (0 = sustains) |
+| `squeal_body` | `0.0` |  | 0 .. 1 | how much the body resonances colour the squeal harmonics |
+| `squeal_db` | `0.0` | dB | -40 .. 20 | squeal level re groan |
+| `tick` | `0.0` |  | 0 .. 2 | contact tick at each squeal onset (shoes) |
+| `scuff` | `0.0` |  | 0 .. 2 | short scuff noise after the tick (shoes) |
+
+Sources: Farnell 2010, Designing Sound, practical 'Creaking door' (stick-slip events through a door formant bank); Heinrichs & McPherson 2014 (performable creaking-door model); Avanzini, Serafin & Rocchesso 2005 (friction locking to a resonance); Freesound CC0 recordings 455324, 766155, 397687, 88502, 124289, 506665, 788701 (fitted numbers only)
+
 ## Stage: synth
 
 ### `osc`

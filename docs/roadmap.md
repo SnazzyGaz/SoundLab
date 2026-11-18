@@ -11,6 +11,10 @@ Ground rules:
 
 ## Now: interaction models and resynthesis (v0.17 to v0.27)
 
+v0.28: creaks and squeaks rebuilt as the fitted `creak` model (groan: slip clicks through fixed body
+resonances; squeal: a near-pure tone locked to a resonance that hops between bursts), measured from CC0
+recordings; `rope_creak` removed; see [friction.md](friction.md).
+
 v0.27.1: door creak, hinge squeak, shoe squeak and rope creak rebuilt as stick-slip squeals from the excitation
 (no ringing body, no knock at the stroke end); see [friction.md](friction.md).
 

@@ -56,14 +56,11 @@ def test_rain_has_air_on_top_and_slow_swells():
     assert P[(f >= 0.25) & (f < 4)].sum() / P[(f >= 0.25) & (f < 128)].sum() > 0.1   # v0.14: 0.035
 
 
-def test_door_creak_is_a_continuous_squeal_not_clicks():
-    ks = []
-    for k in (1, 2, 3):
-        y = rec("door_creak", k)
-        ks.append(stats.kurtosis(active(y, band_env(y, 2000, 4000))))
-    # v0.14 click train: ~0.35. v0.25.3: 12 BigSoundBank door creaks give -0.88..0.41 (median -0.37, one
-    # metal-door outlier at 10); the refitted creak sits at ~0.15
-    assert np.mean(ks) < 0.3
+def test_door_creak_groans_low_like_a_heavy_door():
+    # v0.28: a slow swing is a groan of slip clicks through the door's resonances (the CC0 heavy door
+    # recording has most of its energy under 2.5 kHz); squeals belong to faster swings
+    shares = [band_share(rec("door_creak", k), 100, 2500) for k in (1, 2, 3)]
+    assert min(shares) > 0.5 and sorted(shares)[1] > 0.9        # an odd variation may catch a squeal
 
 
 def test_creature_has_an_audible_trill_and_breath():

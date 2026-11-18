@@ -1,66 +1,15 @@
 {
   "soundlab": 1,
-  "name": "Shoe squeak: a rubber sole skidding on a polished floor",
+  "name": "Shoe squeak: a rubber sole squeaking on a polished court",
   "category": "foley",
   "sample_rate": 48000,
-  "duration": 0.5,
-  "seed": 27,
+  "duration": 1.3,
+  "seed": 43,
   "master": {
     "normalize_db": -1.0,
     "fade_out": 0.05
   },
   "macros": {
-    "material": {
-      "default": "plastic",
-      "doc": "plastic / wood_hard / rubber",
-      "choices": {
-        "plastic": [
-          {
-            "to": "0.material",
-            "op": "set",
-            "value": "plastic"
-          }
-        ],
-        "wood_hard": [
-          {
-            "to": "0.material",
-            "op": "set",
-            "value": "wood_hard"
-          }
-        ],
-        "rubber": [
-          {
-            "to": "0.material",
-            "op": "set",
-            "value": "rubber"
-          }
-        ]
-      }
-    },
-    "pressure": {
-      "default": 0.5,
-      "doc": "light .. hard press",
-      "map": [
-        {
-          "to": "0.pressure",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.35
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              2.5
-            ]
-          ]
-        }
-      ]
-    },
     "speed": {
       "default": 0.5,
       "doc": "slow .. fast",
@@ -71,7 +20,7 @@
           "points": [
             [
               0,
-              0.35
+              0.45
             ],
             [
               0.5,
@@ -79,123 +28,15 @@
             ],
             [
               1,
-              2.8
+              2.0
             ]
-          ]
-        }
-      ]
-    },
-    "speed_change": {
-      "default": 0.5,
-      "doc": "slowing to a stop .. steady .. speeding up",
-      "map": [
-        {
-          "to": "0.speed_change",
-          "op": "add",
-          "points": [
-            [
-              0,
-              -0.9
-            ],
-            [
-              0.5,
-              0
-            ],
-            [
-              1,
-              0.9
-            ]
-          ],
-          "clamp": [
-            -1,
-            1
-          ]
-        }
-      ]
-    },
-    "irregularity": {
-      "default": 0.5,
-      "doc": "smooth .. uneven, jerky",
-      "map": [
-        {
-          "to": "0.irregularity",
-          "op": "add",
-          "points": [
-            [
-              0,
-              -0.4
-            ],
-            [
-              0.5,
-              0
-            ],
-            [
-              1,
-              0.5
-            ]
-          ],
-          "clamp": [
-            0,
-            1
-          ]
-        }
-      ]
-    },
-    "size": {
-      "default": 0.5,
-      "doc": "small .. large (pitch ~ 1/size)",
-      "map": [
-        {
-          "to": "0.size",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.4
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              2.5
-            ]
-          ]
-        }
-      ]
-    },
-    "hollowness": {
-      "default": 0.5,
-      "doc": "solid .. hollow",
-      "map": [
-        {
-          "to": "0.hollowness",
-          "op": "add",
-          "points": [
-            [
-              0,
-              -0.5
-            ],
-            [
-              0.5,
-              0
-            ],
-            [
-              1,
-              0.5
-            ]
-          ],
-          "clamp": [
-            0,
-            1
           ]
         }
       ]
     },
     "length": {
       "default": 0.5,
-      "doc": "short .. long stroke",
+      "doc": "short .. long",
       "map": [
         {
           "to": "0.length_s",
@@ -221,7 +62,7 @@
           "points": [
             [
               0,
-              0.7
+              0.5
             ],
             [
               0.5,
@@ -231,6 +72,58 @@
               1,
               1.9
             ]
+          ]
+        }
+      ]
+    },
+    "pitch": {
+      "default": 0.5,
+      "doc": "low .. high",
+      "map": [
+        {
+          "to": "0.pitch",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.6
+            ]
+          ]
+        }
+      ]
+    },
+    "irregularity": {
+      "default": 0.5,
+      "doc": "smooth .. jerky",
+      "map": [
+        {
+          "to": "0.irregularity",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.5
+            ]
+          ],
+          "clamp": [
+            0,
+            1
           ]
         }
       ]
@@ -266,36 +159,36 @@
   },
   "vary": {
     "0.speed": {
-      "rel": 0.15
-    },
-    "0.pressure": {
-      "rel": 0.15
+      "rel": 0.12
     },
     "0.length_s": {
       "rel": 0.1
+    },
+    "0.irregularity": {
+      "abs": 0.1
     }
   },
   "layers": [
     {
-      "name": "friction",
-      "model": "friction_family",
+      "name": "creak",
+      "model": "creak",
       "params": {
         "at": 0.05,
-        "material": "plastic",
-        "shape": "plate",
-        "size": 1.0,
-        "hollowness": 0.0,
-        "length_s": 0.22,
-        "speed": 0.5,
-        "speed_change": 0.3,
-        "pressure": 20.0,
+        "length_s": 0.55,
+        "speed": 0.6,
+        "speed_change": 0.0,
         "irregularity": 0.2,
-        "mode": "squeal",
-        "pitch_hz": 237.5,
-        "pitch_follow": 1.0,
-        "body": 0.1,
-        "roughness": 0.25,
-        "slip_shape": 0.2
+        "regime": "squeal",
+        "body": "floor",
+        "voice": "shoe",
+        "burst_ms": 300.0,
+        "gap_ms": 120.0,
+        "glide_follow": 0.0,
+        "drift_cents": -70.0,
+        "tone_decay_db_s": 100.0,
+        "tick": 1.0,
+        "scuff": 0.4,
+        "hop": 0.5
       }
     }
   ],
@@ -309,15 +202,7 @@
             0
           ],
           [
-            125,
-            0
-          ],
-          [
             250,
-            0
-          ],
-          [
-            500,
             0
           ],
           [
@@ -325,15 +210,7 @@
             0
           ],
           [
-            2000,
-            0
-          ],
-          [
             4000,
-            0
-          ],
-          [
-            8000,
             0
           ],
           [
@@ -344,5 +221,5 @@
       }
     }
   ],
-  "notes": "v0.27.1: squeal mode -- a short rubbery stick-slip chirp sweeping up through ~1.2-2.2 kHz with harmonics, quick tonal onset (no noise burst), released with the slide."
+  "notes": "v0.28: contact tick, scuff and a decaying ~2.4 kHz tone fitted to a CC0 sneaker recording."
 }

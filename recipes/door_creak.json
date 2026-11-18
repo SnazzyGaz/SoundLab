@@ -1,40 +1,10 @@
 {
   "soundlab": 1,
-  "name": "Door creak: stick-slip at the hinge as a door opens",
-  "category": "door",
+  "name": "Door creak: a door swinging on a dry hinge (groaning clicks through the door, squeals when it moves fast)",
+  "category": "foley",
   "sample_rate": 48000,
-  "duration": 3.2,
-  "seed": 18,
-  "layers": [
-    {
-      "name": "main",
-      "model": "door_creak",
-      "params": {
-        "open_s": 2.6,
-        "pitch_hz": 340.1617,
-        "pressure": 0.6794,
-        "wander": 0.5,
-        "hinge": 0.9142,
-        "door_size": 0.35,
-        "at": 0.05,
-        "slip": 0.0538,
-        "steady": 0.0,
-        "hinge_hz": 1530.0628,
-        "hinge_q": 3.1327
-      }
-    }
-  ],
-  "post": [
-    {
-      "model": "room",
-      "params": {
-        "volume": 45,
-        "absorption": 0.3,
-        "source_distance": 2.0,
-        "wet": 0.383
-      }
-    }
-  ],
+  "duration": 2.7,
+  "seed": 41,
   "master": {
     "normalize_db": -1.0,
     "fade_out": 0.05
@@ -42,15 +12,15 @@
   "macros": {
     "speed": {
       "default": 0.5,
-      "doc": "slow, ticking .. quick groan",
+      "doc": "slow .. fast",
       "map": [
         {
-          "to": "0.open_s",
+          "to": "0.speed",
           "op": "mul",
           "points": [
             [
               0,
-              2.0
+              0.45
             ],
             [
               0.5,
@@ -58,7 +28,31 @@
             ],
             [
               1,
-              0.45
+              2.0
+            ]
+          ]
+        }
+      ]
+    },
+    "length": {
+      "default": 0.5,
+      "doc": "short .. long",
+      "map": [
+        {
+          "to": "0.length_s",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.0
             ]
           ]
         },
@@ -68,7 +62,7 @@
           "points": [
             [
               0,
-              1.9
+              0.5
             ],
             [
               0.5,
@@ -76,7 +70,7 @@
             ],
             [
               1,
-              0.5
+              1.9
             ]
           ]
         }
@@ -84,15 +78,15 @@
     },
     "pitch": {
       "default": 0.5,
-      "doc": "low groan .. high squeal",
+      "doc": "low .. high",
       "map": [
         {
-          "to": "0.pitch_hz",
+          "to": "0.pitch",
           "op": "mul",
           "points": [
             [
               0,
-              0.35
+              0.6
             ],
             [
               0.5,
@@ -100,23 +94,23 @@
             ],
             [
               1,
-              2.8
+              1.6
             ]
           ]
         }
       ]
     },
-    "stiffness": {
+    "irregularity": {
       "default": 0.5,
-      "doc": "oiled .. rusty",
+      "doc": "smooth .. jerky",
       "map": [
         {
-          "to": "0.pressure",
+          "to": "0.irregularity",
           "op": "add",
           "points": [
             [
               0,
-              -0.5
+              -0.4
             ],
             [
               0.5,
@@ -124,17 +118,59 @@
             ],
             [
               1,
-              0.4
+              0.5
             ]
+          ],
+          "clamp": [
+            0,
+            1
           ]
-        },
+        }
+      ]
+    },
+    "body": {
+      "default": "door_heavy",
+      "doc": "heavy door / light door / metal gate",
+      "choices": {
+        "door_heavy": [
+          {
+            "to": "0.body",
+            "op": "set",
+            "value": "door_heavy"
+          }
+        ],
+        "door_light": [
+          {
+            "to": "0.body",
+            "op": "set",
+            "value": "door_light"
+          }
+        ],
+        "gate": [
+          {
+            "to": "0.body",
+            "op": "set",
+            "value": "gate"
+          },
+          {
+            "to": "0.voice",
+            "op": "set",
+            "value": "gate"
+          }
+        ]
+      }
+    },
+    "squeal": {
+      "default": 0.5,
+      "doc": "groans more .. squeals more",
+      "map": [
         {
-          "to": "0.wander",
+          "to": "0.squeal_above",
           "op": "add",
           "points": [
             [
               0,
-              -0.2
+              0.4
             ],
             [
               0.5,
@@ -142,34 +178,20 @@
             ],
             [
               1,
-              0.3
+              -0.4
             ]
+          ],
+          "clamp": [
+            0,
+            1.5
           ]
         }
       ]
     },
     "distance": {
-      "default": 0.5,
-      "doc": "near .. far (level, more room sound)",
+      "default": 0.0,
+      "doc": "near .. far (level)",
       "map": [
-        {
-          "to": "post.0.source_distance",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.4
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              8
-            ]
-          ]
-        },
         {
           "to": "master.gain_db",
           "op": "add",
@@ -180,11 +202,11 @@
             ],
             [
               0.5,
-              0
+              -6
             ],
             [
               1,
-              -12
+              -18
             ]
           ],
           "clamp": [
@@ -196,15 +218,66 @@
     }
   },
   "vary": {
-    "0.pitch_hz": {
+    "0.speed": {
       "rel": 0.12
     },
-    "0.open_s": {
-      "rel": 0.12
+    "0.length_s": {
+      "rel": 0.1
     },
-    "0.wander": {
+    "0.irregularity": {
       "abs": 0.1
     }
   },
-  "notes": "v0.25.3: refitted to four BigSoundBank door creaks (#3206, #3208-#3210; hold-out #3205, #3207, #3211: loss 9.0 -> 4.6). The v0.25 creak had jittery cycles (smeared harmonics), a dull spectrum (centroid 430 Hz vs ~1050 Hz real) and no formant: the cycles smeared into a zipper-like rasp instead of a groan. Now: short slips (a sharp harmonic series), the hinge/door resonance at ~1.5 kHz ringing longer. wander set to 0.5 after the fit (hold-out loss 4.0; the fitted 0.88 made the 2-4 kHz level jagged, envelope kurtosis 0.7 vs -0.35 median real)."
+  "layers": [
+    {
+      "name": "creak",
+      "model": "creak",
+      "params": {
+        "at": 0.05,
+        "length_s": 2.4,
+        "speed": 0.45,
+        "speed_change": -0.5,
+        "irregularity": 0.4,
+        "regime": "auto",
+        "squeal_above": 0.75,
+        "body": "door_heavy",
+        "voice": "door",
+        "burst_ms": 700.0,
+        "gap_ms": 15.0,
+        "squeal_burst_ms": 900.0,
+        "squeal_gap_ms": 60.0,
+        "glide_follow": 1.6
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            0
+          ],
+          [
+            250,
+            0
+          ],
+          [
+            1000,
+            0
+          ],
+          [
+            4000,
+            0
+          ],
+          [
+            16000,
+            0
+          ]
+        ]
+      }
+    }
+  ],
+  "notes": "v0.28: two-regime creak fitted to CC0 door recordings (see docs/friction.md). Slow swings groan, fast swings squeal."
 }

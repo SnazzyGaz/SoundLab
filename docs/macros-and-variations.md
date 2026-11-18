@@ -70,7 +70,7 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 | `coin.json` | coin | `floor` (tile, wood, table, stone), `metal` (cupronickel, bronze, steel, brass, aluminium), `size`, `height`, `spin`, `distance` |
 | `coin_jingle.json` | coin | `metal` (cupronickel, bronze, steel, brass, aluminium), `coins`, `shake`, `length`, `distance` |
 | `creature_growl.json` | creature | `size`, `roughness`, `snarl`, `length`, `distance`, `uvula`, `wet` |
-| `door_creak.json` | door | `speed`, `pitch`, `stiffness`, `distance` |
+| `door_creak.json` | door | `speed`, `length`, `pitch`, `irregularity`, `body`, `squeal`, `distance` |
 | `door_slam.json` | door | `intensity`, `size`, `rattle`, `distance` |
 | `dowel.json` | impact | `material` (wood, metal, glass, plastic, stone, cardboard), `size`, `intensity`, `hardness`, `distance` |
 | `drip.json` | water | `size`, `intensity`, `distance` |

@@ -363,10 +363,10 @@ inharmonic), two slightly different objects that beat, a very short metal contac
 through the same modes (the 'shing'). The hand/grip soaks up the lowest modes, so a held sword is bright and
 short; a hanging pipe rings long and is very tonal. Macros: `object` (sword/pipe/plate/pan), `intensity`, `scrape`, `ring`, `distance` / `object` (pipe/plate/pan/sword), `intensity`, `size`, `ring`, `distance`.
 
-**Door creak (`door_creak`).** Stick-slip at the hinge: each slip is a tiny impulse into the hinge (small,
-damped metal modes) and the door leaf (a big damped wooden panel). The slip rate (the creak's pitch) follows
-the swing speed and pressure and wanders cycle to cycle; near standstill it breaks into sparse ticks.
-Macros: `speed`, `pitch`, `stiffness`, `distance`.
+**Door creak (`door_creak`).** v0.28 `creak` model, fitted to CC0 door recordings. A slow swing groans: bursts of
+slip clicks through the door's fixed resonances, with a big slip every ~0.1 s. A faster swing squeals: a
+near-pure tone locked to a hinge resonance that glides with the swing and jumps between bursts.
+Macros: `speed`, `length`, `pitch`, `irregularity`, `body` (heavy door, light door, gate), `squeal`, `distance`.
 
 **Door slam (`door_slam`).** The leaf edge hits the stop (1-2.6 ms wooden contact), the leaf rings as a
 damped oak plate (its lowest modes pinned at impact), a short wood-on-wood knock, rebound rattles in the frame,

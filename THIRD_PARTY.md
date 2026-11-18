@@ -40,7 +40,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## Recordings measured for fitted numbers (no audio included)
+
+v0.28 `creak` (`soundlab/models/creak_data.py`): resonances, squeal pitches and harmonic levels, click rates,
+slip timing, burst lengths and decay rates were measured from these CC0 1.0 recordings on Freesound. Only the
+numbers are in the repository. Further CC0 door, gate, hinge, shoe and floor recordings from Freesound were
+looked at for ranges.
+
+| Freesound id | Title | Author | URL |
+|---|---|---|---|
+| 455324 | Heavy Door Creaking_05 | rambler52 | https://freesound.org/people/rambler52/sounds/455324/ |
+| 766155 | creaking door | dianegray26 | https://freesound.org/people/dianegray26/sounds/766155/ |
+| 397687 | Creaking Gate | piermic | https://freesound.org/people/piermic/sounds/397687/ |
+| 788701 | Soft_sqeuak_door_hinge | T.I.B | https://freesound.org/people/T.I.B/sounds/788701/ |
+| 88502 | sneaker squeak rubber | shakaharu | https://freesound.org/people/shakaharu/sounds/88502/ |
+| 124289 | squeaky-floor-loud | alienistcog | https://freesound.org/people/alienistcog/sounds/124289/ |
+| 506665 | Wood Creak Single V10 | Rudmer_Rotteveel | https://freesound.org/people/Rudmer_Rotteveel/sounds/506665/ |
+
 ## Methods adopted from other projects and papers (no code copied)
+
+v0.28 `creak`: the creaking door as stick-slip events through a fixed wood formant bank (A. Farnell, *Designing
+Sound*, MIT Press 2010, practical "creaking door"; C. Heinrichs, A. McPherson, A. Farnell, "Human performance of
+computational sound models for immersive environments", The New Soundtrack 4(2), 2014). Method only; the
+resonances and event statistics here are our own fits.
 
 v0.27 `friction_family`: elasto-plastic friction (P. Dupont, V. Hayward, B. Armstrong, F. Altpeter, "Single
 state elastoplastic friction models", IEEE TAC 47(5), 2002) as in the Sound Design Toolkit friction model

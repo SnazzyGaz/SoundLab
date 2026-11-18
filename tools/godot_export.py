@@ -105,8 +105,9 @@ def main(out: Path):
             swing = mac.pop("open_s", None)
             if swing:
                 # a door's creak follows its motion: set the swing time and fit the recipe length to it
-                raw["layers"][0]["params"]["open_s"] = swing
-                raw["duration"] = swing + 0.35
+                lp = raw["layers"][0]["params"]
+                lp["length_s"] = swing                                  # v0.28 creak model: length of the motion
+                raw["duration"] = lp.get("at", 0.0) + swing + 0.35
             for v in range(n):
                 f = f"{name}_v{v + 1:02d}"
                 info = soundlab.render_to_file(raw, tmp / f"{f}.wav", macros=mac, variation=v)

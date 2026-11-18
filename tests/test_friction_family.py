@@ -1,5 +1,7 @@
 """v0.27: friction_family -- stick-slip / scrape / rub driving the material_impact modes, and dull gravel steps.
-v0.27.1: squeal mode (hinge-pin, sole and rope stick-slip from the excitation, no body ring), no end-of-stroke knock."""
+v0.27.1: squeal mode (stick-slip from the excitation, no body ring), no end-of-stroke knock.
+v0.28: door_creak, hinge_squeak, shoe_squeak and floorboard_creak moved to the fitted creak model (tests/test_creak.py);
+rope_creak and door_creak_wood are gone. The friction model's own squeal mode is still tested here."""
 from pathlib import Path
 
 import numpy as np
@@ -12,10 +14,8 @@ from conftest import SR, run
 from test_v0261_impact_fixes import sustained_partial_db
 
 R = Path(__file__).resolve().parents[1] / "recipes"
-WOOD_CREAKS = ["floorboard_creak", "chair_creak"]
-SQUEALS = ["door_creak_wood", "hinge_squeak", "shoe_squeak", "rope_creak"]
-F0_RANGE = {"door_creak_wood": (200, 1200), "hinge_squeak": (400, 2500), "shoe_squeak": (900, 3500), "rope_creak": (60, 450)}
-RECIPES = WOOD_CREAKS + SQUEALS + ["glass_rub", "metal_scrape", "stone_scrape", "sandpaper", "cloth_rub"]
+WOOD_CREAKS = ["chair_creak"]
+RECIPES = WOOD_CREAKS + ["glass_rub", "metal_scrape", "stone_scrape", "sandpaper", "cloth_rub"]
 
 
 def render(name, k=0, **mac):
@@ -78,14 +78,6 @@ def test_creak_rate_rises_with_speed_and_falls_with_pressure():
     assert 150 < base < 600                                               # recorded door creaks: ~190-590 Hz
     assert creak_rate(run("friction_family", speed=0.06, pressure=8.0, **kw)) > 1.3 * base
     assert creak_rate(run("friction_family", speed=0.03, pressure=16.0, **kw)) < base / 1.3
-
-
-def test_pressure_and_speed_change_the_sound():
-    base = render("door_creak_wood")
-    for mac in ({"pressure": 0.0}, {"pressure": 1.0}, {"speed": 0.0}, {"speed": 1.0}):
-        y = render("door_creak_wood", **mac)
-        n = min(len(y), len(base))
-        assert np.abs(y[:n] - base[:n]).max() > 0.05, mac
 
 
 def test_speed_change_accelerates_a_scrape():
@@ -170,30 +162,14 @@ def harmonic_count(y, f0, floor_db=30):
     return int(np.sum(hs > hs.max() - floor_db))
 
 
-@pytest.mark.parametrize("name", SQUEALS + WOOD_CREAKS)
+@pytest.mark.parametrize("name", WOOD_CREAKS)
 def test_no_knock_after_the_stroke_ends(name):
     p = params(name)
     end = int((p.get("at", 0.05) + 1.15 * p["length_s"]) * SR)     # variations stretch the stroke by up to 10 %
     for k in range(3):
         e = env10(render(name, k))
         before = e[:max(1, end - int(0.05 * SR))].max()
-        if name not in ("shoe_squeak", "hinge_squeak"):              # (those may swell to their end, then stop)
-            assert e[end - int(0.05 * SR):].max() < before, (name, k)  # the stroke's end is never its loudest part
-        if name in SQUEALS:
-            assert e[end + int(0.05 * SR):].max() < before * 10 ** (-30 / 20), (name, k)   # and nothing rings on
-
-
-@pytest.mark.parametrize("name", SQUEALS)
-def test_squeals_are_harmonic_and_rough_not_a_pure_sine(name):
-    y = render(name)
-    f0, hnr = voice_stats(y, *F0_RANGE[name])
-    assert F0_RANGE[name][0] < f0 < F0_RANGE[name][1]
-    assert harmonic_count(y, f0) >= 5, name                    # recorded door creaks: 3-10
-    lo = -3 if name == "rope_creak" else 0.5                   # the rope groan is the roughest
-    assert lo < hnr < 12, (name, hnr)                          # recorded door creaks: about 1-10 dB
-    t = np.arange(SR) / SR
-    sine = np.sin(2 * np.pi * f0 * t)                          # the measure itself: a pure tone is far outside both
-    assert harmonic_count(sine, f0) <= 2 and voice_stats(sine, 0.4 * f0, 2.5 * f0)[1] > 20
+        assert e[end - int(0.05 * SR):].max() < before, (name, k)  # the stroke's end is never its loudest part
 
 
 def test_squeal_pitch_follows_speed():
@@ -202,16 +178,3 @@ def test_squeal_pitch_follows_speed():
     hi = voice_stats(run("friction_family", speed=0.05, speed_change=1.0, **kw), 550, 1600, 0.45, 0.7)[0]
     assert hi > 1.2 * lo
 
-
-def test_shoe_squeak_starts_tonal_not_with_a_noise_burst():
-    for k in range(3):
-        y = render("shoe_squeak", k)
-        e = env10(y)
-        on = int(np.argmax(e > 0.1 * e.max()))
-        seg = y[on:on + int(0.015 * SR)]
-        X = np.abs(np.fft.rfft(seg * np.hanning(len(seg)), 4096)) ** 2 + 1e-20
-        flat = np.exp(np.mean(np.log(X))) / np.mean(X)
-        assert flat < 0.2, (k, flat)                          # white noise ~0.5+, a harmonic chirp far lower
-        f0, hnr = voice_stats(y, *F0_RANGE["shoe_squeak"])
-        assert 1000 < f0 < 3000 and hnr > 0.5, (k, f0, hnr)
-        assert int(np.argmax(e > 0.5 * e.max())) - on < int(0.03 * SR)   # quick onset
