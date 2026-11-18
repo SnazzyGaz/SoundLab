@@ -1,0 +1,221 @@
+{
+  "soundlab": 1,
+  "name": "Hinge squeak: a dry metal hinge squealing in short bursts",
+  "category": "foley",
+  "sample_rate": 48000,
+  "duration": 1.5,
+  "seed": 42,
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "speed": {
+      "default": 0.5,
+      "doc": "slow .. fast",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.45
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.0
+            ]
+          ]
+        }
+      ]
+    },
+    "length": {
+      "default": 0.5,
+      "doc": "short .. long",
+      "map": [
+        {
+          "to": "0.length_s",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.0
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.9
+            ]
+          ]
+        }
+      ]
+    },
+    "pitch": {
+      "default": 0.5,
+      "doc": "low .. high",
+      "map": [
+        {
+          "to": "0.pitch",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.6
+            ]
+          ]
+        }
+      ]
+    },
+    "irregularity": {
+      "default": 0.5,
+      "doc": "smooth .. jerky",
+      "map": [
+        {
+          "to": "0.irregularity",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.5
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.0,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              -6
+            ],
+            [
+              1,
+              -18
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.speed": {
+      "rel": 0.12
+    },
+    "0.length_s": {
+      "rel": 0.1
+    },
+    "0.irregularity": {
+      "abs": 0.1
+    }
+  },
+  "layers": [
+    {
+      "name": "creak",
+      "model": "creak",
+      "params": {
+        "at": 0.05,
+        "length_s": 1.2,
+        "speed": 0.7,
+        "speed_change": -0.3,
+        "irregularity": 0.4,
+        "regime": "squeal",
+        "body": "gate",
+        "voice": "hinge",
+        "burst_ms": 400.0,
+        "gap_ms": 40.0,
+        "glide_follow": 0.8,
+        "squeal_body": 0.3
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            0
+          ],
+          [
+            250,
+            0
+          ],
+          [
+            1000,
+            0
+          ],
+          [
+            4000,
+            0
+          ],
+          [
+            16000,
+            0
+          ]
+        ]
+      }
+    }
+  ],
+  "notes": "v0.28: squeal bursts fitted to CC0 gate and hinge recordings."
+}

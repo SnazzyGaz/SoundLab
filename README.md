@@ -15,10 +15,14 @@ What's in it:
   size, force, hardness, hollowness, muffle and contact-point sliders; see [docs/impacts.md](docs/impacts.md).
 - **Friction through the same materials** (`friction_family`, v0.27): creaks, squeaks, scrapes and rubs with
   pressure, speed, speed-change, irregularity, size and hollowness sliders; see [docs/friction.md](docs/friction.md).
-- **Creaks and squeaks fitted to recordings** (`creak`, v0.28): door creak, hinge squeak, shoe squeak and
-  floorboard creak as slip-click groans through fixed resonances or near-pure squeals that hop between bursts.
-- **37 hand-built recipes** for game sound (100 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind,
-  rain, glass break, sword swing and clash, metal clang, door creak and slam, punch, bullet impacts, gunshot
+- **Squeals, squeaks and creaks from recording stems** (`squeal_stems`, v0.29): door squeal, door creak (open,
+  pause, close), hinge squeaks, gate squeals (with an optional latch), shoe squeaks and floorboard creak rebuilt
+  from stems of CC0 recordings (partial tracks, real wobble, noise layer, onsets, body colour; numbers only, no
+  audio) and played as a gesture timeline of motions; macros brightness, stretch, pitch, motions, gaps, seed.
+  The fitted physical `creak` model (v0.28) stays as a fallback in `recipes/creak_model/`; see
+  [docs/friction.md](docs/friction.md).
+- **37 hand-built recipes** for game sound (109 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind,
+  rain, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splash, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.
 - **Macro sliders** on every recipe (size, distance, intensity, material, ...), **seeded variations** and

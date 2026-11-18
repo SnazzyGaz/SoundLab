@@ -1,0 +1,263 @@
+{
+  "soundlab": 1,
+  "name": "Gate squeal: a metal gate swung open and shut on its hinge, then the latch",
+  "category": "foley",
+  "sample_rate": 48000,
+  "duration": 6.14,
+  "seed": 1,
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "brightness": {
+      "default": 1.0,
+      "doc": "as recorded .. gate (higher, brighter, more metallic, dry)",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.brightness",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "stretch": {
+      "default": 0.5,
+      "doc": "faster .. slower motion (every burst and pause)",
+      "map": [
+        {
+          "to": "0.stretch",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.7
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.5
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.8
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.5
+            ]
+          ]
+        }
+      ]
+    },
+    "pitch": {
+      "default": 0.5,
+      "doc": "lower .. higher (-4 .. +4 semitones)",
+      "map": [
+        {
+          "to": "0.pitch",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        }
+      ]
+    },
+    "motions": {
+      "default": 0.2,
+      "doc": "gesture: 1 .. 6 motions (open, close, ...), one burst per motion",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.motions_n",
+          "op": "set",
+          "range": [
+            1,
+            6
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.2,
+              1.0
+            ],
+            [
+              0.4,
+              1.784281299662834
+            ],
+            [
+              0.6,
+              2.5685625993256678
+            ],
+            [
+              0.8,
+              3.352843898988502
+            ],
+            [
+              1.0,
+              4.1371251986513355
+            ]
+          ]
+        }
+      ]
+    },
+    "gaps": {
+      "default": 0.5,
+      "doc": "pauses between motions: short .. long",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.gap_scale",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.3
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              3.0
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              14.15
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "doc": "another take: reseeds the burst timing and partial jitter",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    },
+    "latch": {
+      "default": "on",
+      "doc": "latch lift and drop at the end",
+      "choices": {
+        "on": [],
+        "off": [
+          {
+            "to": "0.latch",
+            "op": "set",
+            "value": false
+          },
+          {
+            "to": "duration",
+            "op": "add",
+            "value": -0.568
+          }
+        ]
+      }
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    },
+    "0.stretch": {
+      "rel": 0.04
+    },
+    "0.pitch": {
+      "abs": 0.4
+    }
+  },
+  "layers": [
+    {
+      "name": "squeal",
+      "model": "squeal_stems",
+      "params": {
+        "motions": [
+          {
+            "burst": "hinge_535530/9",
+            "action": "open"
+          },
+          {
+            "burst": "hinge_535530/7",
+            "action": "close"
+          }
+        ],
+        "stretch": 1.0,
+        "pitch": -1.0,
+        "seed": 31,
+        "brightness": 1.0,
+        "latch": true,
+        "at": 0.0
+      }
+    }
+  ],
+  "notes": "v0.29 squeal_stems: stems of CC0 recordings recombined (docs/friction.md). The hinge_squeak_2 gesture with brightness 1 (+2 st, +2 dB/oct, +3 dB upper partials, dry); latch = gate_207140 #0 and #1, 0.35 s after the squeal, 6 dB under it."
+}

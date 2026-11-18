@@ -1,124 +1,31 @@
 {
   "soundlab": 1,
-  "name": "Floorboard creak: a loose board creaking under a step",
+  "name": "Floorboard creak: weight shifting on old boards, three low woody groans",
   "category": "foley",
   "sample_rate": 48000,
-  "duration": 1.3,
-  "seed": 44,
+  "duration": 3.51,
+  "seed": 1,
   "master": {
     "normalize_db": -1.0,
     "fade_out": 0.05
   },
   "macros": {
-    "speed": {
-      "default": 0.5,
-      "doc": "slow .. fast",
+    "brightness": {
+      "default": 0.0,
+      "doc": "as recorded .. gate (higher, brighter, more metallic, dry)",
+      "jitter": 0.0,
       "map": [
         {
-          "to": "0.speed",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.45
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              2.0
-            ]
-          ]
-        }
-      ]
-    },
-    "length": {
-      "default": 0.5,
-      "doc": "short .. long",
-      "map": [
-        {
-          "to": "0.length_s",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.4
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              2.0
-            ]
-          ]
-        },
-        {
-          "to": "duration",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.5
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              1.9
-            ]
-          ]
-        }
-      ]
-    },
-    "pitch": {
-      "default": 0.5,
-      "doc": "low .. high",
-      "map": [
-        {
-          "to": "0.pitch",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.6
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              1.6
-            ]
-          ]
-        }
-      ]
-    },
-    "irregularity": {
-      "default": 0.5,
-      "doc": "smooth .. jerky",
-      "map": [
-        {
-          "to": "0.irregularity",
+          "to": "0.brightness",
           "op": "add",
           "points": [
             [
               0,
-              -0.4
-            ],
-            [
-              0.5,
               0
             ],
             [
               1,
-              0.5
+              1
             ]
           ],
           "clamp": [
@@ -128,12 +35,142 @@
         }
       ]
     },
-    "distance": {
-      "default": 0.0,
-      "doc": "near .. far (level)",
+    "stretch": {
+      "default": 0.5,
+      "doc": "faster .. slower motion (every burst and pause)",
       "map": [
         {
-          "to": "master.gain_db",
+          "to": "0.stretch",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.7
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.5
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.8
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.5
+            ]
+          ]
+        }
+      ]
+    },
+    "pitch": {
+      "default": 0.5,
+      "doc": "lower .. higher (-4 .. +4 semitones)",
+      "map": [
+        {
+          "to": "0.pitch",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        }
+      ]
+    },
+    "motions": {
+      "default": 0.4,
+      "doc": "gesture: 1 .. 6 motions (open, close, ...), one burst per motion",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.motions_n",
+          "op": "set",
+          "range": [
+            1,
+            6
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.2,
+              1.0
+            ],
+            [
+              0.4,
+              1.0
+            ],
+            [
+              0.6,
+              1.8148456591780024
+            ],
+            [
+              0.8,
+              2.6296913183560053
+            ],
+            [
+              1.0,
+              3.444536977534008
+            ]
+          ]
+        }
+      ]
+    },
+    "gaps": {
+      "default": 0.5,
+      "doc": "pauses between motions: short .. long",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.gap_scale",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.3
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              3.0
+            ]
+          ]
+        },
+        {
+          "to": "duration",
           "op": "add",
           "points": [
             [
@@ -142,84 +179,66 @@
             ],
             [
               0.5,
-              -6
+              0
             ],
             [
               1,
-              -18
+              15.23
             ]
-          ],
-          "clamp": [
-            -40,
-            0
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "doc": "another take: reseeds the burst timing and partial jitter",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
           ]
         }
       ]
     }
   },
   "vary": {
-    "0.speed": {
-      "rel": 0.12
+    "0.variation": {
+      "abs": 100000
     },
-    "0.length_s": {
-      "rel": 0.1
+    "0.stretch": {
+      "rel": 0.04
     },
-    "0.irregularity": {
-      "abs": 0.1
+    "0.pitch": {
+      "abs": 0.4
     }
   },
   "layers": [
     {
-      "name": "creak",
-      "model": "creak",
+      "name": "squeal",
+      "model": "squeal_stems",
       "params": {
-        "at": 0.05,
-        "length_s": 1.0,
-        "speed": 0.4,
-        "speed_change": -0.2,
-        "irregularity": 0.5,
-        "regime": "groan",
-        "body": "floor",
-        "voice": "door",
-        "burst_ms": 90.0,
-        "gap_ms": 220.0,
-        "burst_spread": 0.9,
-        "pulse_hz": 240.0,
-        "pulse_jitter": 0.35,
-        "slip_interval_s": 0.15,
-        "slip_jump_db": 12.0,
-        "slip_decay_db_s": 260.0
+        "motions": [
+          {
+            "burst": "floor_124289/8"
+          },
+          {
+            "burst": "floor_124289/17"
+          },
+          {
+            "burst": "floor_124289/27"
+          }
+        ],
+        "stretch": 1.1,
+        "pitch": -2.0,
+        "tilt": -2.0,
+        "seed": 21,
+        "at": 0.0
       }
     }
   ],
-  "post": [
-    {
-      "model": "eq",
-      "params": {
-        "curve": [
-          [
-            63,
-            0
-          ],
-          [
-            250,
-            0
-          ],
-          [
-            1000,
-            0
-          ],
-          [
-            4000,
-            0
-          ],
-          [
-            16000,
-            0
-          ]
-        ]
-      }
-    }
-  ],
-  "notes": "v0.28: irregular click bursts through floorboard resonances fitted to CC0 floor-creak recordings."
+  "notes": "v0.29 squeal_stems: stems of CC0 recordings recombined (docs/friction.md). floor_124289 #8, #17, #27 (217-333 Hz groans), own stems, -2 st, -2 dB/oct."
 }

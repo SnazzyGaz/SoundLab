@@ -57,9 +57,9 @@ def test_rain_has_air_on_top_and_slow_swells():
 
 
 def test_door_creak_groans_low_like_a_heavy_door():
-    # v0.28: a slow swing is a groan of slip clicks through the door's resonances (the CC0 heavy door
+    # v0.28 creak model (recipes/creak_model since v0.29): a slow swing is a groan of slip clicks through the door's resonances (the CC0 heavy door
     # recording has most of its energy under 2.5 kHz); squeals belong to faster swings
-    shares = [band_share(rec("door_creak", k), 100, 2500) for k in (1, 2, 3)]
+    shares = [band_share(rec("creak_model/door_creak", k), 100, 2500) for k in (1, 2, 3)]
     assert min(shares) > 0.5 and sorted(shares)[1] > 0.9        # an odd variation may catch a squeal
 
 

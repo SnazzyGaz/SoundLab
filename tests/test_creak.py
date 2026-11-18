@@ -2,7 +2,9 @@
 
 groan  = bursts of slip clicks through fixed body resonances (clicks speed up, the resonances stay put);
 squeal = a near-pure tone locked to a resonance that glides with speed and hops between bursts.
-Targets are numbers measured from the recordings; no audio is stored."""
+Targets are numbers measured from the recordings; no audio is stored.
+v0.29: the shipped door_creak/hinge_squeak/shoe_squeak/floorboard_creak recipes are squeal_stems now
+(tests/test_squeal_stems.py); the v0.28 creak recipes live on in recipes/creak_model/ as the physical fallback."""
 import json
 from pathlib import Path
 
@@ -14,7 +16,7 @@ from soundlab.models.creak_data import BODIES, VOICES
 
 from conftest import SR, run
 
-R = Path(__file__).resolve().parents[1] / "recipes"
+R = Path(__file__).resolve().parents[1] / "recipes" / "creak_model"
 CREAKS = ["door_creak", "hinge_squeak", "shoe_squeak", "floorboard_creak"]
 
 
@@ -180,7 +182,7 @@ def test_nothing_rings_on_after_the_stroke(name):
 
 
 def test_rope_creak_is_gone():
-    assert not (R / "rope_creak.json").exists() and not (R / "door_creak_wood.json").exists()
+    assert not (R.parent / "rope_creak.json").exists() and not (R.parent / "door_creak_wood.json").exists()
 
 
 # ---- groan ---------------------------------------------------------------------------------------------------

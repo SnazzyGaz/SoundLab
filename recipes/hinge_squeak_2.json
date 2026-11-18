@@ -1,0 +1,242 @@
+{
+  "soundlab": 1,
+  "name": "Hinge squeak: open and close of a squeaky hinge (a sweep, a pause, a short squeal)",
+  "category": "foley",
+  "sample_rate": 48000,
+  "duration": 6.17,
+  "seed": 1,
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "brightness": {
+      "default": 0.0,
+      "doc": "as recorded .. gate (higher, brighter, more metallic, dry)",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.brightness",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "stretch": {
+      "default": 0.5,
+      "doc": "faster .. slower motion (every burst and pause)",
+      "map": [
+        {
+          "to": "0.stretch",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.7
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.5
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.8
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.5
+            ]
+          ]
+        }
+      ]
+    },
+    "pitch": {
+      "default": 0.5,
+      "doc": "lower .. higher (-4 .. +4 semitones)",
+      "map": [
+        {
+          "to": "0.pitch",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        }
+      ]
+    },
+    "motions": {
+      "default": 0.2,
+      "doc": "gesture: 1 .. 6 motions (open, close, ...), one burst per motion",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.motions_n",
+          "op": "set",
+          "range": [
+            1,
+            6
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.2,
+              1.0
+            ],
+            [
+              0.4,
+              1.84319528337114
+            ],
+            [
+              0.6,
+              2.6863905667422805
+            ],
+            [
+              0.8,
+              3.5295858501134205
+            ],
+            [
+              1.0,
+              4.372781133484561
+            ]
+          ]
+        }
+      ]
+    },
+    "gaps": {
+      "default": 0.5,
+      "doc": "pauses between motions: short .. long",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.gap_scale",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.3
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              3.0
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              15.27
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "doc": "another take: reseeds the burst timing and partial jitter",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    },
+    "0.stretch": {
+      "rel": 0.04
+    },
+    "0.pitch": {
+      "abs": 0.4
+    }
+  },
+  "layers": [
+    {
+      "name": "squeal",
+      "model": "squeal_stems",
+      "params": {
+        "motions": [
+          {
+            "burst": "hinge_535530/9",
+            "action": "open"
+          },
+          {
+            "burst": "hinge_535530/7",
+            "action": "close"
+          }
+        ],
+        "stretch": 1.08,
+        "pitch": -1.0,
+        "seed": 12,
+        "at": 0.0
+      }
+    }
+  ],
+  "notes": "v0.29 squeal_stems: stems of CC0 recordings recombined (docs/friction.md). hinge_535530 #9 then #7, own stems."
+}

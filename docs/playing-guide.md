@@ -363,10 +363,15 @@ inharmonic), two slightly different objects that beat, a very short metal contac
 through the same modes (the 'shing'). The hand/grip soaks up the lowest modes, so a held sword is bright and
 short; a hanging pipe rings long and is very tonal. Macros: `object` (sword/pipe/plate/pan), `intensity`, `scrape`, `ring`, `distance` / `object` (pipe/plate/pan/sword), `intensity`, `size`, `ring`, `distance`.
 
-**Door creak (`door_creak`).** v0.28 `creak` model, fitted to CC0 door recordings. A slow swing groans: bursts of
-slip clicks through the door's fixed resonances, with a big slip every ~0.1 s. A faster swing squeals: a
-near-pure tone locked to a hinge resonance that glides with the swing and jumps between bursts.
-Macros: `speed`, `length`, `pitch`, `irregularity`, `body` (heavy door, light door, gate), `squeal`, `distance`.
+**Door creak, squeals and squeaks (`door_creak`, `door_squeal`, `hinge_squeak`, `hinge_squeak_2`, `gate_squeal`,
+`gate_squeal_long`, `shoe_squeak`, `shoe_squeak_2`, `floorboard_creak`).** v0.29 `squeal_stems`: stems of CC0
+recordings (partial tracks, the real wobble, noise layer, onsets, body colour) recombined and played as a gesture
+timeline. `door_creak` is an open, a pause and a close, with cracks and squeals; the pause is the door at rest, not
+a cut. `gate_squeal` is the open/close hinge made brighter, more metallic and dry, then a latch.
+Macros: `brightness` (as recorded .. gate), `stretch`, `pitch`, `motions` (1-6), `gaps`, `seed`; `gate_squeal`
+also `latch` (on/off). For a creak of an exact length (a game door's swing time) use the v0.28 physical model in
+`recipes/creak_model/door_creak.json` (macros `speed`, `length`, `pitch`, `irregularity`, `body`, `squeal`,
+`distance`).
 
 **Door slam (`door_slam`).** The leaf edge hits the stop (1-2.6 ms wooden contact), the leaf rings as a
 damped oak plate (its lowest modes pinned at impact), a short wood-on-wood knock, rebound rattles in the frame,

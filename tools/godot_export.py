@@ -50,8 +50,8 @@ ONESHOTS = {
     "step_wood": ("footstep", {"surface": "wood"}, 8, STEP_EQ["wood"]),
     "step_stone": ("footstep", {"surface": "stone"}, 8, STEP_EQ["stone"]),
     "step_gravel": ("footstep", {"surface": "gravel"}, 8, STEP_EQ["gravel"]),
-    "door_open": ("door_creak", {"open_s": 1.4}, 3),     # the creak lasts exactly as long as the swing:
-    "door_close": ("door_creak", {"open_s": 0.55, "pitch": 0.6}, 3),   # the game reads open_s to time it
+    "door_open": ("creak_model/door_creak", {"open_s": 1.4}, 3),     # the creak lasts exactly as long as the swing:
+    "door_close": ("creak_model/door_creak", {"open_s": 0.55, "pitch": 0.6}, 3),   # the game reads open_s to time it
     "door_slam": ("door_slam", {}, 4),
     "knock": ("hc_knock", {}, 6),
     "clang": ("metal_clang", {}, 6),
@@ -106,7 +106,7 @@ def main(out: Path):
             if swing:
                 # a door's creak follows its motion: set the swing time and fit the recipe length to it
                 lp = raw["layers"][0]["params"]
-                lp["length_s"] = swing                                  # v0.28 creak model: length of the motion
+                lp["length_s"] = swing          # creak model (the exact-length fallback): length of the motion
                 raw["duration"] = lp.get("at", 0.0) + swing + 0.35
             for v in range(n):
                 f = f"{name}_v{v + 1:02d}"

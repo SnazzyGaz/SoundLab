@@ -1139,6 +1139,52 @@ Door creaks, hinge squeaks, shoe squeaks and floorboard creaks rebuilt from CC0 
 
 Sources: Farnell 2010, Designing Sound, practical 'Creaking door' (stick-slip events through a door formant bank); Heinrichs & McPherson 2014 (performable creaking-door model); Avanzini, Serafin & Rocchesso 2005 (friction locking to a resonance); Freesound CC0 recordings 455324, 766155, 397687, 88502, 124289, 506665, 788701 (fitted numbers only)
 
+### `squeal_stems`
+
+Squeals, squeaks and creaks rebuilt from stems of CC0 recordings (numbers only, no audio): partial tracks, the real wobble, the noise layer, onset/clicks and body colour per burst, recombined across recordings. A gesture timeline of motions (each with speed, pressure, duration) plays one burst per motion; the pause between motions is the motion stopping. Brightness turns a hinge into a gate (higher, brighter, more metallic, dry); an optional latch clank ends it.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `motions` | `[{'burst': 'hinge_535530/9'}]` |  |  | gesture timeline: list of {burst, action, speed, pressure, duration, gap_after}; burst is a stored burst key or a list of keys that play joined |
+| `micro` | `` |  |  | donor of the wobble track (stored key, '' = each burst's own) |
+| `onset` | `` |  |  | donor of the first motion's onset ('' = own) |
+| `noise` | `` |  |  | donor of the noise colour ('' = own) |
+| `body` | `` |  |  | donor of the body colour ('' = own) |
+| `borrow` | `always` |  | always, if_similar | if_similar: use the wobble donor only when it measures within 25 % of the burst's own |
+| `stretch` | `1.0` |  | 0.5 .. 2.0 | time stretch of every burst (>1 slower) |
+| `pitch` | `0.0` | st | -6 .. 6 | pitch shift in semitones (noise shaping follows) |
+| `tilt` | `0.0` | dB/oct | -6 .. 6 | spectral tilt about 1 kHz (tones and noise) |
+| `brightness` | `0.0` |  | 0 .. 1 | 0 as recorded .. 1 gate: +2 st, +2 dB/oct, +3 dB upper partials, no ambient bed, noise tails pulled down (dry, outdoor) |
+| `jitter_cents` | `0.0` | cents | 0 .. 30 | extra pitch jitter on top of the real wobble |
+| `flutter_db` | `0.0` | dB | 0 .. 3 | extra level flutter on top of the real wobble |
+| `micro_depth` | `1.0` |  | 0 .. 2 | depth of a borrowed wobble track |
+| `wobble` | `1.0` |  | 0 .. 1.5 | scale of pitch wobble around a 1.5 Hz trend |
+| `am_wobble` | `1.0` |  | 0 .. 1.5 | scale of level wobble around a 1.5 Hz trend |
+| `flatten` | `1.0` |  | 0 .. 1 | scale of the pitch contour around its median (hooks, glides) |
+| `smoothing` | `None` |  |  | null = stems as analysed; or the anti-bubble pass {min_track_ms, rel_db, noise_ms, amp_fc, freq_fc} |
+| `noise_db` | `0.0` | dB | -40 .. 20 | noise layer level |
+| `noise_hi_db` | `0.0` | dB | -40 .. 20 | noise layer above noise_hi_hz |
+| `noise_hi_hz` | `0.0` | Hz | 0 .. 20000 |  |
+| `noise_tail_db` | `0.0` | dB | -40 .. 0 | noise pulled down over the last noise_tail_s of each burst |
+| `noise_tail_s` | `0.12` | s | 0 .. 2 |  |
+| `partial_hi_db` | `0.0` | dB | -20 .. 20 | smooth high shelf on the partials above partial_hi_hz |
+| `partial_hi_hz` | `2500.0` | Hz | 200 .. 16000 |  |
+| `mute` | `[]` |  |  | stray-partial rules: list of {lo, hi, min_s, max_range_cents} |
+| `purr_gate` | `[]` |  |  | [lo_hz, hi_hz, over_db]: clamp that noise band at its median + over_db |
+| `trim_s` | `0.0` | s | 0 .. 30 | cut each burst at this time (0 = whole burst) |
+| `trim_fade_s` | `0.3` | s | 0.005 .. 2 |  |
+| `bed_db` | `0.0` | dB | -200 .. 20 | ambient bed (the band levels just outside the bursts) |
+| `latch` | `False` |  |  | end with a real latch lift and drop |
+| `latch_gap_s` | `0.35` | s | 0 .. 3 |  |
+| `latch_level` | `0.5` |  | 0 .. 2 | latch peak re the squeal peak |
+| `motions_n` | `0` |  | 0 .. 16 | number of motions (0 = as listed; more repeat the pattern with other bursts of the same kind) |
+| `gap_scale` | `1.0` |  | 0 .. 4 | scales the pauses between motions |
+| `seed` | `0` |  | 0 .. 2147483647 | the model's own seed (the recipe default reproduces its reference) |
+| `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the reference render; other values reseed |
+| `at` | `0.0` | s | 0 .. None |  |
+
+Sources: Serra & Smith 1990 (spectral modelling synthesis: sinusoids + residual); McAulay & Quatieri 1986 (sinusoidal tracking); Akay 2002 (acoustics of friction); Woodhouse 2004 (bowed-string Helmholtz motion); Freesound CC0 recordings 766155, 563136, 575206, 455324, 268574, 124289, 535530, 429130, 788701, 784964, 204759, 88502, 397687, 483166, 207140 (analysed numbers only; THIRD_PARTY.md)
+
 ## Stage: synth
 
 ### `osc`

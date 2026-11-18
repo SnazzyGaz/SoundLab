@@ -70,7 +70,8 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 | `coin.json` | coin | `floor` (tile, wood, table, stone), `metal` (cupronickel, bronze, steel, brass, aluminium), `size`, `height`, `spin`, `distance` |
 | `coin_jingle.json` | coin | `metal` (cupronickel, bronze, steel, brass, aluminium), `coins`, `shake`, `length`, `distance` |
 | `creature_growl.json` | creature | `size`, `roughness`, `snarl`, `length`, `distance`, `uvula`, `wet` |
-| `door_creak.json` | door | `speed`, `length`, `pitch`, `irregularity`, `body`, `squeal`, `distance` |
+| `door_creak.json` | door | `brightness`, `stretch`, `pitch`, `motions`, `gaps`, `seed` |
+| `door_squeal.json` | door | `brightness`, `stretch`, `pitch`, `motions`, `gaps`, `seed` |
 | `door_slam.json` | door | `intensity`, `size`, `rattle`, `distance` |
 | `dowel.json` | impact | `material` (wood, metal, glass, plastic, stone, cardboard), `size`, `intensity`, `hardness`, `distance` |
 | `drip.json` | water | `size`, `intensity`, `distance` |
@@ -81,12 +82,17 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 | `explosion.json` | explosion | `size`, `intensity`, `debris`, `distance` |
 | `explosion_small.json` | explosion | `size`, `intensity`, `debris`, `distance` |
 | `fire.json` | ambience | `size`, `intensity`, `distance` |
+| `floorboard_creak.json` | floor | `brightness`, `stretch`, `pitch`, `motions`, `gaps`, `seed` |
 | `foghorn.json` | ambience | `size`, `intensity`, `length`, `distance` |
 | `foghorn_pattern.json` | ambience | `size`, `intensity`, `length`, `distance` |
 | `footstep.json` | footstep | `shoe` (trainer, boot, heel), `surface` (wood, stone, gravel), `size`, `intensity`, `pace`, `creak`, `distance` |
+| `gate_squeal.json` | gate | `brightness`, `stretch`, `pitch`, `motions`, `gaps`, `seed`, `latch` (on, off) |
+| `gate_squeal_long.json` | gate | `brightness`, `stretch`, `pitch`, `motions`, `gaps`, `seed` |
 | `glass_break.json` | glass | `size`, `intensity`, `floor` (hard, wood, soft), `distance` |
 | `glass_hit_room.json` | impact | `size`, `intensity`, `distance` |
 | `gunshot.json` | weapon | `calibre` (pistol, rifle, shotgun), `space` (street, room, open), `body`, `crack`, `distance` |
+| `hinge_squeak.json` | hinge | `brightness`, `stretch`, `pitch`, `motions`, `gaps`, `seed` |
+| `hinge_squeak_2.json` | hinge | `brightness`, `stretch`, `pitch`, `motions`, `gaps`, `seed` |
 | `hit.json` | impact | `object` (board, door, dowel), `material` (wood, metal, glass, plastic, stone, cardboard), `size`, `intensity`, `hardness`, `distance` |
 | `match.json` | foley | `size`, `intensity`, `wetness`, `distance` |
 | `matchbox.json` | foley | `intensity`, `size`, `wetness`, `distance` |
@@ -94,6 +100,8 @@ while fitting `hit.json`, whose `object: board` choice names the board's dimensi
 | `paper_rustle.json` | foley | `material` (paper, plastic, leaves, cloth), `intensity`, `length`, `distance` |
 | `punch.json` | combat | `target` (body, face, belly), `glove` (bare, glove), `intensity`, `sweeten`, `distance` |
 | `rain.json` | ambience | `intensity`, `surface` (ground, leaves, roof, window, puddle), `closeness`, `distance` |
+| `shoe_squeak.json` | shoe | `brightness`, `stretch`, `pitch`, `motions`, `gaps`, `seed` |
+| `shoe_squeak_2.json` | shoe | `brightness`, `stretch`, `pitch`, `motions`, `gaps`, `seed` |
 | `splash.json` | water | `size`, `intensity`, `distance`, `spray` |
 | `sword_clash.json` | weapon | `object` (sword, pipe, plate, pan), `intensity`, `scrape`, `ring`, `distance` |
 | `sword_swing.json` | whoosh | `speed`, `object`, `zing`, `distance` |

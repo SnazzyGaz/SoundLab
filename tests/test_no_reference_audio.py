@@ -1,8 +1,10 @@
-"""Rule: never ship reference clips or stems derived from them.
+"""Rule: never ship reference clips or audio stems derived from them.
 
 Reference recordings are used for tuning during development only and live
 OUTSIDE the repository (soundlab-research/refs). This test fails if any audio file is tracked by git or sits
 anywhere in the working tree, except paths listed in tests/audio_allowlist.txt (empty: nothing is allowed).
+Analysis numbers of credited CC0 recordings are allowed (v0.28 creak_data.py, v0.29 squeal_stems.bin: partial
+tracks and band envelopes at frame rate, see THIRD_PARTY.md); no file may hold sample data, whatever its name.
 """
 import subprocess
 from pathlib import Path
@@ -10,6 +12,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 AUDIO_EXT = {".wav", ".wave", ".mp3", ".flac", ".ogg", ".oga", ".opus", ".m4a", ".aac", ".aif", ".aiff", ".aifc",
              ".wma", ".caf", ".mid", ".midi", ".npy", ".npz"}
+AUDIO_MAGIC = (b"RIFF", b"ID3", b"\xff\xfb", b"\xff\xf3", b"\xff\xf2", b"fLaC", b"OggS", b"FORM", b"\x93NUMPY",
+               b"MThd", b"caff", b"\x30\x26\xb2\x75")
 SKIP_DIRS = {".git", ".venv", "venv", "__pycache__", ".pytest_cache", "node_modules"}
 
 
@@ -41,3 +45,32 @@ def test_no_audio_tracked_by_git():
         return  # not a git checkout (e.g. an sdist)
     bad = sorted(f for f in out.splitlines() if Path(f).suffix.lower() in AUDIO_EXT and f not in _allowlist())
     assert not bad, f"audio files tracked by git: {bad}"
+
+
+def test_no_file_holds_audio_under_another_name():
+    """Content check: no file in the package or tests starts like an audio container or a numpy array."""
+    bad = []
+    for d in ("soundlab", "tests", "recipes", "tools", "docs", "demos"):
+        for p in (ROOT / d).rglob("*"):
+            if not p.is_file() or any(part in SKIP_DIRS for part in p.relative_to(ROOT).parts):
+                continue
+            with open(p, "rb") as f:
+                head = f.read(16)
+            if head.startswith(AUDIO_MAGIC) or head[8:12] in (b"WAVE", b"AIFF", b"AIFC"):
+                bad.append(p.relative_to(ROOT).as_posix())
+    assert not sorted(set(bad) - _allowlist()), bad
+
+
+def test_stem_data_has_no_sample_rate_arrays():
+    """squeal_stems.bin: every array is per frame (hop 128) or per band, never per sample."""
+    import json, lzma, struct
+    import numpy as np
+    raw = (ROOT / "soundlab" / "models" / "squeal_stems.bin").read_bytes()
+    p = lzma.decompress(raw[8:])
+    hdr = json.loads(p[4:4 + struct.unpack("<I", p[:4])[0]])
+    blob = memoryview(p)[4 + struct.unpack("<I", p[:4])[0]:]
+    for k, b in hdr["bursts"].items():
+        assert b["nfr"] <= (b["t1"] - b["t0"]) * hdr["sr"] / hdr["hop"] + 160, k     # 2.9 ms frames (+ margins)
+        t = b["tracks"]
+        ln = np.frombuffer(blob, t["length"]["dt"], t["length"]["sh"][0], t["length"]["o"])
+        assert ln.max() <= b["nfr"] and t["dc"]["sh"][0] == t["db"]["sh"][0] == ln.sum(), k

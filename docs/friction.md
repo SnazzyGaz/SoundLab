@@ -1,4 +1,4 @@
-# Friction family (v0.27, v0.27.1) and the creak model (v0.28)
+# Friction family (v0.27, v0.27.1), the creak model (v0.28) and stem-based squeals (v0.29)
 
 `friction_family` makes creaks, squeaks, scrapes, rubbing and bowing out of the same material bodies as
 `material_impact` ([impacts.md](impacts.md)): the material table, shapes, damping laws and cavity modes are shared,
@@ -26,8 +26,102 @@ hollowness, length (stroke and render length together) and distance (`cloth_rub`
 ## Recipes
 
 `friction_family`: `chair_creak`, `glass_rub`, `metal_scrape`, `stone_scrape`, `sandpaper`, `cloth_rub`.
-`creak` (v0.28): `door_creak`, `hinge_squeak`, `shoe_squeak`, `floorboard_creak`. `rope_creak` and
-`door_creak_wood` were removed in v0.28. `creak_friction`, `squeak_friction` and `scrape_sdt` stay as they were.
+`squeal_stems` (v0.29): `door_squeal`, `door_creak`, `hinge_squeak`, `hinge_squeak_2`, `gate_squeal`,
+`gate_squeal_long`, `shoe_squeak`, `shoe_squeak_2`, `floorboard_creak` (below).
+`creak` (v0.28) is kept as the physical fallback: its four recipes moved to `recipes/creak_model/` (any length,
+an exact swing time, no stored data; `tools/godot_export.py` uses `creak_model/door_creak` for door open/close).
+`rope_creak` and `door_creak_wood` were removed in v0.28. `creak_friction`, `squeak_friction` and `scrape_sdt`
+stay as they were.
+
+## v0.29: stem-based squeals (`squeal_stems`)
+
+Physical models of a squeal (v0.27.1 relaxation oscillator, v0.28 `creak`) get the regime right but not the
+detail that makes it believable: the exact way a squeal's pitch hooks, wobbles and breaks, how the noise
+around it breathes, the cracks at the start of a motion. v0.29 keeps that detail from recordings without
+storing audio: each burst of 15 CC0 recordings ([THIRD_PARTY.md](../THIRD_PARTY.md)) is analysed into stems,
+and recipes recombine real stems.
+
+### Method
+
+Analysis (sinusoids + residual, Serra & Smith 1990): 44.1 kHz, 2.9 ms frames (hop 128). Each burst becomes
+
+| stem | what it is |
+|---|---|
+| tonal | partial tracks: start frame, pitch (cents) and level (dB) per frame |
+| micro | the dominant partial's wobble: pitch and level deviation from a 60/40 ms smoothed contour, replayed at its own rate (mirror-looped), never stretched |
+| noise | the residual as 96 log-spaced band envelopes, with clicks bridged out, and its average shape |
+| transients | the onset (first ~30 ms) and the clicks (frames more than 6 dB over a 30 ms median) |
+| body | 1/3-octave long-term spectrum minus its tilt (includes tone energy, so it is a colour, not a clean body) |
+
+Rendering (`render_burst`): partials as sines (pitch shift, time stretch, optional extra jitter), the noise
+envelopes re-imposed on fresh noise, onset and clicks re-inserted, body colour applied as a smooth EQ. Any stem
+can come from another burst (a donor): wobble, onset, noise colour or body. The stored file
+(`soundlab/models/squeal_stems.bin`, about 2 MB, lzma) holds numbers only: tracks as cents and dB offsets
+(float16) from an exact per-track start pitch and peak, noise envelopes in 0.6 dB steps, donors as their
+derived arrays. The 35 stored bursts are what the recipes play plus a small pool for the `motions` macro.
+
+### Gesture timeline
+
+A recipe is a list of **motions** (`{"burst", "action", "speed", "pressure", "duration", "gap_after"}`). Each
+motion plays one burst: `speed` stretches it (faster = shorter) with a small pitch rise (1.2 st per doubling),
+`pressure` scales its level and tilts it brighter, `duration` fits it to a time. Between motions the hinge is
+at rest: the pause is silence plus the room bed, drawn from the source recording's own pauses (x `stretch`,
+x `gap_scale`) or set with `gap_after`. A door creak is open, pause, close; it is never a single squeal cut in
+two. `motions_n` repeats the pattern with other bursts of the same kind.
+
+### Recipes and their stems
+
+| recipe | motions (bursts) | other stems | settings |
+|---|---|---|---|
+| `door_squeal` | door_766155 #5 | onset and body: door_563136 #1 | stretch 0.9, -1.5 st, jitter 2 c / 0.3 dB, noise above 1.5 kHz -12 dB, bed -14 dB, cut at 2.05 s (0.3 s fade) |
+| `door_creak` | open door_575206 #2, close #1 | wobble door_455324 #0 at 40 %; body door_268574 #2 | stretch 1.1, +1 st, jitter 5 c / 0.6 dB; stray steady tones and the 150-330 Hz drone muted, that band's noise clamped |
+| `hinge_squeak` | hinge_535530 #3+#4 joined | onset hinge_788701 #1, noise hinge_784964 #1, body hinge_204759 #2 | smoothed stems, half wobble, stretch 0.85, +2 st |
+| `hinge_squeak_2` | open hinge_535530 #9, close #7 | own | stretch 1.08, -1 st |
+| `gate_squeal` | as `hinge_squeak_2` | latch: gate_207140 #0, #1 | brightness 1; latch 0.35 s after, 6 dB under (macro on/off) |
+| `gate_squeal_long` | gate_397687 #0 | wobble gate_483166 #0; onset and body gate_207140 #2 | stretch 1.2, -1 st, jitter 4 c / 0.5 dB |
+| `shoe_squeak`, `shoe_squeak_2` | shoe_88502 #5 #6 #7 / #8 #9 #11 | own | +0.5 / -0.7 st |
+| `floorboard_creak` | floor_124289 #8 #17 #27 | own | stretch 1.1, -2 st, -2 dB/oct |
+
+Macros on every recipe: `brightness` (as recorded .. gate: +2 st, +2 dB/oct, +3 dB on partials above
+2.5 kHz, no room bed, noise tails pulled down 10 dB: a hinge outdoors on metal), `stretch`, `pitch`,
+`motions` (1-6), `gaps` (pause length) and `seed` (another take). `gate_squeal` adds `latch` on/off.
+Variations reseed the model and jitter stretch and pitch.
+
+### Lessons
+
+- **Never average.** Averaging bursts or spectra smears exactly the detail that makes a squeal real (one
+  hook, one break, one wobble rate) into a generic tone. Pick real stems and recombine them.
+- **Each burst keeps its own wobble.** A borrowed wobble track that is stronger than the burst's own, plus
+  added jitter, turned squeals into trills and bubbling. Borrow only when it measures like the own one
+  (within 25 %, `borrow: if_similar`) or at reduced depth (`micro_depth`).
+- **Smooth the noise, not the clicks.** Band envelopes of noise read every 2.9 ms are themselves random; playing
+  them back on new noise doubles the flutter and bubbles. The anti-bubble pass (`smoothing`) power-smooths the
+  noise envelopes (25-70 ms), low-passes the partials' own pitch/level (zero phase, 10/6 Hz) and returns
+  short or very weak tracks ("birdies") to the noise. Clicks and onsets are separate stems, so they stay sharp.
+  It is not always better: a hinge needed it, the door and floor creaks sound truer raw.
+- **Remove stray tracks by rule, keep the gain.** A tracker also follows things that are not the squeal: a
+  steady 3-6 kHz beep, a 190-250 Hz drone purring at 8-9 Hz. They are muted by rule (frequency band, length,
+  pitch range) and kept in the list, so every random draw stays the same; the burst keeps the level it had
+  with them (rendered both ways from the same random state), so removing a tone does not raise the rest.
+- **Model the motion, not the clip.** An open and a close are two motions with a stop between them; the
+  pause comes from the gesture timeline, and its length from the recording's own pauses.
+- **A gate is a brighter, drier hinge.** Gate recordings bring their own problems (sheet-metal rattle, a
+  single beep); the hinge with the brightness macro and a real latch reads better.
+
+### Checks (`tests/test_squeal_stems.py`)
+
+- Reproduction: every default recipe against a numeric fingerprint of its reference render
+  (`tests/data/squeal_fingerprints.json`: 1/3-octave levels, 125 Hz-16 kHz, 50 ms frames, 0.5 dB steps).
+  Mean level distance under 0.5 dB (measured 0.01-0.12 dB; another take of the same recipe is over 1.5 dB away).
+  Not bit-exact: tracks are stored as float16 offsets, noise in 0.6 dB steps, and the render is resampled to 48 kHz.
+- Gesture: open and close are separate motions at least 0.12 s apart, the pause 20 dB or more under both;
+  `gaps` scales the pause, `motions` changes the count, long gestures fit their duration.
+- No bubbling: the 8-30 Hz level modulation of the band envelopes on steady parts stays under 3.3 dB
+  (bubbling renders: 3.9-4.5 dB). No low drone: the 150-330 Hz share stays under -15 dB for `door_creak`
+  (the version with the ~200 Hz drone: -10 dB) and under -20 dB for hinges, gates and shoes.
+- Data: numbers only, frame-rate arrays, every recording credited (`tests/test_no_reference_audio.py` also
+  rejects any file that starts like audio, whatever its name).
+
 
 ## v0.28: the creak model
 
@@ -62,7 +156,7 @@ Fitted numbers (from the recordings):
 | sneaker (88502) | contact tick 1-10 ms; f0 2400-2430 Hz, drifting down 35-115 cents; decays 91-115 dB/s; h2 -11 to -19 dB; a partial at 1.34-1.38 f0 that starts level with f0 and fades 10-15 dB faster; scuff noise 30-40 dB under the tone | `shoe` voice, `tone_decay_db_s` 100, `drift_cents` -70 |
 | floor (124289, 506665) | click rate ~250 Hz; bursts 25-175 ms (median 60 ms) with ~0.27 s gaps, one longer main creak; slips +12 dB, 260 dB/s; resonances 570/250, 1680/1030, 3500/700, 6300/880 Hz | `floor` body, `pulse_hz` 240 |
 
-Recipes: `door_creak` (groan when slow, squeals on a faster swing; macros speed, length, pitch, irregularity,
+Recipes (since v0.29 in `recipes/creak_model/`): `door_creak` (groan when slow, squeals on a faster swing; macros speed, length, pitch, irregularity,
 body door_heavy/door_light/gate, squeal, distance), `hinge_squeak` (squeal bursts that hop between hinge
 pitches), `shoe_squeak` (tick, scuff and a decaying 2.4 kHz tone), `floorboard_creak` (irregular groan bursts).
 

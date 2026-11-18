@@ -11,6 +11,13 @@ Ground rules:
 
 ## Now: interaction models and resynthesis (v0.17 to v0.27)
 
+v0.29: squeals, squeaks and creaks rebuilt from stems of CC0 recordings (`squeal_stems`: partial tracks, the
+real wobble, noise layer, onsets and body colour per burst, stored as numbers, recombined across recordings and
+played as a gesture timeline of motions with pauses between them); new recipes `door_squeal`, `hinge_squeak_2`,
+`gate_squeal`, `gate_squeal_long`, `shoe_squeak_2`; the v0.28 `creak` recipes moved to `recipes/creak_model/` as the
+physical fallback. Next for this family: more motions per recording in the pool (squeaky chairs, beds, ropes,
+wet glass), speed and pressure read from a game's door angle, stems for scrapes; see [friction.md](friction.md).
+
 v0.28: creaks and squeaks rebuilt as the fitted `creak` model (groan: slip clicks through fixed body
 resonances; squeal: a near-pure tone locked to a resonance that hops between bursts), measured from CC0
 recordings; `rope_creak` removed; see [friction.md](friction.md).

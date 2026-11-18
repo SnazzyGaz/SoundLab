@@ -1,124 +1,31 @@
 {
   "soundlab": 1,
-  "name": "Door creak: a door swinging on a dry hinge (groaning clicks through the door, squeals when it moves fast)",
+  "name": "Door creak: open, pause, close; cracking clicks and squeals of a wooden door",
   "category": "foley",
   "sample_rate": 48000,
-  "duration": 2.7,
-  "seed": 41,
+  "duration": 8.49,
+  "seed": 1,
   "master": {
     "normalize_db": -1.0,
     "fade_out": 0.05
   },
   "macros": {
-    "speed": {
-      "default": 0.5,
-      "doc": "slow .. fast",
+    "brightness": {
+      "default": 0.0,
+      "doc": "as recorded .. gate (higher, brighter, more metallic, dry)",
+      "jitter": 0.0,
       "map": [
         {
-          "to": "0.speed",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.45
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              2.0
-            ]
-          ]
-        }
-      ]
-    },
-    "length": {
-      "default": 0.5,
-      "doc": "short .. long",
-      "map": [
-        {
-          "to": "0.length_s",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.4
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              2.0
-            ]
-          ]
-        },
-        {
-          "to": "duration",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.5
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              1.9
-            ]
-          ]
-        }
-      ]
-    },
-    "pitch": {
-      "default": 0.5,
-      "doc": "low .. high",
-      "map": [
-        {
-          "to": "0.pitch",
-          "op": "mul",
-          "points": [
-            [
-              0,
-              0.6
-            ],
-            [
-              0.5,
-              1
-            ],
-            [
-              1,
-              1.6
-            ]
-          ]
-        }
-      ]
-    },
-    "irregularity": {
-      "default": 0.5,
-      "doc": "smooth .. jerky",
-      "map": [
-        {
-          "to": "0.irregularity",
+          "to": "0.brightness",
           "op": "add",
           "points": [
             [
               0,
-              -0.4
-            ],
-            [
-              0.5,
               0
             ],
             [
               1,
-              0.5
+              1
             ]
           ],
           "clamp": [
@@ -128,72 +35,142 @@
         }
       ]
     },
-    "body": {
-      "default": "door_heavy",
-      "doc": "heavy door / light door / metal gate",
-      "choices": {
-        "door_heavy": [
-          {
-            "to": "0.body",
-            "op": "set",
-            "value": "door_heavy"
-          }
-        ],
-        "door_light": [
-          {
-            "to": "0.body",
-            "op": "set",
-            "value": "door_light"
-          }
-        ],
-        "gate": [
-          {
-            "to": "0.body",
-            "op": "set",
-            "value": "gate"
-          },
-          {
-            "to": "0.voice",
-            "op": "set",
-            "value": "gate"
-          }
-        ]
-      }
-    },
-    "squeal": {
+    "stretch": {
       "default": 0.5,
-      "doc": "groans more .. squeals more",
+      "doc": "faster .. slower motion (every burst and pause)",
       "map": [
         {
-          "to": "0.squeal_above",
-          "op": "add",
+          "to": "0.stretch",
+          "op": "mul",
           "points": [
             [
               0,
-              0.4
+              0.7
             ],
             [
               0.5,
-              0
+              1
             ],
             [
               1,
-              -0.4
+              1.5
             ]
-          ],
-          "clamp": [
-            0,
-            1.5
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.8
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.5
+            ]
           ]
         }
       ]
     },
-    "distance": {
-      "default": 0.0,
-      "doc": "near .. far (level)",
+    "pitch": {
+      "default": 0.5,
+      "doc": "lower .. higher (-4 .. +4 semitones)",
       "map": [
         {
-          "to": "master.gain_db",
+          "to": "0.pitch",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        }
+      ]
+    },
+    "motions": {
+      "default": 0.2,
+      "doc": "gesture: 1 .. 6 motions (open, close, ...), one burst per motion",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.motions_n",
+          "op": "set",
+          "range": [
+            1,
+            6
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.2,
+              1.0
+            ],
+            [
+              0.4,
+              1.6483584812075767
+            ],
+            [
+              0.6,
+              2.2967169624151533
+            ],
+            [
+              0.8,
+              2.9450754436227293
+            ],
+            [
+              1.0,
+              3.5934339248303058
+            ]
+          ]
+        }
+      ]
+    },
+    "gaps": {
+      "default": 0.5,
+      "doc": "pauses between motions: short .. long",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.gap_scale",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.3
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              3.0
+            ]
+          ]
+        },
+        {
+          "to": "duration",
           "op": "add",
           "points": [
             [
@@ -202,82 +179,91 @@
             ],
             [
               0.5,
-              -6
+              0
             ],
             [
               1,
-              -18
+              12.92
             ]
-          ],
-          "clamp": [
-            -40,
-            0
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "doc": "another take: reseeds the burst timing and partial jitter",
+      "jitter": 0.0,
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
           ]
         }
       ]
     }
   },
   "vary": {
-    "0.speed": {
-      "rel": 0.12
+    "0.variation": {
+      "abs": 100000
     },
-    "0.length_s": {
-      "rel": 0.1
+    "0.stretch": {
+      "rel": 0.04
     },
-    "0.irregularity": {
-      "abs": 0.1
+    "0.pitch": {
+      "abs": 0.4
     }
   },
   "layers": [
     {
-      "name": "creak",
-      "model": "creak",
+      "name": "squeal",
+      "model": "squeal_stems",
       "params": {
-        "at": 0.05,
-        "length_s": 2.4,
-        "speed": 0.45,
-        "speed_change": -0.5,
-        "irregularity": 0.4,
-        "regime": "auto",
-        "squeal_above": 0.75,
-        "body": "door_heavy",
-        "voice": "door",
-        "burst_ms": 700.0,
-        "gap_ms": 15.0,
-        "squeal_burst_ms": 900.0,
-        "squeal_gap_ms": 60.0,
-        "glide_follow": 1.6
+        "motions": [
+          {
+            "burst": "door_575206/2",
+            "action": "open"
+          },
+          {
+            "burst": "door_575206/1",
+            "action": "close"
+          }
+        ],
+        "micro": "door_455324/0",
+        "body": "door_268574/2",
+        "stretch": 1.1,
+        "pitch": 1.0,
+        "jitter_cents": 5,
+        "flutter_db": 0.6,
+        "seed": 6,
+        "micro_depth": 0.4,
+        "mute": [
+          {
+            "lo": 2900,
+            "hi": 6200,
+            "min_s": 0.2,
+            "max_range_cents": 80
+          },
+          {
+            "lo": 0,
+            "hi": 260,
+            "min_s": 0.4
+          },
+          {
+            "lo": 150,
+            "hi": 330
+          }
+        ],
+        "purr_gate": [
+          150,
+          330,
+          3.0
+        ],
+        "at": 0.0
       }
     }
   ],
-  "post": [
-    {
-      "model": "eq",
-      "params": {
-        "curve": [
-          [
-            63,
-            0
-          ],
-          [
-            250,
-            0
-          ],
-          [
-            1000,
-            0
-          ],
-          [
-            4000,
-            0
-          ],
-          [
-            16000,
-            0
-          ]
-        ]
-      }
-    }
-  ],
-  "notes": "v0.28: two-regime creak fitted to CC0 door recordings (see docs/friction.md). Slow swings groan, fast swings squeal."
+  "notes": "v0.29 squeal_stems: stems of CC0 recordings recombined (docs/friction.md). open = door_575206 #2, close = door_575206 #1; wobble of door_455324 #0 at 40 %, body colour of door_268574 #2; stray steady tones and the 150-330 Hz drone muted, that band's noise clamped at its median + 3 dB."
 }

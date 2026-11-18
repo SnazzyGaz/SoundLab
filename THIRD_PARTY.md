@@ -57,6 +57,32 @@ looked at for ranges.
 | 124289 | squeaky-floor-loud | alienistcog | https://freesound.org/people/alienistcog/sounds/124289/ |
 | 506665 | Wood Creak Single V10 | Rudmer_Rotteveel | https://freesound.org/people/Rudmer_Rotteveel/sounds/506665/ |
 
+## Recordings decomposed into stems for `squeal_stems` (v0.29, numbers only, no audio included)
+
+`soundlab/models/squeal_stems.bin` holds analysis numbers of bursts from these CC0 1.0 recordings on Freesound:
+partial tracks (start frame, pitch in cents, level in dB per 2.9 ms frame), 96-band residual envelopes, wobble
+tracks, onset and body spectra, and the pauses between bursts. No samples of the recordings are stored; the sound
+is resynthesised from the numbers. Which burst of which recording each recipe plays is listed in the recipe's
+`notes` and in `docs/friction.md`.
+
+| Freesound id | Title | Author | URL | Licence |
+|---|---|---|---|---|
+| 88502 | sneaker squeak rubber | shakaharu | https://freesound.org/people/shakaharu/sounds/88502/ | CC0 1.0 |
+| 124289 | squeaky-floor-loud | alienistcog | https://freesound.org/people/alienistcog/sounds/124289/ | CC0 1.0 |
+| 204759 | hinge slow motion | Yuval | https://freesound.org/people/Yuval/sounds/204759/ | CC0 1.0 |
+| 207140 | OldGate | ahill86 | https://freesound.org/people/ahill86/sounds/207140/ | CC0 1.0 |
+| 268574 | Hollow_Door_Creak | 7h3_lark | https://freesound.org/people/7h3_lark/sounds/268574/ | CC0 1.0 |
+| 397687 | Creaking Gate | piermic | https://freesound.org/people/piermic/sounds/397687/ | CC0 1.0 |
+| 429130 | Spring Loaded Metal Door Creak Open Close 02 | leonelmail | https://freesound.org/people/leonelmail/sounds/429130/ | CC0 1.0 |
+| 455324 | Heavy Door Creaking_05 | rambler52 | https://freesound.org/people/rambler52/sounds/455324/ | CC0 1.0 |
+| 483166 | Gate Creak 2 | recklessgoomba | https://freesound.org/people/recklessgoomba/sounds/483166/ | CC0 1.0 |
+| 535530 | hinge-squeaks | cyoung510 | https://freesound.org/people/cyoung510/sounds/535530/ | CC0 1.0 |
+| 563136 | door creak | ollitunes | https://freesound.org/people/ollitunes/sounds/563136/ | CC0 1.0 |
+| 575206 | cold room door creaks opening close 08 | TRP | https://freesound.org/people/TRP/sounds/575206/ | CC0 1.0 |
+| 766155 | creaking door | dianegray26 | https://freesound.org/people/dianegray26/sounds/766155/ | CC0 1.0 |
+| 784964 | Squeaky Door | apintofmild | https://freesound.org/people/apintofmild/sounds/784964/ | CC0 1.0 |
+| 788701 | Soft_sqeuak_door_hinge | T.I.B | https://freesound.org/people/T.I.B/sounds/788701/ | CC0 1.0 |
+
 ## Methods adopted from other projects and papers (no code copied)
 
 v0.28 `creak`: the creaking door as stick-slip events through a fixed wood formant bank (A. Farnell, *Designing

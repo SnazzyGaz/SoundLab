@@ -1,0 +1,283 @@
+{
+  "soundlab": 1,
+  "name": "Door creak: a door swinging on a dry hinge (groaning clicks through the door, squeals when it moves fast)",
+  "category": "foley",
+  "sample_rate": 48000,
+  "duration": 2.7,
+  "seed": 41,
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "speed": {
+      "default": 0.5,
+      "doc": "slow .. fast",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.45
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.0
+            ]
+          ]
+        }
+      ]
+    },
+    "length": {
+      "default": 0.5,
+      "doc": "short .. long",
+      "map": [
+        {
+          "to": "0.length_s",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.0
+            ]
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.9
+            ]
+          ]
+        }
+      ]
+    },
+    "pitch": {
+      "default": 0.5,
+      "doc": "low .. high",
+      "map": [
+        {
+          "to": "0.pitch",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              1.6
+            ]
+          ]
+        }
+      ]
+    },
+    "irregularity": {
+      "default": 0.5,
+      "doc": "smooth .. jerky",
+      "map": [
+        {
+          "to": "0.irregularity",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.5
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    "body": {
+      "default": "door_heavy",
+      "doc": "heavy door / light door / metal gate",
+      "choices": {
+        "door_heavy": [
+          {
+            "to": "0.body",
+            "op": "set",
+            "value": "door_heavy"
+          }
+        ],
+        "door_light": [
+          {
+            "to": "0.body",
+            "op": "set",
+            "value": "door_light"
+          }
+        ],
+        "gate": [
+          {
+            "to": "0.body",
+            "op": "set",
+            "value": "gate"
+          },
+          {
+            "to": "0.voice",
+            "op": "set",
+            "value": "gate"
+          }
+        ]
+      }
+    },
+    "squeal": {
+      "default": 0.5,
+      "doc": "groans more .. squeals more",
+      "map": [
+        {
+          "to": "0.squeal_above",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -0.4
+            ]
+          ],
+          "clamp": [
+            0,
+            1.5
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.0,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              -6
+            ],
+            [
+              1,
+              -18
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.speed": {
+      "rel": 0.12
+    },
+    "0.length_s": {
+      "rel": 0.1
+    },
+    "0.irregularity": {
+      "abs": 0.1
+    }
+  },
+  "layers": [
+    {
+      "name": "creak",
+      "model": "creak",
+      "params": {
+        "at": 0.05,
+        "length_s": 2.4,
+        "speed": 0.45,
+        "speed_change": -0.5,
+        "irregularity": 0.4,
+        "regime": "auto",
+        "squeal_above": 0.75,
+        "body": "door_heavy",
+        "voice": "door",
+        "burst_ms": 700.0,
+        "gap_ms": 15.0,
+        "squeal_burst_ms": 900.0,
+        "squeal_gap_ms": 60.0,
+        "glide_follow": 1.6
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            0
+          ],
+          [
+            250,
+            0
+          ],
+          [
+            1000,
+            0
+          ],
+          [
+            4000,
+            0
+          ],
+          [
+            16000,
+            0
+          ]
+        ]
+      }
+    }
+  ],
+  "notes": "v0.28: two-regime creak fitted to CC0 door recordings (see docs/friction.md). Slow swings groan, fast swings squeal."
+}
