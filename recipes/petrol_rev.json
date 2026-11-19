@@ -1,0 +1,320 @@
+{
+  "soundlab": 1,
+  "name": "Petrol V8: idle into a rev and back",
+  "category": "machines",
+  "sample_rate": 48000,
+  "duration": 12.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "machine",
+      "model": "machine_stems",
+      "params": {
+        "source": "petrol_rev",
+        "slow_mode": "split",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "throttle": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "lower .. higher revs (tape speed -/+300 cents, 0.5 = the recording): higher is faster, louder, brighter firing and a little more noise; slower uses the split render (no treble edge moving down)",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -300.0
+            ],
+            [
+              0.1,
+              -240.0
+            ],
+            [
+              0.2,
+              -180.0
+            ],
+            [
+              0.3,
+              -120.0
+            ],
+            [
+              0.4,
+              -60.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              60.0
+            ],
+            [
+              0.7,
+              120.0
+            ],
+            [
+              0.8,
+              180.0
+            ],
+            [
+              0.9,
+              240.0
+            ],
+            [
+              1.0,
+              300.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -2.5
+            ],
+            [
+              0.1,
+              -2.0
+            ],
+            [
+              0.2,
+              -1.5
+            ],
+            [
+              0.3,
+              -1.0
+            ],
+            [
+              0.4,
+              -0.5
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.5
+            ],
+            [
+              0.7,
+              1.0
+            ],
+            [
+              0.8,
+              1.5
+            ],
+            [
+              0.9,
+              2.0
+            ],
+            [
+              1.0,
+              2.5
+            ]
+          ],
+          "clamp": [
+            -20,
+            20
+          ]
+        },
+        {
+          "to": "0.tilt",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.1875
+            ],
+            [
+              0.1,
+              -0.15
+            ],
+            [
+              0.2,
+              -0.1125
+            ],
+            [
+              0.3,
+              -0.075
+            ],
+            [
+              0.4,
+              -0.0375
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.0375
+            ],
+            [
+              0.7,
+              0.075
+            ],
+            [
+              0.8,
+              0.1125
+            ],
+            [
+              0.9,
+              0.15
+            ],
+            [
+              1.0,
+              0.1875
+            ]
+          ],
+          "clamp": [
+            -1,
+            1
+          ]
+        },
+        {
+          "to": "0.noise_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.1,
+              0.0
+            ],
+            [
+              0.2,
+              0.0
+            ],
+            [
+              0.3,
+              0.0
+            ],
+            [
+              0.4,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.25
+            ],
+            [
+              0.7,
+              0.5
+            ],
+            [
+              0.8,
+              0.75
+            ],
+            [
+              0.9,
+              1.0
+            ],
+            [
+              1.0,
+              1.25
+            ]
+          ],
+          "clamp": [
+            -24,
+            12
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.1892
+            ],
+            [
+              0.1,
+              1.1487
+            ],
+            [
+              0.2,
+              1.1096
+            ],
+            [
+              0.3,
+              1.0718
+            ],
+            [
+              0.4,
+              1.0353
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              0.9659
+            ],
+            [
+              0.7,
+              0.933
+            ],
+            [
+              0.8,
+              0.9013
+            ],
+            [
+              0.9,
+              0.8706
+            ],
+            [
+              1.0,
+              0.8409
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise carriers (the clock also re-sequences its real ticks)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.32 machine_stems (docs/machines.md): source 'petrol_rev', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Speed is tape speed (pitch and time together); throttle down uses the split render (tonal stems taped, noise envelopes stretched in time, read backwards past the end)."
+}

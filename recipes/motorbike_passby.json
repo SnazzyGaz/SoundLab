@@ -1,0 +1,274 @@
+{
+  "soundlab": 1,
+  "name": "Motorbike passing by",
+  "category": "machines",
+  "sample_rate": 48000,
+  "duration": 9.8,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "machine",
+      "model": "machine_stems",
+      "params": {
+        "source": "motorbike_passby",
+        "slow_mode": "split",
+        "distance_depth": 0,
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "distance": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "nearer .. further (distance 0.6 .. 2, 0.5 = the recording): further is quieter (-6 dB per doubling), duller (high shelf, soft low-pass)",
+      "map": [
+        {
+          "to": "0.distance",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              0.6
+            ],
+            [
+              0.1,
+              0.6645
+            ],
+            [
+              0.2,
+              0.736
+            ],
+            [
+              0.3,
+              0.8152
+            ],
+            [
+              0.4,
+              0.9029
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              1.1487
+            ],
+            [
+              0.7,
+              1.3195
+            ],
+            [
+              0.8,
+              1.5157
+            ],
+            [
+              0.9,
+              1.7411
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            0.25,
+            4.0
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              4.4218
+            ],
+            [
+              0.1,
+              3.5374
+            ],
+            [
+              0.2,
+              2.6531
+            ],
+            [
+              0.3,
+              1.7687
+            ],
+            [
+              0.4,
+              0.8844
+            ],
+            [
+              0.5,
+              -0.0
+            ],
+            [
+              0.6,
+              -1.2
+            ],
+            [
+              0.7,
+              -2.4
+            ],
+            [
+              0.8,
+              -3.6
+            ],
+            [
+              0.9,
+              -4.8
+            ],
+            [
+              1.0,
+              -6.0
+            ]
+          ],
+          "clamp": [
+            -20,
+            20
+          ]
+        }
+      ]
+    },
+    "speed": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "slower .. faster pass (tape speed -/+250 cents); slower uses the split render",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -250.0
+            ],
+            [
+              0.1,
+              -200.0
+            ],
+            [
+              0.2,
+              -150.0
+            ],
+            [
+              0.3,
+              -100.0
+            ],
+            [
+              0.4,
+              -50.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              50.0
+            ],
+            [
+              0.7,
+              100.0
+            ],
+            [
+              0.8,
+              150.0
+            ],
+            [
+              0.9,
+              200.0
+            ],
+            [
+              1.0,
+              250.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.1554
+            ],
+            [
+              0.1,
+              1.1225
+            ],
+            [
+              0.2,
+              1.0905
+            ],
+            [
+              0.3,
+              1.0595
+            ],
+            [
+              0.4,
+              1.0293
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              0.9715
+            ],
+            [
+              0.7,
+              0.9439
+            ],
+            [
+              0.8,
+              0.917
+            ],
+            [
+              0.9,
+              0.8909
+            ],
+            [
+              1.0,
+              0.8655
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise carriers (the clock also re-sequences its real ticks)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.32 machine_stems (docs/machines.md): source 'motorbike_passby', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Speed is tape speed (pitch and time together); distance is level, a high shelf and a soft low-pass."
+}

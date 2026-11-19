@@ -1234,6 +1234,38 @@ Splashes, drips, a pour, a stream, a river, a waterfall, boiling and sloshing re
 
 Sources: McDermott & Simoncelli 2011 (sound texture statistics); Minnaert 1933 (bubble resonance); McAulay & Quatieri 1986 (sinusoidal tracking); Wikimedia Commons / Internet Archive public-domain and CC0 recordings (numbers only; THIRD_PARTY.md)
 
+### `machine_stems`
+
+Engines (petrol rev, diesel idle), pass-bys (motorbike, car, tram), a servo motor, a drill, an AC unit, a clock, a lawn mower and a sewing machine rebuilt from stems of CC0 / public-domain recordings (numbers only, no audio): tracked harmonics with their real amplitude and phase wobble, persistent lines, band-envelope noise, per-cycle firing pulses and band-envelope events. Speed is tape speed; gestures play a controlled start, steady run at chosen speeds and stop from the real spin-up, steady and spin-down stems.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `source` | `petrol_rev` |  | petrol_rev, diesel_idle, motorbike_passby, car_drive_by, servo_motor, power_drill, ac_unit, clock_tick, tram, lawn_mower, sewing_machine | stored source |
+| `speed_cents` | `0.0` | cents | -1200 .. 1200 | tape speed (pitch and time together); in a gesture it scales every speed |
+| `slow_mode` | `tape` |  | tape, tape_lp, split | slower: plain tape speed; tape_lp adds a treble roll-off that follows the speed (the recording's ~16 kHz edge moves down); split: tonal stems by tape speed, the noise envelopes stretched in time (no edge moves) |
+| `harm_db` | `0.0` | dB | -24 .. 12 | harmonic layer level |
+| `tilt` | `0.0` |  | -1 .. 1 | harmonic tilt: amp x (k/8)^tilt (sharper / softer firing) |
+| `pulse_gamma` | `1.0` |  | 0.3 .. 2.0 | deepen (>1) or soften (<1) each cycle's own pulse shape |
+| `env_depth` | `1.0` |  | 0.5 .. 1.5 | noise envelope contrast |
+| `noise_db` | `0.0` | dB | -24 .. 12 | noise layer level |
+| `lp_hz` | `0.0` | Hz | 0 .. 20000 | treble roll-off (2nd order low-pass; 0 or 20000 = off) |
+| `distance` | `1.0` |  | 0.25 .. 4.0 | 1 = as recorded; further = high shelf down, softer low-pass, flatter envelope; nearer = more low end, deeper envelope (level: the recipe's master gain) |
+| `distance_depth` | `1` |  | 0 .. 1 | 1 = distance also flattens the noise envelope when further |
+| `hs_hz` | `2500.0` | Hz | 200 .. 16000 | high shelf corner |
+| `hs_db` | `0.0` | dB | -24 .. 12 | high shelf gain (distance: negative) |
+| `ls_hz` | `200.0` | Hz | 30 .. 2000 | low shelf corner |
+| `ls_db` | `0.0` | dB | -12 .. 12 | low shelf gain (load, proximity) |
+| `tick_rate` | `1.0` |  | 0.25 .. 4.0 | clock: tick rate re the recording; the real ticks are re-timed, each with its own following stretch (read backwards when short, never held) |
+| `room_rt` | `0.0` | s | 0 .. 2 | room tail decay excited by the events (0 = dry) |
+| `room_wet_db` | `-10.0` | dB | -40 .. 0 | room tail level |
+| `room_lp_hz` | `4000.0` | Hz | 500 .. 16000 | room tail low-pass |
+| `gesture` | `[]` |  |  | gesture timeline (power_drill, servo_motor, sewing_machine, lawn_mower): list of {action: start|hold|change|stop|pause, speed (1 = as recorded), duration (s)}; [] = the recording as taken |
+| `seed` | `0` |  | 0 .. 2147483647 | noise seed (the recipe default reproduces its reference) |
+| `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the reference; others reseed (the clock also re-sequences) |
+| `at` | `0.0` | s | 0 .. None |  |
+
+Sources: Hermes 1988 (subharmonic summation); McAulay & Quatieri 1986 (sinusoidal modelling); McDermott & Simoncelli 2011 (sound texture statistics); Freesound CC0 and Wikimedia Commons public-domain recordings (numbers only; THIRD_PARTY.md)
+
 ## Stage: synth
 
 ### `osc`

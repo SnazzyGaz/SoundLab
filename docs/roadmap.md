@@ -11,6 +11,14 @@ Ground rules:
 
 ## Now: interaction models and resynthesis (v0.17 to v0.27)
 
+v0.32: machines and vehicles from recording stems (`machine_stems`: tracked harmonics with their real amplitude and
+phase wobble at 4 ms, persistent lines, band-envelope noise at 1 ms, per-cycle firing pulses, band-envelope ticks;
+numbers only); new recipes `petrol_rev`, `diesel_idle`, `motorbike_passby`, `car_drive_by`, `servo_motor`,
+`power_drill`, `ac_unit`, `clock_tick`, `tram`, `lawn_mower`, `sewing_machine`, each with mild macros (speed by tape
+speed), plus gesture timelines (start, hold, change speed, stop) from real spin-up, steady and spin-down stems.
+Next for this family: recorded starts and stops for the motor and sewing machine, engine start / shut-down,
+stereo from paired takes; see [machines.md](machines.md).
+
 v0.31: liquids from recording stems (`liquid_stems`: per-band noise envelopes on 1/8-octave bands at 2 ms imposed
 on band-limited noise, bubbles as chirps, onset envelopes and colour, with the `air_stems` STFT engine for the
 stream, boiling and slosh; numbers only); new recipes `splash_small`, `splash_medium`, `splash_large`, `drip_tub`,

@@ -1,0 +1,266 @@
+{
+  "soundlab": 1,
+  "name": "Window air conditioner",
+  "category": "machines",
+  "sample_rate": 48000,
+  "duration": 10.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "machine",
+      "model": "machine_stems",
+      "params": {
+        "source": "ac_unit",
+        "slow_mode": "tape_lp",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "fan": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "low .. high fan (tape speed -/+200 cents): lower is slower, quieter, darker with a flatter envelope",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -200.0
+            ],
+            [
+              0.1,
+              -160.0
+            ],
+            [
+              0.2,
+              -120.0
+            ],
+            [
+              0.3,
+              -80.0
+            ],
+            [
+              0.4,
+              -40.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              40.0
+            ],
+            [
+              0.7,
+              80.0
+            ],
+            [
+              0.8,
+              120.0
+            ],
+            [
+              0.9,
+              160.0
+            ],
+            [
+              1.0,
+              200.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -3.0
+            ],
+            [
+              0.1,
+              -2.4
+            ],
+            [
+              0.2,
+              -1.8
+            ],
+            [
+              0.3,
+              -1.2
+            ],
+            [
+              0.4,
+              -0.6
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.4
+            ],
+            [
+              0.7,
+              0.8
+            ],
+            [
+              0.8,
+              1.2
+            ],
+            [
+              0.9,
+              1.6
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            -20,
+            20
+          ]
+        },
+        {
+          "to": "0.env_depth",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.1
+            ],
+            [
+              0.1,
+              -0.08
+            ],
+            [
+              0.2,
+              -0.06
+            ],
+            [
+              0.3,
+              -0.04
+            ],
+            [
+              0.4,
+              -0.02
+            ],
+            [
+              0.5,
+              -0.0
+            ],
+            [
+              0.6,
+              -0.0
+            ],
+            [
+              0.7,
+              -0.0
+            ],
+            [
+              0.8,
+              -0.0
+            ],
+            [
+              0.9,
+              -0.0
+            ],
+            [
+              1.0,
+              -0.0
+            ]
+          ],
+          "clamp": [
+            0.5,
+            1.5
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.1225
+            ],
+            [
+              0.1,
+              1.0968
+            ],
+            [
+              0.2,
+              1.0718
+            ],
+            [
+              0.3,
+              1.0473
+            ],
+            [
+              0.4,
+              1.0234
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              0.9772
+            ],
+            [
+              0.7,
+              0.9548
+            ],
+            [
+              0.8,
+              0.933
+            ],
+            [
+              0.9,
+              0.9117
+            ],
+            [
+              1.0,
+              0.8909
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise carriers (the clock also re-sequences its real ticks)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.32 machine_stems (docs/machines.md): source 'ac_unit', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Speed is tape speed (pitch and time together); the unit's own hum is kept: it is the sound."
+}

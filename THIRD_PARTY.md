@@ -115,6 +115,30 @@ of these public-domain, Public Domain Mark and CC0 recordings. No samples are st
 | boiling (0.5-8.5 s) | Boiling lentils.ogg | hugh | Wikimedia Commons | https://commons.wikimedia.org/wiki/File:Boiling_lentils.ogg | Public domain |
 | slosh (whole) | Sloshing canister of water.ogg | stephan | Wikimedia Commons | https://commons.wikimedia.org/wiki/File:Sloshing_canister_of_water.ogg | Public domain |
 
+## Recordings decomposed into stems for `machine_stems` (v0.32, numbers only, no audio included)
+
+`soundlab/models/machine_stems.bin` holds analysis numbers (a tracked fundamental, harmonic and line amplitude and
+phase tracks at 4 ms, per-band noise envelopes at 1 ms on 1/8-octave bands, per-cycle pulse profiles, tick / stitch
+band envelopes at 0.5 ms, a 1/6-octave spectrum) of stretches of these CC0 and public-domain recordings. No samples
+are stored; renders use new noise. The `_gesture` takes supply the real spin-up, steady and spin-down stretches for
+gesture timelines.
+
+| Source | Title | Author | Where | URL | Licence |
+|---|---|---|---|---|---|
+| ac_unit (10-20 s) | Window Air Conditioner in Apartment | benhabrams | Freesound | https://freesound.org/people/benhabrams/sounds/521033/ | CC0 |
+| car_drive_by (4-16 s) | car_passing_by | zamoranqk | Freesound | https://freesound.org/people/zamoranqk/sounds/808404/ | CC0 |
+| clock_tick (2-12 s) | Clock, ticking | natalie (pdsounds.org) | Wikimedia Commons | https://commons.wikimedia.org/wiki/File:Clock_ticking.ogg | Public domain |
+| diesel_idle (10-20 s) | engine idle van diesel exhaust CBC microwave truck side4 nearby | kyles | Freesound | https://freesound.org/people/kyles/sounds/453995/ | CC0 |
+| lawn_mower (26-38 s) | 166cc gas-powered push mower; starting, pulling cord, playing with control lever | Mihacappy | Freesound | https://freesound.org/people/Mihacappy/sounds/774661/ | CC0 |
+| lawn_mower_gesture (0-12 s) | 166cc gas-powered push mower; starting, pulling cord, playing with control lever | Mihacappy | Freesound | https://freesound.org/people/Mihacappy/sounds/774661/ | CC0 |
+| motorbike_passby (2-11.5 s) | 10_motorbike_650_passing_by | 16HPanskaFantys_Tomas | Freesound | https://freesound.org/people/16HPanskaFantys_Tomas/sounds/499237/ | CC0 |
+| petrol_rev (14-26 s) | auto performance corvette ext top open shift into gear, start, idle, rev from engine | kyles | Freesound | https://freesound.org/people/kyles/sounds/637184/ | CC0 |
+| power_drill (24-36 s) | cordless_drill | ondondvo | Freesound | https://freesound.org/people/ondondvo/sounds/393422/ | CC0 |
+| power_drill_gesture (55.6-58.8 s) | cordless_drill | ondondvo | Freesound | https://freesound.org/people/ondondvo/sounds/393422/ | CC0 |
+| servo_motor (2-14 s) | Small electronic motor | derjuli | Freesound | https://freesound.org/people/derjuli/sounds/418013/ | CC0 |
+| sewing_machine (0.5-11.5 s) | SewingMachineLong.wav | Infinita08 | Freesound | https://freesound.org/people/Infinita08/sounds/546441/ | CC0 |
+| tram (0.5-12.5 s) | TRAM_001.wav | rollingmill | Freesound | https://freesound.org/people/rollingmill/sounds/340456/ | CC0 |
+
 ## Methods adopted from other projects and papers (no code copied)
 
 v0.28 `creak`: the creaking door as stick-slip events through a fixed wood formant bank (A. Farnell, *Designing

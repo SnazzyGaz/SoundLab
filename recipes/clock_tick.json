@@ -1,0 +1,222 @@
+{
+  "soundlab": 1,
+  "name": "Clock ticking",
+  "category": "machines",
+  "sample_rate": 48000,
+  "duration": 10.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "machine",
+      "model": "machine_stems",
+      "params": {
+        "source": "clock_tick",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "tick_rate": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "slower .. faster ticking (0.5 .. 2 ticks per recorded tick): the real ticks are re-timed, each with its own following stretch",
+      "map": [
+        {
+          "to": "0.tick_rate",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              0.5
+            ],
+            [
+              0.1,
+              0.5743
+            ],
+            [
+              0.2,
+              0.6598
+            ],
+            [
+              0.3,
+              0.7579
+            ],
+            [
+              0.4,
+              0.8706
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              1.1487
+            ],
+            [
+              0.7,
+              1.3195
+            ],
+            [
+              0.8,
+              1.5157
+            ],
+            [
+              0.9,
+              1.7411
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            0.25,
+            4.0
+          ]
+        }
+      ]
+    },
+    "room": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "dry .. roomy (room tail 0 .. 0.6 s excited by the real ticks, narrow peaks flattened so nothing rings into a tone)",
+      "map": [
+        {
+          "to": "0.room_rt",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.1,
+              0.06
+            ],
+            [
+              0.2,
+              0.12
+            ],
+            [
+              0.3,
+              0.18
+            ],
+            [
+              0.4,
+              0.24
+            ],
+            [
+              0.5,
+              0.3
+            ],
+            [
+              0.6,
+              0.36
+            ],
+            [
+              0.7,
+              0.42
+            ],
+            [
+              0.8,
+              0.48
+            ],
+            [
+              0.9,
+              0.54
+            ],
+            [
+              1.0,
+              0.6
+            ]
+          ],
+          "clamp": [
+            0,
+            2
+          ]
+        },
+        {
+          "to": "0.noise_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.1,
+              0.2
+            ],
+            [
+              0.2,
+              0.4
+            ],
+            [
+              0.3,
+              0.6
+            ],
+            [
+              0.4,
+              0.8
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              1.0
+            ],
+            [
+              0.7,
+              1.0
+            ],
+            [
+              0.8,
+              1.0
+            ],
+            [
+              0.9,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "clamp": [
+            -24,
+            12
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise carriers (the clock also re-sequences its real ticks)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.32 machine_stems (docs/machines.md): source 'clock_tick', rebuilt from stems of a public-domain recording (THIRD_PARTY.md). Ticks are their own band envelopes at 0.5 ms rebuilt from noise; the room is a smooth decaying noise tail, no comb or feedback delays."
+}

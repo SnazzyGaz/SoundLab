@@ -1,0 +1,158 @@
+{
+  "soundlab": 1,
+  "name": "Sewing machine stitching",
+  "category": "machines",
+  "sample_rate": 48000,
+  "duration": 11.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "machine",
+      "model": "machine_stems",
+      "params": {
+        "source": "sewing_machine",
+        "slow_mode": "tape_lp",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "speed": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "slower .. faster stitching (tape speed -/+300 cents)",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -300.0
+            ],
+            [
+              0.1,
+              -240.0
+            ],
+            [
+              0.2,
+              -180.0
+            ],
+            [
+              0.3,
+              -120.0
+            ],
+            [
+              0.4,
+              -60.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              60.0
+            ],
+            [
+              0.7,
+              120.0
+            ],
+            [
+              0.8,
+              180.0
+            ],
+            [
+              0.9,
+              240.0
+            ],
+            [
+              1.0,
+              300.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.1892
+            ],
+            [
+              0.1,
+              1.1487
+            ],
+            [
+              0.2,
+              1.1096
+            ],
+            [
+              0.3,
+              1.0718
+            ],
+            [
+              0.4,
+              1.0353
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              0.9659
+            ],
+            [
+              0.7,
+              0.933
+            ],
+            [
+              0.8,
+              0.9013
+            ],
+            [
+              0.9,
+              0.8706
+            ],
+            [
+              1.0,
+              0.8409
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise carriers (the clock also re-sequences its real ticks)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.32 machine_stems (docs/machines.md): source 'sewing_machine', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Speed is tape speed (pitch and time together); stitches are their own band envelopes at 0.5 ms rebuilt from noise. For a controlled start, run and stop see sewing_machine_on_off."
+}

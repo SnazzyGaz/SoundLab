@@ -1,0 +1,320 @@
+{
+  "soundlab": 1,
+  "name": "Petrol lawn mower running",
+  "category": "machines",
+  "sample_rate": 48000,
+  "duration": 12.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "machine",
+      "model": "machine_stems",
+      "params": {
+        "source": "lawn_mower",
+        "slow_mode": "split",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "throttle": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "lower .. higher throttle (tape speed -/+250 cents): higher is faster, louder, brighter; slower uses the split render",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -250.0
+            ],
+            [
+              0.1,
+              -200.0
+            ],
+            [
+              0.2,
+              -150.0
+            ],
+            [
+              0.3,
+              -100.0
+            ],
+            [
+              0.4,
+              -50.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              50.0
+            ],
+            [
+              0.7,
+              100.0
+            ],
+            [
+              0.8,
+              150.0
+            ],
+            [
+              0.9,
+              200.0
+            ],
+            [
+              1.0,
+              250.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -2.0
+            ],
+            [
+              0.1,
+              -1.6
+            ],
+            [
+              0.2,
+              -1.2
+            ],
+            [
+              0.3,
+              -0.8
+            ],
+            [
+              0.4,
+              -0.4
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.4
+            ],
+            [
+              0.7,
+              0.8
+            ],
+            [
+              0.8,
+              1.2
+            ],
+            [
+              0.9,
+              1.6
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            -20,
+            20
+          ]
+        },
+        {
+          "to": "0.tilt",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.1
+            ],
+            [
+              0.1,
+              -0.08
+            ],
+            [
+              0.2,
+              -0.06
+            ],
+            [
+              0.3,
+              -0.04
+            ],
+            [
+              0.4,
+              -0.02
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.02
+            ],
+            [
+              0.7,
+              0.04
+            ],
+            [
+              0.8,
+              0.06
+            ],
+            [
+              0.9,
+              0.08
+            ],
+            [
+              1.0,
+              0.1
+            ]
+          ],
+          "clamp": [
+            -1,
+            1
+          ]
+        },
+        {
+          "to": "0.noise_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.1,
+              0.0
+            ],
+            [
+              0.2,
+              0.0
+            ],
+            [
+              0.3,
+              0.0
+            ],
+            [
+              0.4,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.2
+            ],
+            [
+              0.7,
+              0.4
+            ],
+            [
+              0.8,
+              0.6
+            ],
+            [
+              0.9,
+              0.8
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "clamp": [
+            -24,
+            12
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.1554
+            ],
+            [
+              0.1,
+              1.1225
+            ],
+            [
+              0.2,
+              1.0905
+            ],
+            [
+              0.3,
+              1.0595
+            ],
+            [
+              0.4,
+              1.0293
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              0.9715
+            ],
+            [
+              0.7,
+              0.9439
+            ],
+            [
+              0.8,
+              0.917
+            ],
+            [
+              0.9,
+              0.8909
+            ],
+            [
+              1.0,
+              0.8655
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise carriers (the clock also re-sequences its real ticks)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.32 machine_stems (docs/machines.md): source 'lawn_mower', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Speed is tape speed (pitch and time together); each firing cycle carries its own measured pulse shape. For pull-start, run and shut-down see lawn_mower_on_off."
+}

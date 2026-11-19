@@ -1,0 +1,169 @@
+{
+  "soundlab": 1,
+  "name": "Small motor: on, steady, off",
+  "category": "machines",
+  "sample_rate": 48000,
+  "duration": 6.6,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "machine",
+      "model": "machine_stems",
+      "params": {
+        "source": "servo_motor",
+        "gesture": [
+          {
+            "action": "start"
+          },
+          {
+            "action": "hold",
+            "duration": 5.0
+          },
+          {
+            "action": "stop"
+          }
+        ],
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "speed": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "slower .. faster overall (every speed in the timeline x 0.84 .. 1.19, tape speed)",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -300.0
+            ],
+            [
+              0.1,
+              -240.0
+            ],
+            [
+              0.2,
+              -180.0
+            ],
+            [
+              0.3,
+              -120.0
+            ],
+            [
+              0.4,
+              -60.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              60.0
+            ],
+            [
+              0.7,
+              120.0
+            ],
+            [
+              0.8,
+              180.0
+            ],
+            [
+              0.9,
+              240.0
+            ],
+            [
+              1.0,
+              300.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.1,
+              1.0
+            ],
+            [
+              0.2,
+              1.0
+            ],
+            [
+              0.3,
+              1.0
+            ],
+            [
+              0.4,
+              1.0
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              1.0
+            ],
+            [
+              0.7,
+              1.0
+            ],
+            [
+              0.8,
+              1.0
+            ],
+            [
+              0.9,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise carriers (the clock also re-sequences its real ticks)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.32 machine_stems (docs/machines.md): source 'servo_motor', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Gesture timeline (params.gesture): the recording has no start or stop: they are tape ramps (0.3x to 1x in 0.6 s, back down in 0.9 s) with a fade. Actions: start, hold {speed, duration}, change {speed, duration}, stop, pause {duration}; speed 1 = as recorded, by tape speed with a treble roll-off when slower. An empty timeline plays the recording as taken."
+}

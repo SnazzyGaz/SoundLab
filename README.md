@@ -34,7 +34,15 @@ What's in it:
   rebuilt from per-band noise envelopes, bubble chirps, onset envelopes and colour of public-domain and CC0
   recordings (numbers only, no audio). The procedural `drip`, `splash` and `water` recipes stay as fallbacks; see
   [docs/liquids.md](docs/liquids.md).
-- **52 hand-built recipes** for game sound (124 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind, whooshes, arrows, fans,
+- **Engines, pass-bys, motors and machines from recording stems** (`machine_stems`, v0.32): `petrol_rev` and
+  `lawn_mower` (throttle), `diesel_idle` (load), `motorbike_passby`, `car_drive_by` and `tram` (distance, speed),
+  `servo_motor`, `power_drill` and `sewing_machine` (speed), `ac_unit` (fan) and `clock_tick` (tick rate, room),
+  rebuilt from tracked harmonics with their real amplitude and phase wobble, persistent lines, band-envelope noise,
+  per-cycle firing pulses and band-envelope ticks of CC0 and public-domain recordings (numbers only, no audio).
+  Gesture timelines (start, hold, change speed, stop) play the drill, motor, sewing machine and mower from their
+  real spin-up, steady and spin-down stems: `power_drill_on_off`, `power_drill_two_speeds`, `servo_motor_on_off`,
+  `sewing_machine_on_off`, `lawn_mower_on_off`; see [docs/machines.md](docs/machines.md).
+- **52 hand-built recipes** for game sound (140 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind, whooshes, arrows, fans,
   rain, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splashes, drips, a pour, a stream, a river, a waterfall, boiling and sloshing, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.
