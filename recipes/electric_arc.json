@@ -1,0 +1,323 @@
+{
+  "soundlab": 1,
+  "name": "Electric arc: Jacob's ladder",
+  "category": "foley",
+  "sample_rate": 48000,
+  "duration": 12.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "fire",
+      "model": "fire_stems",
+      "params": {
+        "source": "electric_arc",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "intensity": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "weaker .. stronger arc (0.5 = the recording): stronger lifts the hum and plays a fresh take drawn towards the crackliest stretches; weaker is quieter, duller, with softer swells",
+      "map": [
+        {
+          "to": "0.harm_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -2.0
+            ],
+            [
+              0.1,
+              -1.6
+            ],
+            [
+              0.2,
+              -1.2
+            ],
+            [
+              0.3,
+              -0.8
+            ],
+            [
+              0.4,
+              -0.4
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.2
+            ],
+            [
+              0.7,
+              0.4
+            ],
+            [
+              0.8,
+              0.6
+            ],
+            [
+              0.9,
+              0.8
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "clamp": [
+            -24,
+            12
+          ]
+        },
+        {
+          "to": "0.bias",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.1,
+              0.0
+            ],
+            [
+              0.2,
+              0.0
+            ],
+            [
+              0.3,
+              0.0
+            ],
+            [
+              0.4,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.2
+            ],
+            [
+              0.7,
+              0.4
+            ],
+            [
+              0.8,
+              0.6
+            ],
+            [
+              0.9,
+              0.8
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "clamp": [
+            -2,
+            2
+          ]
+        },
+        {
+          "to": "0.tilt",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.1
+            ],
+            [
+              0.1,
+              -0.08
+            ],
+            [
+              0.2,
+              -0.06
+            ],
+            [
+              0.3,
+              -0.04
+            ],
+            [
+              0.4,
+              -0.02
+            ],
+            [
+              0.5,
+              -0.0
+            ],
+            [
+              0.6,
+              -0.0
+            ],
+            [
+              0.7,
+              -0.0
+            ],
+            [
+              0.8,
+              -0.0
+            ],
+            [
+              0.9,
+              -0.0
+            ],
+            [
+              1.0,
+              -0.0
+            ]
+          ],
+          "clamp": [
+            -1,
+            1
+          ]
+        },
+        {
+          "to": "0.bed_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -2.0
+            ],
+            [
+              0.1,
+              -1.6
+            ],
+            [
+              0.2,
+              -1.2
+            ],
+            [
+              0.3,
+              -0.8
+            ],
+            [
+              0.4,
+              -0.4
+            ],
+            [
+              0.5,
+              -0.0
+            ],
+            [
+              0.6,
+              -0.0
+            ],
+            [
+              0.7,
+              -0.0
+            ],
+            [
+              0.8,
+              -0.0
+            ],
+            [
+              0.9,
+              -0.0
+            ],
+            [
+              1.0,
+              -0.0
+            ]
+          ],
+          "clamp": [
+            -24,
+            12
+          ]
+        },
+        {
+          "to": "0.env_depth",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.15
+            ],
+            [
+              0.1,
+              -0.12
+            ],
+            [
+              0.2,
+              -0.09
+            ],
+            [
+              0.3,
+              -0.06
+            ],
+            [
+              0.4,
+              -0.03
+            ],
+            [
+              0.5,
+              -0.0
+            ],
+            [
+              0.6,
+              -0.0
+            ],
+            [
+              0.7,
+              -0.0
+            ],
+            [
+              0.8,
+              -0.0
+            ],
+            [
+              0.9,
+              -0.0
+            ],
+            [
+              1.0,
+              -0.0
+            ]
+          ],
+          "clamp": [
+            0.5,
+            1.5
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and the rebuilt events; looping sources play a fresh take (the recording's own pieces in a new order)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.33 fire_stems (docs/fire.md): source 'electric_arc', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Tracked harmonics and the band-envelope bed; the crackle is in the bed (no separate events). The seed macro (or any variation) plays a fresh take: the recording's own pieces, forward-only, in a new order with 100 ms crossfades, each real crackle riding with its piece. "
+}

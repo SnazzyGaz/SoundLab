@@ -1,0 +1,161 @@
+{
+  "soundlab": 1,
+  "name": "Embers: charcoal ticking and popping",
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 12.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "fire",
+      "model": "fire_stems",
+      "params": {
+        "source": "embers",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "pop_density": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "fewer .. more pops (0.5 = the recording): fewer plays a fresh take drawn towards the recording's quieter stretches (about 15% fewer pops at 0); more adds the pops of a second take (about 1.4x at 1)",
+      "map": [
+        {
+          "to": "0.bias",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -1.0
+            ],
+            [
+              0.1,
+              -0.8
+            ],
+            [
+              0.2,
+              -0.6
+            ],
+            [
+              0.3,
+              -0.4
+            ],
+            [
+              0.4,
+              -0.2
+            ],
+            [
+              0.5,
+              -0.0
+            ],
+            [
+              0.6,
+              -0.0
+            ],
+            [
+              0.7,
+              -0.0
+            ],
+            [
+              0.8,
+              -0.0
+            ],
+            [
+              0.9,
+              -0.0
+            ],
+            [
+              1.0,
+              -0.0
+            ]
+          ],
+          "clamp": [
+            -2,
+            2
+          ]
+        },
+        {
+          "to": "0.density",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.1,
+              0.0
+            ],
+            [
+              0.2,
+              0.0
+            ],
+            [
+              0.3,
+              0.0
+            ],
+            [
+              0.4,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.08
+            ],
+            [
+              0.7,
+              0.16
+            ],
+            [
+              0.8,
+              0.24
+            ],
+            [
+              0.9,
+              0.32
+            ],
+            [
+              1.0,
+              0.4
+            ]
+          ],
+          "clamp": [
+            0.3,
+            3.0
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and the rebuilt events; looping sources play a fresh take (the recording's own pieces in a new order)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.33 fire_stems (docs/fire.md): source 'embers', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Slow-burning wood charcoal: dense small ticks with a few louder pops on a very quiet bed. The seed macro (or any variation) plays a fresh take: the recording's own pieces, forward-only, in a new order with 100 ms crossfades, each real crackle riding with its piece. "
+}

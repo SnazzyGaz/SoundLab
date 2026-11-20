@@ -1,0 +1,384 @@
+{
+  "soundlab": 1,
+  "name": "Campfire crackling",
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 12.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "fire",
+      "model": "fire_stems",
+      "params": {
+        "source": "campfire",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "size": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "smaller .. larger fire (0.5 = the recording): larger has a louder bed and crackles, about 1.3x the crackles and a little more low end",
+      "map": [
+        {
+          "to": "0.bed_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -2.5
+            ],
+            [
+              0.1,
+              -2.0
+            ],
+            [
+              0.2,
+              -1.5
+            ],
+            [
+              0.3,
+              -1.0
+            ],
+            [
+              0.4,
+              -0.5
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.5
+            ],
+            [
+              0.7,
+              1.0
+            ],
+            [
+              0.8,
+              1.5
+            ],
+            [
+              0.9,
+              2.0
+            ],
+            [
+              1.0,
+              2.5
+            ]
+          ],
+          "clamp": [
+            -24,
+            12
+          ]
+        },
+        {
+          "to": "0.crackle_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -1.5
+            ],
+            [
+              0.1,
+              -1.2
+            ],
+            [
+              0.2,
+              -0.9
+            ],
+            [
+              0.3,
+              -0.6
+            ],
+            [
+              0.4,
+              -0.3
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.3
+            ],
+            [
+              0.7,
+              0.6
+            ],
+            [
+              0.8,
+              0.9
+            ],
+            [
+              0.9,
+              1.2
+            ],
+            [
+              1.0,
+              1.5
+            ]
+          ],
+          "clamp": [
+            -24,
+            12
+          ]
+        },
+        {
+          "to": "0.density",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.3
+            ],
+            [
+              0.1,
+              -0.24
+            ],
+            [
+              0.2,
+              -0.18
+            ],
+            [
+              0.3,
+              -0.12
+            ],
+            [
+              0.4,
+              -0.06
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.06
+            ],
+            [
+              0.7,
+              0.12
+            ],
+            [
+              0.8,
+              0.18
+            ],
+            [
+              0.9,
+              0.24
+            ],
+            [
+              1.0,
+              0.3
+            ]
+          ],
+          "clamp": [
+            0.3,
+            3.0
+          ]
+        },
+        {
+          "to": "0.ls_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -2.0
+            ],
+            [
+              0.1,
+              -1.6
+            ],
+            [
+              0.2,
+              -1.2
+            ],
+            [
+              0.3,
+              -0.8
+            ],
+            [
+              0.4,
+              -0.4
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.4
+            ],
+            [
+              0.7,
+              0.8
+            ],
+            [
+              0.8,
+              1.2
+            ],
+            [
+              0.9,
+              1.6
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            -12,
+            12
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "nearer .. further (distance 0.7 .. 2): further is quieter (-6 dB per doubling) and duller (high shelf -5 dB per doubling, softer low-pass); nearer has more low end",
+      "map": [
+        {
+          "to": "0.distance",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              0.7
+            ],
+            [
+              0.1,
+              0.7518
+            ],
+            [
+              0.2,
+              0.8073
+            ],
+            [
+              0.3,
+              0.867
+            ],
+            [
+              0.4,
+              0.9311
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              1.1487
+            ],
+            [
+              0.7,
+              1.3195
+            ],
+            [
+              0.8,
+              1.5157
+            ],
+            [
+              0.9,
+              1.7411
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            0.25,
+            4.0
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              3.0874
+            ],
+            [
+              0.1,
+              2.47
+            ],
+            [
+              0.2,
+              1.8525
+            ],
+            [
+              0.3,
+              1.235
+            ],
+            [
+              0.4,
+              0.6175
+            ],
+            [
+              0.5,
+              -0.0
+            ],
+            [
+              0.6,
+              -1.2
+            ],
+            [
+              0.7,
+              -2.4
+            ],
+            [
+              0.8,
+              -3.6
+            ],
+            [
+              0.9,
+              -4.8
+            ],
+            [
+              1.0,
+              -6.0
+            ]
+          ],
+          "clamp": [
+            -20,
+            20
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and the rebuilt events; looping sources play a fresh take (the recording's own pieces in a new order)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.33 fire_stems (docs/fire.md): source 'campfire', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Every crackle is its own band envelopes rebuilt from noise over the fire's band-envelope bed. The seed macro (or any variation) plays a fresh take: the recording's own pieces, forward-only, in a new order with 100 ms crossfades, each real crackle riding with its piece. "
+}

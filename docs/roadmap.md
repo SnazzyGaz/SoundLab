@@ -11,6 +11,14 @@ Ground rules:
 
 ## Now: interaction models and resynthesis (v0.17 to v0.27)
 
+v0.33: fire, crackle and electricity from recording stems (`fire_stems`: band-envelope noise beds at 1 ms, every
+recorded crackle / pop / click as its own band envelopes at 0.5 ms (0.125 ms for igniter clicks), tracked harmonics
+and lines at 4 ms, a static treble ceiling; numbers only); new recipes `campfire`, `large_blaze`, `embers`,
+`match_strike`, `gas_stove_ignite`, `sparkler`, `fuse`, `transformer_hum`, `electric_arc`, `fluorescent_flicker`,
+each with mild macros (fuse speed by tape speed), and fresh takes from forward-only pieces of the stems replayed in
+a new order with their events. Next for this family: ignite / burn / die-down gestures, a torch, stereo from paired
+takes; see [fire.md](fire.md).
+
 v0.32: machines and vehicles from recording stems (`machine_stems`: tracked harmonics with their real amplitude and
 phase wobble at 4 ms, persistent lines, band-envelope noise at 1 ms, per-cycle firing pulses, band-envelope ticks;
 numbers only); new recipes `petrol_rev`, `diesel_idle`, `motorbike_passby`, `car_drive_by`, `servo_motor`,

@@ -42,7 +42,14 @@ What's in it:
   Gesture timelines (start, hold, change speed, stop) play the drill, motor, sewing machine and mower from their
   real spin-up, steady and spin-down stems: `power_drill_on_off`, `power_drill_two_speeds`, `servo_motor_on_off`,
   `sewing_machine_on_off`, `lawn_mower_on_off`; see [docs/machines.md](docs/machines.md).
-- **52 hand-built recipes** for game sound (140 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind, whooshes, arrows, fans,
+- **Fire, crackle and electricity from recording stems** (`fire_stems`, v0.33): `campfire` (size, distance),
+  `large_blaze` (intensity, distance), `embers` (pop density), `match_strike` (force), `gas_stove_ignite` (click
+  count, flame), `sparkler` (pop density, distance), `fuse` (burn speed by tape speed), `transformer_hum` (load),
+  `electric_arc` (intensity) and `fluorescent_flicker` (clang density), rebuilt from band-envelope noise beds, every
+  recorded crackle, pop and click as its own band envelopes, and tracked harmonics and lines of CC0 recordings
+  (numbers only, no audio). Fresh takes replay forward-only pieces of the stems in a new order with the events
+  riding along; see [docs/fire.md](docs/fire.md).
+- **52 hand-built recipes** for game sound (150 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind, whooshes, arrows, fans,
   rain, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splashes, drips, a pour, a stream, a river, a waterfall, boiling and sloshing, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.

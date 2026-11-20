@@ -139,6 +139,27 @@ gesture timelines.
 | sewing_machine (0.5-11.5 s) | SewingMachineLong.wav | Infinita08 | Freesound | https://freesound.org/people/Infinita08/sounds/546441/ | CC0 |
 | tram (0.5-12.5 s) | TRAM_001.wav | rollingmill | Freesound | https://freesound.org/people/rollingmill/sounds/340456/ | CC0 |
 
+## Recordings decomposed into stems for `fire_stems` (v0.33, numbers only, no audio included)
+
+`soundlab/models/fire_stems.bin` holds analysis numbers (per-band noise envelopes at 1 ms on 1/8-octave bands, the
+band envelopes of each recorded crackle / pop / click at 0.5 ms (0.125 ms for the gas stove's clicks) inside its own
+window, a tracked fundamental with harmonic and line amplitude and phase tracks at 4 ms, a 1/6-octave spectrum, a
+static treble ceiling and transient times) of stretches of these CC0 recordings. No samples are stored; renders use
+new noise.
+
+| Source | Title | Author | Where | URL | Licence |
+|---|---|---|---|---|---|
+| campfire (20-32 s) | crackling campfire | aerror | Freesound #767107 | https://freesound.org/people/aerror/sounds/767107/ | CC0 |
+| electric_arc (1-13 s) | Jacob's ladder 2.wav | jensfelger | Freesound #367455 | https://freesound.org/people/jensfelger/sounds/367455/ | CC0 |
+| embers (81-93 s) | Sound of wood charcoal slow burning | tadiyan | Freesound #645460 | https://freesound.org/people/tadiyan/sounds/645460/ | CC0 (as listed in Freesound's CC0-filtered search) |
+| fluorescent_flicker (30-42 s) | fluorescent lamp flickering.flac | arseniiv | Freesound #380660 | https://freesound.org/people/arseniiv/sounds/380660/ | CC0 |
+| fuse (16.5-25.5 s) | Firework Fuse | Joblez | Freesound #646928 | https://freesound.org/people/Joblez/sounds/646928/ | CC0 |
+| gas_stove_ignite (0.2-7.7 s) | turning on gas stove 2 | FOSSarts | Freesound #740092 | https://freesound.org/people/FOSSarts/sounds/740092/ | CC0 |
+| large_blaze (8-20 s) | R27-25-Large Fire Burning.wav | craigsmith | Freesound #483318 | https://freesound.org/people/craigsmith/sounds/483318/ | CC0 |
+| match_strike (0.1-6.3 s) | Match Ignite.aif | DiArchangeli | Freesound #462111 | https://freesound.org/people/DiArchangeli/sounds/462111/ | CC0 |
+| sparkler (2-14 s) | sparkler_fuse_nm.wav | Alex_hears_things | Freesound #316682 | https://freesound.org/people/Alex_hears_things/sounds/316682/ | CC0 |
+| transformer_hum (24-36 s) | transformer at night.wav | ideaph | Freesound #641208 | https://freesound.org/people/ideaph/sounds/641208/ | CC0 |
+
 ## Methods adopted from other projects and papers (no code copied)
 
 v0.28 `creak`: the creaking door as stick-slip events through a fixed wood formant bank (A. Farnell, *Designing

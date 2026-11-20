@@ -1266,6 +1266,39 @@ Engines (petrol rev, diesel idle), pass-bys (motorbike, car, tram), a servo moto
 
 Sources: Hermes 1988 (subharmonic summation); McAulay & Quatieri 1986 (sinusoidal modelling); McDermott & Simoncelli 2011 (sound texture statistics); Freesound CC0 and Wikimedia Commons public-domain recordings (numbers only; THIRD_PARTY.md)
 
+### `fire_stems`
+
+Fire, crackle and electricity rebuilt from stems of CC0 recordings (numbers only, no audio): a campfire, a large blaze, embers, a match strike, a gas stove igniting, a sparkler, a fuse, a transformer hum, an electric arc and a flickering fluorescent tube. Band-envelope noise beds, every real crackle / pop / click as its own band envelopes, tracked harmonics and lines. Fresh takes replay forward-only pieces of the stems in a new order (the events ride with their pieces); speed is tape speed.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `source` | `campfire` |  | campfire, large_blaze, embers, match_strike, gas_stove_ignite, sparkler, fuse, transformer_hum, electric_arc, fluorescent_flicker | stored source |
+| `length_s` | `0.0` | s | 0 .. 600 | looping sources: length of the take (0 = as recorded); another length plays a fresh take |
+| `bed_db` | `0.0` | dB | -24 .. 12 | noise bed level |
+| `crackle_db` | `0.0` | dB | -24 .. 12 | event layer level (crackles, pops, clicks, the strike) |
+| `density` | `1.0` |  | 0.3 .. 3.0 | events: < 1 thins them (small ticks first, big pops mostly stay); > 1 adds the events of a second, independent take with probability density - 1 |
+| `bias` | `0.0` |  | -2.0 .. 2.0 | looping sources: fresh take drawn towards the busier (> 0) or quieter (< 0) stretches of the recording, by their transient activity (0 = every piece once, new order) |
+| `chunk_min_s` | `0.0` | s | 0 .. 5 | fresh take: shortest piece (0 = the source's own, 0.6 s; blaze 1.2 s) |
+| `chunk_max_s` | `0.0` | s | 0 .. 6 | fresh take: longest piece (0 = the source's own, 1.5 s; blaze 2.8 s) |
+| `harm_db` | `0.0` | dB | -24 .. 12 | harmonic layer level (transformer, arc, tube) |
+| `tilt` | `0.0` |  | -1 .. 1 | harmonic tilt: amp x (k/8)^tilt |
+| `env_depth` | `1.0` |  | 0.5 .. 1.5 | noise envelope contrast |
+| `clicks` | `7` |  | 4 .. 13 | gas stove: clicks before the burner catches and burns (7 = as recorded); fewer drop recorded click cycles, more repeat them (never one twice in a row) |
+| `flame_db` | `0.0` | dB | -12 .. 12 | gas stove: burner level from when it catches |
+| `speed_cents` | `0.0` | cents | -1200 .. 1200 | tape speed (pitch and time together) |
+| `slow_mode` | `tape` |  | tape, tape_lp | slower: plain tape speed, or tape_lp: a treble roll-off that follows the speed (the recording's ~16 kHz edge moves down) |
+| `lp_hz` | `0.0` | Hz | 0 .. 20000 | treble roll-off (2nd order low-pass; 0 or 20000 = off) |
+| `distance` | `1.0` |  | 0.25 .. 4.0 | 1 = as recorded; further = high shelf down and a softer low-pass; nearer = more low end (level: the recipe's master gain) |
+| `hs_hz` | `2500.0` | Hz | 200 .. 16000 | high shelf corner |
+| `hs_db` | `0.0` | dB | -24 .. 12 | high shelf gain |
+| `ls_hz` | `250.0` | Hz | 30 .. 2000 | low shelf corner |
+| `ls_db` | `0.0` | dB | -12 .. 12 | low shelf gain (size, proximity) |
+| `seed` | `0` |  | 0 .. 2147483647 | noise seed (the recipe default reproduces its reference) |
+| `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the reference; others reseed (looping sources: a fresh take) |
+| `at` | `0.0` | s | 0 .. None |  |
+
+Sources: McDermott & Simoncelli 2011 (sound texture statistics); McAulay & Quatieri 1986 (sinusoidal modelling); Hermes 1988 (subharmonic summation); Freesound CC0 recordings (numbers only; THIRD_PARTY.md)
+
 ## Stage: synth
 
 ### `osc`

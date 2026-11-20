@@ -1,0 +1,107 @@
+{
+  "soundlab": 1,
+  "name": "Fluorescent tube flickering",
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 12.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "fire",
+      "model": "fire_stems",
+      "params": {
+        "source": "fluorescent_flicker",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "clang_density": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "fewer .. more flicker clangs (0.5 = the recording): a fresh take drawn towards the recording's quieter (bias -1.2) or busier (bias +0.6) stretches",
+      "map": [
+        {
+          "to": "0.bias",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -1.2
+            ],
+            [
+              0.1,
+              -0.96
+            ],
+            [
+              0.2,
+              -0.72
+            ],
+            [
+              0.3,
+              -0.48
+            ],
+            [
+              0.4,
+              -0.24
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.12
+            ],
+            [
+              0.7,
+              0.24
+            ],
+            [
+              0.8,
+              0.36
+            ],
+            [
+              0.9,
+              0.48
+            ],
+            [
+              1.0,
+              0.6
+            ]
+          ],
+          "clamp": [
+            -2,
+            2
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and the rebuilt events; looping sources play a fresh take (the recording's own pieces in a new order)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.33 fire_stems (docs/fire.md): source 'fluorescent_flicker', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Tracked harmonics, persistent lines and the band-envelope bed, with the recording's treble matched above 3 kHz. The seed macro (or any variation) plays a fresh take: the recording's own pieces, forward-only, in a new order with 100 ms crossfades, each real crackle riding with its piece. "
+}

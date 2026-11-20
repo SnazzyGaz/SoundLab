@@ -1,0 +1,158 @@
+{
+  "soundlab": 1,
+  "name": "Firework fuse burning",
+  "category": "foley",
+  "sample_rate": 48000,
+  "duration": 9.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "fire",
+      "model": "fire_stems",
+      "params": {
+        "source": "fuse",
+        "slow_mode": "tape_lp",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "burn_speed": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "slower .. faster burn (tape speed -/+300 cents, pitch and time together); slower rolls the treble off with the speed",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -300.0
+            ],
+            [
+              0.1,
+              -240.0
+            ],
+            [
+              0.2,
+              -180.0
+            ],
+            [
+              0.3,
+              -120.0
+            ],
+            [
+              0.4,
+              -60.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              60.0
+            ],
+            [
+              0.7,
+              120.0
+            ],
+            [
+              0.8,
+              180.0
+            ],
+            [
+              0.9,
+              240.0
+            ],
+            [
+              1.0,
+              300.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        },
+        {
+          "to": "duration",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              1.1831
+            ],
+            [
+              0.1,
+              1.1439
+            ],
+            [
+              0.2,
+              1.106
+            ],
+            [
+              0.3,
+              1.0695
+            ],
+            [
+              0.4,
+              1.0341
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              0.967
+            ],
+            [
+              0.7,
+              0.9352
+            ],
+            [
+              0.8,
+              0.9044
+            ],
+            [
+              0.9,
+              0.8747
+            ],
+            [
+              1.0,
+              0.846
+            ]
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and the rebuilt events; looping sources play a fresh take (the recording's own pieces in a new order)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.33 fire_stems (docs/fire.md): source 'fuse', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). A hiss with no separate events: the band-envelope bed alone. The seed macro (or any variation) plays a fresh take: the recording's own pieces, forward-only, in a new order with 100 ms crossfades, each real crackle riding with its piece. length_s sets a longer burn as a fresh take."
+}

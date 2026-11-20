@@ -1,0 +1,215 @@
+{
+  "soundlab": 1,
+  "name": "Electrical transformer humming",
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 12.3,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "fire",
+      "model": "fire_stems",
+      "params": {
+        "source": "transformer_hum",
+        "seed": 0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "load": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "lighter .. heavier load (0.5 = the recording): heavier has stronger, slightly brighter harmonics and more buzz; lighter is softer and duller",
+      "map": [
+        {
+          "to": "0.harm_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -3.0
+            ],
+            [
+              0.1,
+              -2.4
+            ],
+            [
+              0.2,
+              -1.8
+            ],
+            [
+              0.3,
+              -1.2
+            ],
+            [
+              0.4,
+              -0.6
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.4
+            ],
+            [
+              0.7,
+              0.8
+            ],
+            [
+              0.8,
+              1.2
+            ],
+            [
+              0.9,
+              1.6
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            -24,
+            12
+          ]
+        },
+        {
+          "to": "0.tilt",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.15
+            ],
+            [
+              0.1,
+              -0.12
+            ],
+            [
+              0.2,
+              -0.09
+            ],
+            [
+              0.3,
+              -0.06
+            ],
+            [
+              0.4,
+              -0.03
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.006
+            ],
+            [
+              0.7,
+              0.012
+            ],
+            [
+              0.8,
+              0.018
+            ],
+            [
+              0.9,
+              0.024
+            ],
+            [
+              1.0,
+              0.03
+            ]
+          ],
+          "clamp": [
+            -1,
+            1
+          ]
+        },
+        {
+          "to": "0.bed_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -3.0
+            ],
+            [
+              0.1,
+              -2.4
+            ],
+            [
+              0.2,
+              -1.8
+            ],
+            [
+              0.3,
+              -1.2
+            ],
+            [
+              0.4,
+              -0.6
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              0.6,
+              0.3
+            ],
+            [
+              0.7,
+              0.6
+            ],
+            [
+              0.8,
+              0.9
+            ],
+            [
+              0.9,
+              1.2
+            ],
+            [
+              1.0,
+              1.5
+            ]
+          ],
+          "clamp": [
+            -24,
+            12
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and the rebuilt events; looping sources play a fresh take (the recording's own pieces in a new order)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.33 fire_stems (docs/fire.md): source 'transformer_hum', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Tracked harmonics of the ~120 Hz hum with their real amplitude and phase wobble, over the band-envelope bed. The seed macro (or any variation) plays a fresh take: the recording's own pieces, forward-only, in a new order with 100 ms crossfades, each real crackle riding with its piece. "
+}
