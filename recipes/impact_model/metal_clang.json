@@ -1,0 +1,245 @@
+{
+  "soundlab": 1,
+  "name": "Metal clang: a steel pipe struck by a dead hammer (clean ring)",
+  "category": "impact",
+  "sample_rate": 48000,
+  "duration": 2.5,
+  "seed": 17,
+  "layers": [
+    {
+      "name": "main",
+      "model": "clash",
+      "params": {
+        "object": "pipe",
+        "velocity": 7.724977848757755,
+        "scrape_s": 0.0,
+        "scrape": 0.0,
+        "damping": 1.4771836366592161,
+        "size": 1.7834986060171332,
+        "second": 0.10065070667877496,
+        "at": 0.02
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            6.0
+          ],
+          [
+            125,
+            -5.9
+          ],
+          [
+            250,
+            -6.0
+          ],
+          [
+            500,
+            -6.0
+          ],
+          [
+            1000,
+            -6.0
+          ],
+          [
+            2000,
+            2.8
+          ],
+          [
+            4000,
+            1.9
+          ],
+          [
+            8000,
+            6.0
+          ],
+          [
+            16000,
+            -6.0
+          ]
+        ]
+      }
+    },
+    {
+      "model": "room",
+      "params": {
+        "volume": 60,
+        "absorption": 0.3,
+        "source_distance": 2.0,
+        "wet": 0.8379669907513005
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "object": {
+      "default": "pipe",
+      "doc": "what is struck",
+      "choices": {
+        "pipe": [
+          {
+            "to": "0.object",
+            "op": "set",
+            "value": "pipe"
+          }
+        ],
+        "plate": [
+          {
+            "to": "0.object",
+            "op": "set",
+            "value": "plate"
+          }
+        ],
+        "pan": [
+          {
+            "to": "0.object",
+            "op": "set",
+            "value": "pan"
+          }
+        ],
+        "sword": [
+          {
+            "to": "0.object",
+            "op": "set",
+            "value": "sword"
+          }
+        ]
+      }
+    },
+    "intensity": {
+      "default": 0.5,
+      "doc": "tap .. hard hit",
+      "map": [
+        {
+          "to": "0.velocity",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.2
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.5
+            ]
+          ]
+        }
+      ]
+    },
+    "size": {
+      "default": 0.5,
+      "doc": "small .. large",
+      "map": [
+        {
+          "to": "0.size",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      ]
+    },
+    "ring": {
+      "default": 0.5,
+      "doc": "choked .. long ring",
+      "map": [
+        {
+          "to": "0.damping",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              0.3
+            ]
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level, more room sound)",
+      "map": [
+        {
+          "to": "post.1.source_distance",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.4
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              8
+            ]
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.velocity": {
+      "rel": 0.2
+    },
+    "0.size": {
+      "rel": 0.04
+    }
+  },
+  "notes": "v0.25: fitted to reference recordings (BigSoundBank #0234 iron bar, #3589 anvil), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."
+}

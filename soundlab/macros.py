@@ -20,7 +20,8 @@ Ops (m = macro value, m0 = its default; optional "curve": m -> m**curve first):
   mul      value * F(m) / F(m0), F interpolating the factors in `range` exponentially (log-even)
   add      value + L(m) - L(m0), L interpolating `range` linearly (dB, cents, seconds, plain units)
   stretch  multiplies breakpoint TIMES (or a plain time) by F(m) / F(m0): longer/shorter gestures
-  set      absolute: lo + (hi - lo) * m (or exponential with "interp": "exp"); for choices, "value"
+  set      absolute: lo + (hi - lo) * m (or exponential with "interp": "exp"); with "points", a piecewise
+           numeric value or a stepwise choice (last point whose macro value is <= m); for choices, "value"
 Instead of "range", "points": [[0, 0.5], [0.5, 1], [1, 3]] gives a piecewise mapping (factors for
 mul/stretch, interpolated in log; offsets for add), again anchored at the default. "clamp": [lo, hi] limits
 the result (e.g. master.gain_db never above 0).
@@ -173,19 +174,33 @@ def _apply_one(r, name, spec, val):
         clamp = t.get("clamp")
         if "points" in t:  # piecewise mapping [[macro, factor_or_offset], ...], anchored at the default
             xs = [float(a) for a, _ in t["points"]]
-            ys = [float(b) for _, b in t["points"]]
-            if op in ("mul", "stretch"):
+            raw_ys = [b for _, b in t["points"]]
+            numeric = all(isinstance(b, (int, float)) and not isinstance(b, bool) for b in raw_ys)
+            if op in ("mul", "stretch") and numeric:
+                ys = [float(b) for b in raw_ys]
                 ly = np.log(ys)
                 f = float(np.exp(np.interp(m, xs, ly) - np.interp(m0, xs, ly)))
                 if op == "mul":
                     _set_target(r, t["to"], fn=lambda v, f=f: v * f, clamp=clamp)
                 else:
                     _set_target(r, t["to"], stretch=f)
-            elif op == "add":
+            elif op == "add" and numeric:
+                ys = [float(b) for b in raw_ys]
                 d = float(np.interp(m, xs, ys) - np.interp(m0, xs, ys))
                 _set_target(r, t["to"], fn=lambda v, d=d: v + d, clamp=clamp)
+            elif op == "set":
+                if numeric:
+                    x = float(np.interp(m, xs, [float(b) for b in raw_ys]))
+                    _set_target(r, t["to"], fn=lambda v, x=x: x, clamp=clamp)
+                else:
+                    # stepwise (source names, materials, ...): last point whose x <= m
+                    pick = raw_ys[0]
+                    for a, b in zip(xs, raw_ys):
+                        if m + 1e-12 >= a:
+                            pick = b
+                    _set_target(r, t["to"], value=pick)
             else:
-                raise RecipeError(f"macro {name}: 'points' works with mul/add/stretch, not {op!r}")
+                raise RecipeError(f"macro {name}: 'points' works with mul/add/stretch/set, not {op!r}")
             continue
         if op == "stretch":
             f = _interp(t["range"], mm, "exp") / _interp(t["range"], mm0, "exp")

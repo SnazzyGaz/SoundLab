@@ -9,11 +9,40 @@ from scipy import signal
 import soundlab
 
 RECIPES = Path(__file__).resolve().parents[1] / "recipes"
+
+# v0.34: the shipped {names} recipes use recording stems; the previous procedural versions live in recipes/impact_model/ (the same arrangement as recipes/creak_model/).
+MOVED = {
+    "footstep",
+    "footstep_wood",
+    "footstep_dirt",
+    "footstep_grass",
+    "footstep_gravel",
+    "footstep_metal",
+    "footstep_stone",
+    "ceramic_break",
+    "coin_jingle",
+    "dowel",
+    "drumstick",
+    "glass_break",
+    "glass_clink",
+    "metal_clang",
+    "pickaxe_earth",
+    "pickaxe_rock",
+    "sword_clash",
+}
+
+
+def recipe_path(name):
+    name = name[:-5] if str(name).endswith(".json") else str(name)
+    if name in MOVED:
+        return RECIPES / "impact_model" / f"{name}.json"
+    return RECIPES / f"{name}.json"
+
 SR = 48000
 
 
 def rec(name, k=1):
-    y, sr = soundlab.render(RECIPES / f"{name}.json", variation=k)
+    y, sr = soundlab.render(recipe_path(name), variation=k)
     assert sr == SR and np.all(np.isfinite(y))
     return np.asarray(y, float)
 
@@ -48,7 +77,7 @@ def test_metal_clang_is_bright_with_a_little_body():
 
 
 def test_glass_break_is_loudest_at_the_break_and_has_no_gap():
-    r = json.loads((RECIPES / "glass_break.json").read_text())
+    r = json.loads(recipe_path("glass_break").read_text())
     at = r["layers"][0]["params"]["at"]
     for k in (1, 2):
         y = rec("glass_break", k)

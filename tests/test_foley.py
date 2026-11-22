@@ -9,11 +9,40 @@ import soundlab
 from soundlab.models.foley import coin_mode_freqs, euler_wobble_times
 
 RECIPES = Path(__file__).resolve().parents[1] / "recipes"
+
+# v0.34: the shipped {names} recipes use recording stems; the previous procedural versions live in recipes/impact_model/ (the same arrangement as recipes/creak_model/).
+MOVED = {
+    "footstep",
+    "footstep_wood",
+    "footstep_dirt",
+    "footstep_grass",
+    "footstep_gravel",
+    "footstep_metal",
+    "footstep_stone",
+    "ceramic_break",
+    "coin_jingle",
+    "dowel",
+    "drumstick",
+    "glass_break",
+    "glass_clink",
+    "metal_clang",
+    "pickaxe_earth",
+    "pickaxe_rock",
+    "sword_clash",
+}
+
+
+def recipe_path(name):
+    name = name[:-5] if str(name).endswith(".json") else str(name)
+    if name in MOVED:
+        return RECIPES / "impact_model" / f"{name}.json"
+    return RECIPES / f"{name}.json"
+
 SR = 48000
 
 
 def render(name, **macros):
-    y, sr = soundlab.render(RECIPES / f"{name}.json", macros=macros or None)
+    y, sr = soundlab.render(recipe_path(name), macros=macros or None)
     assert sr == SR and np.all(np.isfinite(y)) and np.max(np.abs(y)) > 0.5
     return y
 
@@ -47,7 +76,7 @@ def test_footstep_has_body_weight_and_no_pure_ring():
     b = bands(y)
     assert b[0] > -4, "a body-weight step on wood has most of its energy below 150 Hz (CC0 refs: -1 to -3 dB)"
     assert tonal_peak_db(y) < 25, "no tonal ring above 150 Hz (the v0.7 'tapping' step rang)"
-    old = soundlab.render(RECIPES / "dowel.json")[0][: int(0.4 * SR)]
+    old = soundlab.render(recipe_path("dowel"))[0][: int(0.4 * SR)]
     assert tonal_peak_db(old) > tonal_peak_db(y) + 10
 
 
@@ -66,7 +95,7 @@ def test_footstep_shoes_and_surfaces_differ():
 
 def test_footstep_steps_and_determinism():
     from soundlab.recipe import render as rr
-    rec = soundlab.load_recipe(str(RECIPES / "footstep.json"))
+    rec = soundlab.load_recipe(str(recipe_path("footstep")))
     rec["layers"][0]["params"].update(steps=3, interval_s=0.5)
     rec["duration"] = 1.6
     a, _ = rr(rec)
@@ -86,7 +115,7 @@ def test_board_knock_is_damped_broadband_and_dowel_is_v07():
     assert tonal_peak_db(board) < tonal_peak_db(dowel) - 10
     assert bands(board)[0] > bands(dowel)[0] + 15, "the board knock has low thump; the dowel has none"
     via_macro = render("hit", object="dowel")
-    assert np.array_equal(via_macro, soundlab.render(RECIPES / "dowel.json")[0])
+    assert np.array_equal(via_macro, soundlab.render(recipe_path("dowel"))[0])
 
 
 # ------------------------------------------------------------------ coin
@@ -127,12 +156,12 @@ def test_heel_and_toe_flam_into_one_step():
     """Heel and toe must come almost as one. Gap ~20-60 ms, scaled a little by shoe/pace."""
     from soundlab.models.foley import SHOES
     from soundlab.recipe import render as rr
-    rec = soundlab.load_recipe(str(RECIPES / "footstep.json"))
+    rec = soundlab.load_recipe(str(recipe_path("footstep")))
     for pace in (0.0, 0.5, 1.0):
         roll = apply_pace(rec, pace)
         for shoe in SHOES.values():
             assert 0.015 <= roll * shoe["roll"] <= 0.075, (pace, roll, shoe["roll"])
-    dry = soundlab.load_recipe(str(RECIPES / "footstep.json"))
+    dry = soundlab.load_recipe(str(recipe_path("footstep")))
     dry["post"] = []
     dry["layers"][0]["params"].update(scuff=0.0, creak=0.0)
     y, _ = rr(dry)

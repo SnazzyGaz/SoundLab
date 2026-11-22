@@ -1,0 +1,228 @@
+{
+  "soundlab": 1,
+  "name": "A punch or blow to the torso",
+  "category": "impact",
+  "sample_rate": 48000,
+  "duration": 1.66,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "stems",
+      "model": "impact_stems",
+      "params": {
+        "source": "body_punch",
+        "seed": 0,
+        "at": 0.0,
+        "force": 0.0,
+        "soft": 0.0,
+        "count": 1
+      },
+      "normalize": false
+    }
+  ],
+  "master": {
+    "fade_out": 0.04,
+    "normalize_db": null
+  },
+  "macros": {
+    "force": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "softer .. harder (0.5 = the recording).",
+      "map": [
+        {
+          "to": "0.force",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              -1.5
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "clamp": [
+            -3,
+            3
+          ]
+        }
+      ]
+    },
+    "soft": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "sharper .. softer attack (a gentler transient and less heel / thump).",
+      "map": [
+        {
+          "to": "0.soft",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              1.1
+            ]
+          ],
+          "clamp": [
+            0,
+            1.2
+          ]
+        }
+      ]
+    },
+    "size": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "smaller .. larger (tape speed: smaller is higher and shorter).",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              300.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              -300.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "nearer .. further (0.5 = as recorded). Further is quieter and duller.",
+      "map": [
+        {
+          "to": "0.distance",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.7
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            0.25,
+            4.0
+          ]
+        }
+      ]
+    },
+    "count": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "a short natural count of real gestures (1 .. 4).",
+      "map": [
+        {
+          "to": "0.count",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.3333333333333333,
+              2.0
+            ],
+            [
+              0.6666666666666666,
+              3.0
+            ],
+            [
+              1.0,
+              4.0
+            ]
+          ],
+          "clamp": [
+            1,
+            4
+          ]
+        }
+      ]
+    },
+    "tempo": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "slower .. quicker spacing when count is more than one (0.5 = the recording's own gaps).",
+      "map": [
+        {
+          "to": "0.tempo",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.7
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.5
+            ]
+          ],
+          "clamp": [
+            0.4,
+            2.5
+          ]
+        }
+      ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and remixes the same real stems (never averaged).",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "notes": "v0.34 impact_stems (docs/impact_stems.md): source 'body_punch', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). A single real hit or short gesture by default. The seed macro (or any variation) remixes the real stems; nothing is averaged, bands are not pitch-shifted (size is tape speed), and there is no freeze, time-squeeze or added smoothing."
+}

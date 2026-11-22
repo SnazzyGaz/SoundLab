@@ -160,6 +160,106 @@ new noise.
 | sparkler (2-14 s) | sparkler_fuse_nm.wav | Alex_hears_things | Freesound #316682 | https://freesound.org/people/Alex_hears_things/sounds/316682/ | CC0 |
 | transformer_hum (24-36 s) | transformer at night.wav | ideaph | Freesound #641208 | https://freesound.org/people/ideaph/sounds/641208/ | CC0 |
 
+## Recordings decomposed into stems for `impact_stems` (v0.34, numbers only, no audio included)
+
+`soundlab/models/impact_stems.bin` holds analysis numbers of gestures from these CC0 1.0 recordings on Freesound. No samples are stored; renders use new noise and the stored envelopes.
+
+| Source (cut) | Title | Author | Site | URL | Licence |
+|---|---|---|---|---|---|
+| ball_bounce (12-23 s) | Bouncy ball bouncing on floor | 89o_dev | Freesound #869172 | https://freesound.org/people/89o_dev/sounds/869172/ | CC0 |
+| body_punch (0.5-13.2 s) | Punches/hits | Wigglesworth | Freesound #853588 | https://freesound.org/people/Wigglesworth/sounds/853588/ | CC0 |
+| ceramic_break (0-13.4 s) | pottery-dish-smash-4x-samples.wav | ragamuffin | Freesound #186363 | https://freesound.org/people/ragamuffin/sounds/186363/ | CC0 |
+| coin_drop (0-15 s) | coin(s) spin drop.wav | Yuval | Freesound #197214 | https://freesound.org/people/Yuval/sounds/197214/ | CC0 |
+| coin_jingle (0-4.3 s) | coin jangle_in hand_fast.wav | ekfink | Freesound #235487 | https://freesound.org/people/ekfink/sounds/235487/ | CC0 |
+| dowel (0.2-6.8 s) | CLAVES | SamuelGremaud | Freesound #517609 | https://freesound.org/people/SamuelGremaud/sounds/517609/ | CC0 |
+| drumstick (0-11 s) | Drum Sticks.wav | MioMeg | Freesound #707012 | https://freesound.org/people/MioMeg/sounds/707012/ | CC0 |
+| glass_break (8-20 s) | various window breaks smashes.flac | TRP | Freesound #575283 | https://freesound.org/people/TRP/sounds/575283/ | CC0 |
+| glass_clink (3-15 s) | Glasses clinking | esmelane | Freesound #806416 | https://freesound.org/people/esmelane/sounds/806416/ | CC0 |
+| metal_clang (0-12 s) | clang_metal_(hit).wav | Godowan | Freesound #240463 | https://freesound.org/people/Godowan/sounds/240463/ | CC0 |
+| pickaxe_earth (2-16 s) | digging into mud.wav | Stefan21100190 | Freesound #593113 | https://freesound.org/people/Stefan21100190/sounds/593113/ | CC0 |
+| pickaxe_rock (0-14 s) | Garden pickaxe hitting rock | Sadiquecat | Freesound #855629 | https://freesound.org/people/Sadiquecat/sounds/855629/ | CC0 |
+| wood_drop (11-22.4 s) | wood plank impact ground hits forest bouncing | unfa | Freesound #857862 | https://freesound.org/people/unfa/sounds/857862/ | CC0 |
+| wood_knock (0-12 s) | Door knocks wood close 77mel 191026.wav | TRP | Freesound #573835 | https://freesound.org/people/TRP/sounds/573835/ | CC0 |
+
+## Recordings decomposed into stems for `weapon_stems` (v0.34, numbers only, no audio included)
+
+`soundlab/models/weapon_stems.bin` holds analysis numbers of gestures from these CC0 1.0 recordings on Freesound. No samples are stored; renders use new noise and the stored envelopes.
+
+| Source (cut) | Title | Author | Site | URL | Licence |
+|---|---|---|---|---|---|
+| arrow_impact (0-1.5 s) | ARROW_WOOD_IMPACT_SINGLE_ARCHERY_01.wav | JoeDinesSound | Freesound #534956 | https://freesound.org/people/JoeDinesSound/sounds/534956/ | CC0 |
+| assault_rifle_burst (0.1-4.2 s) | M16 burst in street.aif | Franki-01234 | Freesound #201668 | https://freesound.org/people/Franki-01234/sounds/201668/ | CC0 |
+| assault_rifle_shot (0-2.6 s) | AR15 rifle shot | michorvath | Freesound #427596 | https://freesound.org/people/michorvath/sounds/427596/ | CC0 |
+| axe_chop (0-7.1 s) | chopping wood_medium [459] | ElSchorscho | Freesound #847818 | https://freesound.org/people/ElSchorscho/sounds/847818/ | CC0 |
+| blade_slide (0-4.9 s) | Escrime swords hits in practice room | YannSauvin | Freesound #778321 | https://freesound.org/people/YannSauvin/sounds/778321/ | CC0 |
+| bolt_cycle (0-12 s) | Mosin Nagant Bolt Action Cycle | Zott820 | Freesound #370345 | https://freesound.org/people/Zott820/sounds/370345/ | CC0 |
+| bow_release (0-0.3 s) | Longbow Release 2.wav | saturdaysoundguy | Freesound #394179 | https://freesound.org/people/saturdaysoundguy/sounds/394179/ | CC0 |
+| brass_casings (0-12 s) | Brass bullet shell casing drop onto concrete, multiple takes | GrayJoy | Freesound #210102 | https://freesound.org/people/GrayJoy/sounds/210102/ | CC0 |
+| charging_handle (0-1.2 s) | Wasr RPK Charge Foreward1.mp3 | Pjkasinski3 | Freesound #171631 | https://freesound.org/people/Pjkasinski3/sounds/171631/ | CC0 |
+| club_hit (0-0.6 s) | Bat_hit2 | hashtagsmcgee | Freesound #851452 | https://freesound.org/people/hashtagsmcgee/sounds/851452/ | CC0 |
+| crossbow (19.5-23.5 s) | EK Cobra Pistol Crossbow.mp3 | Tairblenn | Freesound #540406 | https://freesound.org/people/Tairblenn/sounds/540406/ | CC0 |
+| distant_gunfire (0-7.6 s) | Distant Gunfire | iainmccurdy | Freesound #842326 | https://freesound.org/people/iainmccurdy/sounds/842326/ | CC0 |
+| dry_fire (0-0.3 s) | 9mm Handgun Being Dry Fired | serøutōnin--deprivəd | Freesound #674568 | https://freesound.org/people/ser%C3%B8ut%C5%8Dnin--depriv%C9%99d/sounds/674568/ | CC0 |
+| explosion_close (0.4-1.1 s) | petarda_jaka.wav | mandzo18 | Freesound #60880 | https://freesound.org/people/mandzo18/sounds/60880/ | CC0 |
+| explosion_distant (12.4-14.8 s) | Three Outdoor Clean Explosions (Fireworks on New Year's Eve 2021) | unfa | Freesound #613673 | https://freesound.org/people/unfa/sounds/613673/ | CC0 |
+| firework_bang (0.5-3.2 s) | tro_petarda.wav | mandzo18 | Freesound #60885 | https://freesound.org/people/mandzo18/sounds/60885/ | CC0 |
+| hammer_cock (0.1-0.6 s) | revolvercock1.wav | Dredile | Freesound #111676 | https://freesound.org/people/Dredile/sounds/111676/ | CC0 |
+| knife_draw (0-5.9 s) | Knife Block Unsheath Kitchen Knife | loganzsound | Freesound #873758 | https://freesound.org/people/loganzsound/sounds/873758/ | CC0 |
+| knife_flick (0-12 s) | opening and closing switchblade.wav | 170129 | Freesound #408259 | https://freesound.org/people/170129/sounds/408259/ | CC0 |
+| knife_slash (11.1-19.5 s) | Blade swipes knives etc | spaghettiSFX | Freesound #795665 | https://freesound.org/people/spaghettiSFX/sounds/795665/ | CC0 |
+| knife_stab (0-12 s) | Knife Stabs into Chicken Breasts #2 | CHallSmith | Freesound #870739 | https://freesound.org/people/CHallSmith/sounds/870739/ | CC0 |
+| magazine_change (0.2-7.2 s) | A Glock handgun having its magazine removed and re-inserted // 3 takes | serøutōnin--deprivəd | Freesound #854460 | https://freesound.org/people/ser%C3%B8ut%C5%8Dnin--depriv%C9%99d/sounds/854460/ | CC0 |
+| pistol_reload (0-4.3 s) | Browning Hi-Power handgun being reloaded while empty. Full sequence | serøutōnin--deprivəd | Freesound #674569 | https://freesound.org/people/ser%C3%B8ut%C5%8Dnin--depriv%C9%99d/sounds/674569/ | CC0 |
+| pistol_shot (0.1-12.5 s) | gun_.22mm_7.5mm_9mm_close_single_shots_m10.wav | johanwestling | Freesound #377786 | https://freesound.org/people/johanwestling/sounds/377786/ | CC0 |
+| revolver_shot (0-8.8 s) | Revolver Gunshots | C-V | Freesound #835200 | https://freesound.org/people/C-V/sounds/835200/ | CC0 |
+| ricochet (1.1-1.6 s) | 22 caliber gunfire with ricochet.wav | C-V | Freesound #523404 | https://freesound.org/people/C-V/sounds/523404/ | CC0 |
+| rifle_reload (0-7.1 s) | An M16 Rifle being reloaded while empty; full sequence | serøutōnin--deprivəd | Freesound #725397 | https://freesound.org/people/ser%C3%B8ut%C5%8Dnin--depriv%C9%99d/sounds/725397/ | CC0 |
+| rifle_shot (0.1-0.8 s) | gun lee enfield 303 rifle fire shot loud badass crispy.wav | kyles | Freesound #450852 | https://freesound.org/people/kyles/sounds/450852/ | CC0 |
+| safety_click (0-4.7 s) | Pocket Pistol safety switch | mahecic | Freesound #803265 | https://freesound.org/people/mahecic/sounds/803265/ | CC0 |
+| shield_block_metal (0.1-4.8 s) | Shield / sword hits.wav | PixelsphereStudios | Freesound #182112 | https://freesound.org/people/PixelsphereStudios/sounds/182112/ | CC0 |
+| shotgun_pump (0-12 s) | Remington 870 12 gauge shotgun pump racking cha chock | TotallyPhilip | Freesound #755495 | https://freesound.org/people/TotallyPhilip/sounds/755495/ | CC0 |
+| shotgun_shot (0-1.7 s) | 20 gauge shotgun gunshot | michorvath | Freesound #427595 | https://freesound.org/people/michorvath/sounds/427595/ | CC0 |
+| slide_rack (0-10 s) | Pocket Pistol Slide rack | mahecic | Freesound #803266 | https://freesound.org/people/mahecic/sounds/803266/ | CC0 |
+| smg_burst (0-2.4 s) | MP5 submachine gun down the street.aif | Franki-01234 | Freesound #201671 | https://freesound.org/people/Franki-01234/sounds/201671/ | CC0 |
+| steel_target_ping (0.3-1.4 s) | Anvil Hit 2 | michorvath | Freesound #270588 | https://freesound.org/people/michorvath/sounds/270588/ | CC0 |
+| suppressed_shot (0-0.6 s) | Springfield Armory 1911 Operator (Suppressed) | areniporgen | Freesound #827945 | https://freesound.org/people/areniporgen/sounds/827945/ | CC0 |
+| sword_clash (0-12 s) | Escrime swords hits in practice room | YannSauvin | Freesound #778321 | https://freesound.org/people/YannSauvin/sounds/778321/ | CC0 |
+| sword_draw (0-1.8 s) | Sword drawing | xkeril | Freesound #666581 | https://freesound.org/people/xkeril/sounds/666581/ | CC0 |
+| sword_sheathe (4.9-5.4 s) | OWI Sword Draw and sheath.wav | matthewHoldenSound | Freesound #542516 | https://freesound.org/people/matthewHoldenSound/sounds/542516/ | CC0 |
+| tree_break (2.5-8.2 s) | Heavy explosion in forest debris tree falling.flac | wyskoj | Freesound #530163 | https://freesound.org/people/wyskoj/sounds/530163/ | CC0 |
+
+## Recordings decomposed into stems for `foot_stems` (v0.34, numbers only, no audio included)
+
+`soundlab/models/foot_stems.bin` holds analysis numbers of gestures from these CC0 1.0 recordings on Freesound. No samples are stored; renders use new noise and the stored envelopes.
+
+| Source (cut) | Title | Author | Site | URL | Licence |
+|---|---|---|---|---|---|
+| concrete_walk (0-6.7 s) | Footsteps - Stone, Rock, Concrete, Cement | SecureSubset | Freesound #813622 | https://freesound.org/people/SecureSubset/sounds/813622/ | CC0 |
+| concrete_run (5.2-14.9 s) | paving_18c_trekkingboots_run.wav | sturmankin | Freesound #273117 | https://freesound.org/people/sturmankin/sounds/273117/ | CC0 |
+| stone_walk (0-3.5 s) | Hiking Boot Footsteps on Stone | Fission9 | Freesound #521590 | https://freesound.org/people/Fission9/sounds/521590/ | CC0 |
+| wood_floor (2-8.1 s) | Footsteps on Wood | snakebarney | Freesound #138123 | https://freesound.org/people/snakebarney/sounds/138123/ | CC0 |
+| wood_creaky (0-10.1 s) | Heavy Footsteps on a Squeaky Floor | deleted_user_7146007 | Freesound #383731 | https://freesound.org/people/deleted_user_7146007/sounds/383731/ | CC0 |
+| wood_stairs (0-12.4 s) | walking up wood stairs in shoes | Bastard Fish | Freesound #326985 | https://freesound.org/people/Bastard%20Fish/sounds/326985/ | CC0 |
+| gravel_walk (0-9 s) | Footsteps_Mountain_Boots_Gritty_Ground_Stones_Pebbles_Mono.wav | Nox_Sound | Freesound #543806 | https://freesound.org/people/Nox_Sound/sounds/543806/ | CC0 |
+| dirt_walk (0-9 s) | Footsteps_On_Dirt.wav | lzmraul | Freesound #389454 | https://freesound.org/people/lzmraul/sounds/389454/ | CC0 |
+| grass_walk (0-4.4 s) | Hiking Boot Footsteps on Grass | Fission9 | Freesound #521587 | https://freesound.org/people/Fission9/sounds/521587/ | CC0 |
+| grass_run (20.8-30.5 s) | Footsteps_Mountain_Boots_Grass_Mono.wav | Nox_Sound | Freesound #556042 | https://freesound.org/people/Nox_Sound/sounds/556042/ | CC0 |
+| sand_walk (16.4-24 s) | Soft sand steps.wav | 200221-WeanBekker | Freesound #543714 | https://freesound.org/people/200221-WeanBekker/sounds/543714/ | CC0 |
+| snow_walk (0-11.3 s) | Footsteps_Mountain_Boots_Snow_Walk_Mono.wav | Nox_Sound | Freesound #613849 | https://freesound.org/people/Nox_Sound/sounds/613849/ | CC0 |
+| mud_walk (0-5.5 s) | Footsteps_Mud_01.wav | BenDrain | Freesound #488068 | https://freesound.org/people/BenDrain/sounds/488068/ | CC0 |
+| puddle_walk (0-7 s) | puddlewalk.wav | j1987 | Freesound #106395 | https://freesound.org/people/j1987/sounds/106395/ | CC0 |
+| metal_walk (0-5.4 s) | Footsteps On Metal | IENBA | Freesound #834029 | https://freesound.org/people/IENBA/sounds/834029/ | CC0 |
+| metal_stairs (0-11.2 s) | Metal stairs .WAV | DDT197 | Freesound #445776 | https://freesound.org/people/DDT197/sounds/445776/ | CC0 |
+| tile_walk (0-6.1 s) | Footsteps On Tile | IENBA | Freesound #834027 | https://freesound.org/people/IENBA/sounds/834027/ | CC0 |
+| carpet_walk (0-5.5 s) | Footsteps on carpet.wav | theshuggie | Freesound #371017 | https://freesound.org/people/theshuggie/sounds/371017/ | CC0 |
+| leaves_walk (0-4.1 s) | Footsteps_Leaves_Stereo.wav | Nox_Sound | Freesound #496420 | https://freesound.org/people/Nox_Sound/sounds/496420/ | CC0 |
+| boots_walk (0-9.3 s) | WoodType_1_Footstep_LeatherBoot.wav | monte32 | Freesound #405112 | https://freesound.org/people/monte32/sounds/405112/ | CC0 |
+| heels_walk (0-4.4 s) | 15_Walking_high_heel.wav | Juaner_ | Freesound #471416 | https://freesound.org/people/Juaner_/sounds/471416/ | CC0 |
+| trainers_walk (0-5.1 s) | WoodType_1_Footstep_Sneakers.wav | monte32 | Freesound #405114 | https://freesound.org/people/monte32/sounds/405114/ | CC0 |
+| barefoot_wood (0-4.6 s) | walk_indoor_barefoot.mp3 | dragonmin | Freesound #554592 | https://freesound.org/people/dragonmin/sounds/554592/ | CC0 |
+| jump_land (1.3-2.1 s) | Jumping Onto Wooden Floor.wav | krnash | Freesound #389800 | https://freesound.org/people/krnash/sounds/389800/ | CC0 |
+| jump_land_rock (0-4.9 s) | Footsteps_Mountain_Boots_Rock_Jump_Sequence_Mono.wav | Nox_Sound | Freesound #558477 | https://freesound.org/people/Nox_Sound/sounds/558477/ | CC0 |
+
 ## Methods adopted from other projects and papers (no code copied)
 
 v0.28 `creak`: the creaking door as stick-slip events through a fixed wood formant bank (A. Farnell, *Designing

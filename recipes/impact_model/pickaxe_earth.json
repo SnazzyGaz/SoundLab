@@ -1,0 +1,380 @@
+{
+ "soundlab": 1,
+ "name": "Pickaxe into earth: steel pick into packed soil",
+ "category": "impact",
+ "sample_rate": 48000,
+ "duration": 0.6,
+ "seed": 26,
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.03
+ },
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "small .. large object (pitch ~ 1/size)",
+   "map": [
+    {
+     "to": "0.size",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.8
+      ]
+     ]
+    }
+   ]
+  },
+  "force": {
+   "default": 0.5,
+   "doc": "tap .. slam (contact speed: brighter and louder)",
+   "map": [
+    {
+     "to": "0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.25
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    }
+   ]
+  },
+  "hardness": {
+   "default": 0.5,
+   "doc": "padded .. hard edge (contact stiffness)",
+   "map": [
+    {
+     "to": "0.hardness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.45
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.45
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "hollowness": {
+   "default": 0.5,
+   "doc": "solid .. hollow (thin walls, cavity boom)",
+   "map": [
+    {
+     "to": "0.hollowness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.6
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "muffle": {
+   "default": 0.5,
+   "doc": "ringing .. held/damped",
+   "map": [
+    {
+     "to": "0.muffle",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "contact_point": {
+   "default": 0.5,
+   "doc": "edge .. middle",
+   "map": [
+    {
+     "to": "0.contact_point",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.35
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.45
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.0,
+   "doc": "near .. far (level)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       -6
+      ],
+      [
+       1,
+       -18
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  },
+  "material": {
+   "default": "dirt",
+   "doc": "dirt / gravel / grass / stone",
+   "choices": {
+    "dirt": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "dirt"
+     }
+    ],
+    "gravel": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "gravel"
+     }
+    ],
+    "grass": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "grass"
+     }
+    ],
+    "stone": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "stone"
+     }
+    ]
+   }
+  }
+ },
+ "vary": {
+  "0.velocity": {
+   "rel": 0.15
+  },
+  "0.contact_point": {
+   "abs": 0.1
+  },
+  "0.size": {
+   "rel": 0.06
+  }
+ },
+ "layers": [
+  {
+   "name": "impact",
+   "model": "material_impact",
+   "params": {
+    "material": "dirt",
+    "striker": "steel",
+    "striker_mass_g": 2500,
+    "velocity": 14.4525,
+    "hardness": 0.5583,
+    "striker_ring": 0.0,
+    "striker_size": 0.2397,
+    "grains": 0.9742,
+    "residual": 2.6851,
+    "muffle": 0.0605,
+    "at": 0.01
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "eq",
+   "params": {
+    "curve": [
+     [
+      50,
+      -6.0
+     ],
+     [
+      63,
+      -6.0
+     ],
+     [
+      80,
+      -6.0
+     ],
+     [
+      100,
+      -6.0
+     ],
+     [
+      125,
+      -6.0
+     ],
+     [
+      160,
+      -6.0
+     ],
+     [
+      200,
+      -4.5
+     ],
+     [
+      250,
+      1.6
+     ],
+     [
+      315,
+      2.1
+     ],
+     [
+      400,
+      3.4
+     ],
+     [
+      500,
+      0.9
+     ],
+     [
+      630,
+      0.1
+     ],
+     [
+      800,
+      -0.1
+     ],
+     [
+      1000,
+      2.4
+     ],
+     [
+      1250,
+      4.8
+     ],
+     [
+      1600,
+      5.0
+     ],
+     [
+      2000,
+      5.7
+     ],
+     [
+      2500,
+      6.0
+     ],
+     [
+      3150,
+      6.0
+     ],
+     [
+      4000,
+      6.0
+     ],
+     [
+      5000,
+      6.0
+     ],
+     [
+      6300,
+      6.0
+     ],
+     [
+      8000,
+      6.0
+     ],
+     [
+      10000,
+      6.0
+     ],
+     [
+      12500,
+      6.0
+     ],
+     [
+      16000,
+      6.0
+     ]
+    ]
+   }
+  }
+ ],
+ "notes": "v0.26: controls fitted to a recorded pickaxe strike into soil (outside the repo); residual eq limited to +-6 dB; loss 0.26-0.32 across the default and three variations."
+}

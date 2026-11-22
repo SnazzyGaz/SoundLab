@@ -19,7 +19,7 @@ What's in it:
   pause, close), hinge squeaks, gate squeals (with an optional latch), shoe squeaks and floorboard creak rebuilt
   from stems of CC0 recordings (partial tracks, real wobble, noise layer, onsets, body colour; numbers only, no
   audio) and played as a gesture timeline of motions; macros brightness, stretch, pitch, motions, gaps, seed.
-  The fitted physical `creak` model (v0.28) stays as a fallback in `recipes/creak_model/`; see
+  The fitted physical `creak` model (v0.28) stays as a fallback in `recipes/creak_model/`; previous procedural impact, footstep and clash recipes that now use recording stems stay in `recipes/impact_model/`; see
   [docs/friction.md](docs/friction.md).
 - **Wind, whooshes, arrow fly-bys and fans from recording stems** (`air_stems`, v0.30): `wind_gust`, `wind_trees`
   (a gale by default; a `strength` macro takes it down to a breeze that barely registers), `whoosh` (speed, size,
@@ -49,7 +49,23 @@ What's in it:
   recorded crackle, pop and click as its own band envelopes, and tracked harmonics and lines of CC0 recordings
   (numbers only, no audio). Fresh takes replay forward-only pieces of the stems in a new order with the events
   riding along; see [docs/fire.md](docs/fire.md).
-- **52 hand-built recipes** for game sound (150 recipe files in all): footsteps (trainer/boot/heel on wood, stone, gravel), knocks, coins, wind, whooshes, arrows, fans,
+- **Impacts and breaking from recording stems** (`impact_stems`, v0.34): `wood_knock`, `drumstick`, `dowel`,
+  `wood_drop`, `ball_bounce`, `metal_clang`, `glass_clink`, `pickaxe_earth`, `pickaxe_rock`, `coin_drop`,
+  `coin_jingle`, `body_punch`, `ceramic_break` and `glass_break`, rebuilt from body-mode tracks, each recorded hit
+  as band envelopes, and a 1/8-octave 1 ms noise bed of CC0 recordings (numbers only, no audio). Recipes play a
+  single real gesture by default. `force`, `soft`, `size` (tape speed), `distance`, `count`, `tempo` and `seed`;
+  see [docs/impact_stems.md](docs/impact_stems.md).
+- **Weapons and combat from recording stems** (`weapon_stems`, v0.34): shots, pumps, reloads, blade work,
+  explosions and related one-shots (40 recipes), rebuilt the same way from CC0 recordings (numbers only, no audio).
+  A single real gesture or a short natural count by default; the same macros as `impact_stems`;
+  see [docs/weapon_stems.md](docs/weapon_stems.md).
+- **Footsteps from recording stems** (`foot_stems`, v0.34): walks and runs on concrete, stone, wood (floor, creaky,
+  stairs), gravel, dirt, grass, sand, snow, mud, puddles, metal (walk, stairs), tile, carpet and leaves, plus boots,
+  heels, trainers and barefoot on wood, and two jump landings (25 recipes). Rebuilt the same way from CC0 recordings
+  (numbers only, no audio). Defaults are a softer, more natural step than the often-forceful recordings; `force` and
+  `soft` stay as macros. The older `footstep` / `footstep_*` names still work;
+  see [docs/foot_stems.md](docs/foot_stems.md).
+- **Featured recipes** for game sound (219 recipe files in all): footsteps on many surfaces and shoes, knocks, coins, wind, whooshes, arrows, fans,
   rain, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splashes, drips, a pour, a stream, a river, a waterfall, boiling and sloshing, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.
@@ -195,7 +211,7 @@ control takes a breakpoint list `[[time_s, value], ...]`.
 ```
 
 Shipped recipes: `duck`, `engine`, `foghorn`, `explosion`, `match` (reference sounds), `matchbox` (shake +
-strike + flame), `engine_blips`, `explosion_small`, `foghorn_pattern`, `glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), `hit`, `dowel`, `footstep`, `coin`, `coin_jingle`, `water`; the 0.9 game library: `wind`, `wind_gap`, `rain`, `glass_break`, `sword_swing`, `sword_clash`, `metal_clang`, `door_creak`, `door_slam`, `punch`, `bullet_impact`, `gunshot`, `creature_growl`, `paper_rustle`, `cloth_rustle`, `splash`; v0.21 creature voices: `demon_growl`, `monster_roar`, `dog_growl`, `alligator_bellow`, `elephant_rumble`; v0.19 interaction models: `hc_knock`, `hc_bounce`, `scrape_sdt`, `roll_sdt`, `creak_friction`, `squeak_friction`, `crumple_paper`, `break_glass_sdt`, `wind_howl`, `drill_motor`, `mains_hum`; `recipes/blocks/*` (generic-synth demos: UI click/confirm, coin, power-up, laser,
+strike + flame), `engine_blips`, `explosion_small`, `foghorn_pattern`, `glass_hit_room`, `car_passby`, `fire`, `drip`, `blaster` (examples), `hit`, `dowel`, `footstep`, `coin`, `coin_jingle`, `water`; the v0.34 stem one-shots (`wood_knock`, `pistol_shot`, `wood_floor` and the rest of `impact_stems`, `weapon_stems` and `foot_stems`); the 0.9 game library: `wind`, `wind_gap`, `rain`, `glass_break`, `sword_swing`, `sword_clash`, `metal_clang`, `door_creak`, `door_slam`, `punch`, `bullet_impact`, `gunshot`, `creature_growl`, `paper_rustle`, `cloth_rustle`, `splash`; v0.21 creature voices: `demon_growl`, `monster_roar`, `dog_growl`, `alligator_bellow`, `elephant_rumble`; v0.19 interaction models: `hc_knock`, `hc_bounce`, `scrape_sdt`, `roll_sdt`, `creak_friction`, `squeak_friction`, `crumple_paper`, `break_glass_sdt`, `wind_howl`, `drill_motor`, `mains_hum`; `recipes/blocks/*` (generic-synth demos: UI click/confirm, coin, power-up, laser,
 magic shimmer, whoosh), and `recipes/fit/*_fit.json` (dry recipes
 matched to the reference recordings, the starting points for `soundlab match`). Full format: [docs/recipe-format.md](docs/recipe-format.md).
 

@@ -11,6 +11,35 @@ from conftest import SR
 from test_material_impact import t60
 
 R = Path(__file__).resolve().parents[1] / "recipes"
+
+# v0.34: the shipped {names} recipes use recording stems; the previous procedural versions live in recipes/impact_model/ (the same arrangement as recipes/creak_model/).
+MOVED = {
+    "footstep",
+    "footstep_wood",
+    "footstep_dirt",
+    "footstep_grass",
+    "footstep_gravel",
+    "footstep_metal",
+    "footstep_stone",
+    "ceramic_break",
+    "coin_jingle",
+    "dowel",
+    "drumstick",
+    "glass_break",
+    "glass_clink",
+    "metal_clang",
+    "pickaxe_earth",
+    "pickaxe_rock",
+    "sword_clash",
+}
+
+
+def recipe_path(name):
+    name = name[:-5] if str(name).endswith(".json") else str(name)
+    if name in MOVED:
+        return R / "impact_model" / f"{name}.json"
+    return R / f"{name}.json"
+
 FOOT = ["footstep_wood", "footstep_stone", "footstep_metal", "footstep_dirt", "footstep_gravel", "footstep_grass"]
 
 
@@ -37,7 +66,7 @@ def sustained_partial_db(y, t0=0.05):
 
 
 def render(name, k=0, **mac):
-    return soundlab.render(R / f"{name}.json", variation=k, macros=mac or None)[0]
+    return soundlab.render(recipe_path(name), variation=k, macros=mac or None)[0]
 
 
 @pytest.mark.parametrize("name", FOOT)

@@ -23,7 +23,7 @@ from .core import REGISTRY, RecipeError
 from .recipe import load as load_recipe
 from .recipe import render, validate
 
-__version__ = "0.33.0"
+__version__ = "0.34.0"
 __all__ = ["render", "render_stereo", "render_loop", "render_to_file", "list_models", "describe", "macros", "variation", "batch", "validate",
            "load_recipe", "analyze",
            "analyze_file", "materials", "RecipeError", "__version__", "match", "compare"]

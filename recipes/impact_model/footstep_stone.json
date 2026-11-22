@@ -1,0 +1,334 @@
+{
+ "soundlab": 1,
+ "name": "Footstep on stone/concrete",
+ "category": "impact",
+ "sample_rate": 48000,
+ "duration": 0.6,
+ "seed": 26,
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.03,
+  "gain_db": -10.0
+ },
+ "macros": {
+  "size": {
+   "default": 0.5,
+   "doc": "small .. large object (pitch ~ 1/size)",
+   "map": [
+    {
+     "to": "0.size",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.35
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.8
+      ]
+     ]
+    }
+   ]
+  },
+  "force": {
+   "default": 0.5,
+   "doc": "tap .. slam (contact speed: brighter and louder)",
+   "map": [
+    {
+     "to": "0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.25
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    }
+   ]
+  },
+  "hardness": {
+   "default": 0.5,
+   "doc": "padded .. hard edge (contact stiffness)",
+   "map": [
+    {
+     "to": "0.hardness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.45
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.45
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "hollowness": {
+   "default": 0.5,
+   "doc": "solid .. hollow (thin walls, cavity boom)",
+   "map": [
+    {
+     "to": "0.hollowness",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.6
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "muffle": {
+   "default": 0.5,
+   "doc": "ringing .. held/damped",
+   "map": [
+    {
+     "to": "0.muffle",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.5
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.6
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "contact_point": {
+   "default": 0.5,
+   "doc": "edge .. middle",
+   "map": [
+    {
+     "to": "0.contact_point",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.35
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.45
+      ]
+     ],
+     "clamp": [
+      0,
+      1
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.0,
+   "doc": "near .. far (level; footsteps already sit 10 dB under full scale)",
+   "map": [
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       -3
+      ],
+      [
+       1,
+       -8
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  },
+  "surface": {
+   "default": "stone",
+   "doc": "wood_hard / stone / steel / dirt / gravel / grass / leaves",
+   "choices": {
+    "wood_hard": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "wood_hard"
+     }
+    ],
+    "stone": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "stone"
+     }
+    ],
+    "steel": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "steel"
+     }
+    ],
+    "dirt": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "dirt"
+     }
+    ],
+    "gravel": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "gravel"
+     }
+    ],
+    "grass": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "grass"
+     }
+    ],
+    "leaves": [
+     {
+      "to": "0.material",
+      "op": "set",
+      "value": "leaves"
+     }
+    ]
+   }
+  }
+ },
+ "vary": {
+  "0.velocity": {
+   "rel": 0.15
+  },
+  "0.contact_point": {
+   "abs": 0.1
+  },
+  "0.size": {
+   "rel": 0.06
+  }
+ },
+ "layers": [
+  {
+   "name": "impact",
+   "model": "material_impact",
+   "params": {
+    "at": 0.01,
+    "gesture": "footstep",
+    "striker": "shoe",
+    "striker_mass_g": 6000,
+    "velocity": 0.9,
+    "hardness": 0.45,
+    "residual": 1.0,
+    "material": "stone",
+    "shape": "block",
+    "size": 1.5,
+    "hollowness": 0.0
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "eq",
+   "params": {
+    "curve": [
+     [
+      63,
+      0
+     ],
+     [
+      125,
+      0
+     ],
+     [
+      250,
+      0
+     ],
+     [
+      500,
+      0
+     ],
+     [
+      1000,
+      0
+     ],
+     [
+      2000,
+      0
+     ],
+     [
+      4000,
+      0
+     ],
+     [
+      8000,
+      0
+     ],
+     [
+      16000,
+      0
+     ]
+    ]
+   }
+  }
+ ],
+ "notes": "v0.26.1: normal walking, not stomping: heel ~1 m/s, the foot damps the floor (no ring), ball of the foot and scuff much quieter, sole low-pass, master level -10 dB."
+}

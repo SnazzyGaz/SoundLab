@@ -11,6 +11,15 @@ Ground rules:
 
 ## Now: interaction models and resynthesis (v0.17 to v0.27)
 
+v0.34: impacts, weapons and footsteps from recording stems (`impact_stems`, `weapon_stems`, `foot_stems`: body-mode
+partial tracks, each recorded hit or step as its own 1/8-octave band envelopes, a 1/8-octave 1 ms noise bed, a
+1/6-octave colour curve and a static treble ceiling; numbers only). 14 impact, 40 weapon and 25 footstep recipes
+(a single real gesture or a short natural count by default), with mild macros (`force`, `soft`, `size` by tape
+speed, `distance`, `count`, `tempo`, `seed`). Footstep recipes default to a softer step than the often-forceful
+recordings. The older `footstep` / `footstep_*` names, and a few impact / weapon filenames that already existed,
+now use the stem models and still accept their previous macro names. See [impact_stems.md](impact_stems.md),
+[weapon_stems.md](weapon_stems.md) and [foot_stems.md](foot_stems.md).
+
 v0.33: fire, crackle and electricity from recording stems (`fire_stems`: band-envelope noise beds at 1 ms, every
 recorded crackle / pop / click as its own band envelopes at 0.5 ms (0.125 ms for igniter clicks), tracked harmonics
 and lines at 4 ms, a static treble ceiling; numbers only); new recipes `campfire`, `large_blaze`, `embers`,

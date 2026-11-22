@@ -1,334 +1,329 @@
 {
- "soundlab": 1,
- "name": "Footstep on gravel",
- "category": "impact",
- "sample_rate": 48000,
- "duration": 0.6,
- "seed": 26,
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.03,
-  "gain_db": -10.0
- },
- "macros": {
-  "size": {
-   "default": 0.5,
-   "doc": "small .. large object (pitch ~ 1/size)",
-   "map": [
+  "soundlab": 1,
+  "name": "Footstep on gravel",
+  "category": "impact",
+  "sample_rate": 48000,
+  "duration": 2.68,
+  "seed": 1,
+  "layers": [
     {
-     "to": "0.size",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.35
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.8
-      ]
-     ]
+      "name": "stems",
+      "model": "foot_stems",
+      "params": {
+        "source": "gravel_walk",
+        "seed": 0,
+        "at": 0.0,
+        "force": -1.0,
+        "soft": 0.7,
+        "count": 1,
+        "tempo": 1.0
+      },
+      "normalize": false
     }
-   ]
+  ],
+  "master": {
+    "fade_out": 0.04,
+    "normalize_db": null
   },
-  "force": {
-   "default": 0.5,
-   "doc": "tap .. slam (contact speed: brighter and louder)",
-   "map": [
-    {
-     "to": "0.velocity",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.25
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.5
+  "macros": {
+    "force": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "softer .. harder (0.5 = a natural soft step; 1 = as hard as a stomp). ",
+      "map": [
+        {
+          "to": "0.force",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              -1.8
+            ],
+            [
+              0.5,
+              -1.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "clamp": [
+            -3,
+            3
+          ]
+        }
       ]
-     ]
-    }
-   ]
-  },
-  "hardness": {
-   "default": 0.5,
-   "doc": "padded .. hard edge (contact stiffness)",
-   "map": [
-    {
-     "to": "0.hardness",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.45
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.45
+    },
+    "soft": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "sharper .. softer attack (a gentler transient and less heel / thump).",
+      "map": [
+        {
+          "to": "0.soft",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.7
+            ],
+            [
+              1.0,
+              1.1
+            ]
+          ],
+          "clamp": [
+            0,
+            1.2
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      0,
-      1
-     ]
-    }
-   ]
-  },
-  "hollowness": {
-   "default": 0.5,
-   "doc": "solid .. hollow (thin walls, cavity boom)",
-   "map": [
-    {
-     "to": "0.hollowness",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.6
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.6
+    },
+    "size": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "smaller .. larger (tape speed: smaller is higher and shorter).",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              300.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              -300.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      0,
-      1
-     ]
-    }
-   ]
-  },
-  "muffle": {
-   "default": 0.5,
-   "doc": "ringing .. held/damped",
-   "map": [
-    {
-     "to": "0.muffle",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.5
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.6
+    },
+    "distance": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "nearer .. further (0.5 = as recorded). Further is quieter and duller.",
+      "map": [
+        {
+          "to": "0.distance",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.7
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            0.25,
+            4.0
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      0,
-      1
-     ]
-    }
-   ]
-  },
-  "contact_point": {
-   "default": 0.5,
-   "doc": "edge .. middle",
-   "map": [
-    {
-     "to": "0.contact_point",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.35
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.45
+    },
+    "count": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "a short natural count of real gestures (1 .. 4).",
+      "map": [
+        {
+          "to": "0.count",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.3333333333333333,
+              2.0
+            ],
+            [
+              0.6666666666666666,
+              3.0
+            ],
+            [
+              1.0,
+              4.0
+            ]
+          ],
+          "clamp": [
+            1,
+            4
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      0,
-      1
-     ]
-    }
-   ]
-  },
-  "distance": {
-   "default": 0.0,
-   "doc": "near .. far (level; footsteps already sit 10 dB under full scale)",
-   "map": [
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       -3
-      ],
-      [
-       1,
-       -8
+    },
+    "tempo": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "slower .. quicker spacing when count is more than one (0.5 = the recording's own gaps).",
+      "map": [
+        {
+          "to": "0.tempo",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.7
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.5
+            ]
+          ],
+          "clamp": [
+            0.4,
+            2.5
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and remixes the same real stems (never averaged).",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    },
+    "hardness": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "padded .. hard edge (mapped onto force; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.force",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.3
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              0.3
+            ]
+          ],
+          "clamp": [
+            -3,
+            3
+          ]
+        }
+      ]
+    },
+    "muffle": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "ringing .. held (mapped onto softness; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.soft",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              0.2
+            ]
+          ],
+          "clamp": [
+            0,
+            1.2
+          ]
+        }
+      ]
+    },
+    "hollowness": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "solid .. hollow (no longer used; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.hs_hz",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        }
+      ]
+    },
+    "contact_point": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "edge .. middle (no longer used; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.hs_hz",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        }
+      ]
     }
-   ]
   },
-  "surface": {
-   "default": "gravel",
-   "doc": "wood_hard / stone / steel / dirt / gravel / grass / leaves",
-   "choices": {
-    "wood_hard": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "wood_hard"
-     }
-    ],
-    "stone": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "stone"
-     }
-    ],
-    "steel": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "steel"
-     }
-    ],
-    "dirt": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "dirt"
-     }
-    ],
-    "gravel": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "gravel"
-     }
-    ],
-    "grass": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "grass"
-     }
-    ],
-    "leaves": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "leaves"
-     }
-    ]
-   }
-  }
- },
- "vary": {
-  "0.velocity": {
-   "rel": 0.15
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
   },
-  "0.contact_point": {
-   "abs": 0.1
-  },
-  "0.size": {
-   "rel": 0.06
-  }
- },
- "layers": [
-  {
-   "name": "impact",
-   "model": "material_impact",
-   "params": {
-    "at": 0.01,
-    "gesture": "footstep",
-    "striker": "shoe",
-    "striker_mass_g": 6000,
-    "velocity": 0.9,
-    "hardness": 0.45,
-    "residual": 1.0,
-    "material": "gravel",
-    "shape": "plate",
-    "size": 1.0,
-    "hollowness": 0.0
-   }
-  }
- ],
- "post": [
-  {
-   "model": "eq",
-   "params": {
-    "curve": [
-     [
-      63,
-      0
-     ],
-     [
-      125,
-      0
-     ],
-     [
-      250,
-      0
-     ],
-     [
-      500,
-      0
-     ],
-     [
-      1000,
-      0
-     ],
-     [
-      2000,
-      0
-     ],
-     [
-      4000,
-      0
-     ],
-     [
-      8000,
-      0
-     ],
-     [
-      16000,
-      0
-     ]
-    ]
-   }
-  }
- ],
- "notes": "v0.26.1: normal walking, not stomping: heel ~1 m/s, the foot damps the floor (no ring), ball of the foot and scuff much quieter, sole low-pass, master level -10 dB."
+  "notes": "v0.34 foot_stems (docs/foot_stems.md): source 'gravel_walk', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Legacy recipe name, now served by foot_stems (a soft real step by default). Older macros (hardness, muffle, hollowness, contact_point) still parse; hardness and muffle map lightly onto force and softness. The seed macro (or any variation) remixes the real stems; nothing is averaged, bands are not pitch-shifted (size is tape speed), and there is no freeze, time-squeeze or added smoothing. The dedicated surface and shoe recipes (wood_floor, trainers_walk, \u2026) are the ones to use for new work."
 }

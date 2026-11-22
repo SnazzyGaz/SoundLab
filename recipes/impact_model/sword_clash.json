@@ -1,0 +1,221 @@
+{
+ "soundlab": 1,
+ "name": "Sword clash: steel on steel with ringing blades and a scrape (object: sword/pipe/plate/pan)",
+ "category": "weapon",
+ "sample_rate": 48000,
+ "duration": 2.0,
+ "seed": 16,
+ "layers": [
+  {
+   "name": "main",
+   "model": "clash",
+   "params": {
+    "object": "sword",
+    "velocity": 3.0,
+    "scrape_s": 0.25,
+    "scrape": 0.2,
+    "damping": 1.0,
+    "size": 1.0,
+    "second": 0.7,
+    "at": 0.02
+   }
+  }
+ ],
+ "post": [
+  {
+   "model": "room",
+   "params": {
+    "volume": 60,
+    "absorption": 0.3,
+    "source_distance": 2.0
+   }
+  }
+ ],
+ "master": {
+  "normalize_db": -1.0,
+  "fade_out": 0.05
+ },
+ "macros": {
+  "object": {
+   "default": "sword",
+   "doc": "what clashes",
+   "choices": {
+    "sword": [
+     {
+      "to": "0.object",
+      "op": "set",
+      "value": "sword"
+     }
+    ],
+    "pipe": [
+     {
+      "to": "0.object",
+      "op": "set",
+      "value": "pipe"
+     }
+    ],
+    "plate": [
+     {
+      "to": "0.object",
+      "op": "set",
+      "value": "plate"
+     }
+    ],
+    "pan": [
+     {
+      "to": "0.object",
+      "op": "set",
+      "value": "pan"
+     }
+    ]
+   }
+  },
+  "intensity": {
+   "default": 0.5,
+   "doc": "tap .. full blow",
+   "map": [
+    {
+     "to": "0.velocity",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.2
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       2.5
+      ]
+     ]
+    }
+   ]
+  },
+  "scrape": {
+   "default": 0.5,
+   "doc": "clean clang .. long scrape",
+   "map": [
+    {
+     "to": "0.scrape_s",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.25
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.5
+      ]
+     ]
+    },
+    {
+     "to": "0.scrape",
+     "op": "add",
+     "points": [
+      [
+       0,
+       -0.4
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       0.4
+      ]
+     ]
+    }
+   ]
+  },
+  "ring": {
+   "default": 0.5,
+   "doc": "choked .. long ring",
+   "map": [
+    {
+     "to": "0.damping",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       0.3
+      ]
+     ]
+    }
+   ]
+  },
+  "distance": {
+   "default": 0.5,
+   "doc": "near .. far (level, more room sound)",
+   "map": [
+    {
+     "to": "post.0.source_distance",
+     "op": "mul",
+     "points": [
+      [
+       0,
+       0.4
+      ],
+      [
+       0.5,
+       1
+      ],
+      [
+       1,
+       8
+      ]
+     ]
+    },
+    {
+     "to": "master.gain_db",
+     "op": "add",
+     "points": [
+      [
+       0,
+       0
+      ],
+      [
+       0.5,
+       0
+      ],
+      [
+       1,
+       -12
+      ]
+     ],
+     "clamp": [
+      -40,
+      0
+     ]
+    }
+   ]
+  }
+ },
+ "vary": {
+  "0.velocity": {
+   "rel": 0.2
+  },
+  "0.size": {
+   "rel": 0.05
+  },
+  "0.scrape_s": {
+   "rel": 0.2
+  }
+ }
+}

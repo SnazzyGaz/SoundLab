@@ -62,7 +62,7 @@ def test_macro_extremes_render(path):
 
 
 def test_macro_mapping_mul_add_clamp_choice():
-    rec = soundlab.load_recipe(str(ROOT / "recipes" / "dowel.json"))  # the v0.7 hit
+    rec = soundlab.load_recipe(str(ROOT / "recipes" / "impact_model" / "dowel.json"))  # the v0.7 hit (procedural fallback)
     big = apply_macros(rec, {"size": 1.0})
     assert big["layers"][0]["params"]["length"] == pytest.approx(0.45 * 2.5)
     near = apply_macros(rec, {"distance": 0.0})

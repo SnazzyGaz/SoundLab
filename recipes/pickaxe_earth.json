@@ -1,380 +1,356 @@
 {
- "soundlab": 1,
- "name": "Pickaxe into earth: steel pick into packed soil",
- "category": "impact",
- "sample_rate": 48000,
- "duration": 0.6,
- "seed": 26,
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.03
- },
- "macros": {
-  "size": {
-   "default": 0.5,
-   "doc": "small .. large object (pitch ~ 1/size)",
-   "map": [
+  "soundlab": 1,
+  "name": "A pickaxe into packed earth",
+  "category": "impact",
+  "sample_rate": 48000,
+  "duration": 4.15,
+  "seed": 1,
+  "layers": [
     {
-     "to": "0.size",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.35
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.8
-      ]
-     ]
+      "name": "stems",
+      "model": "impact_stems",
+      "params": {
+        "source": "pickaxe_earth",
+        "seed": 0,
+        "at": 0.0,
+        "force": 0.0,
+        "soft": 0.0,
+        "count": 1
+      },
+      "normalize": false
     }
-   ]
+  ],
+  "master": {
+    "fade_out": 0.04,
+    "normalize_db": null
   },
-  "force": {
-   "default": 0.5,
-   "doc": "tap .. slam (contact speed: brighter and louder)",
-   "map": [
-    {
-     "to": "0.velocity",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.25
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.5
+  "macros": {
+    "force": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "softer .. harder (0.5 = the recording).",
+      "map": [
+        {
+          "to": "0.force",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              -1.5
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "clamp": [
+            -3,
+            3
+          ]
+        }
       ]
-     ]
-    }
-   ]
-  },
-  "hardness": {
-   "default": 0.5,
-   "doc": "padded .. hard edge (contact stiffness)",
-   "map": [
-    {
-     "to": "0.hardness",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.45
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.45
+    },
+    "soft": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "sharper .. softer attack (a gentler transient and less heel / thump).",
+      "map": [
+        {
+          "to": "0.soft",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              1.1
+            ]
+          ],
+          "clamp": [
+            0,
+            1.2
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      0,
-      1
-     ]
-    }
-   ]
-  },
-  "hollowness": {
-   "default": 0.5,
-   "doc": "solid .. hollow (thin walls, cavity boom)",
-   "map": [
-    {
-     "to": "0.hollowness",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.6
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.6
+    },
+    "size": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "smaller .. larger (tape speed: smaller is higher and shorter).",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              300.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              -300.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      0,
-      1
-     ]
-    }
-   ]
-  },
-  "muffle": {
-   "default": 0.5,
-   "doc": "ringing .. held/damped",
-   "map": [
-    {
-     "to": "0.muffle",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.5
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.6
+    },
+    "distance": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "nearer .. further (0.5 = as recorded). Further is quieter and duller.",
+      "map": [
+        {
+          "to": "0.distance",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.7
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            0.25,
+            4.0
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      0,
-      1
-     ]
-    }
-   ]
-  },
-  "contact_point": {
-   "default": 0.5,
-   "doc": "edge .. middle",
-   "map": [
-    {
-     "to": "0.contact_point",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.35
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.45
+    },
+    "count": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "a short natural count of real gestures (1 .. 4).",
+      "map": [
+        {
+          "to": "0.count",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.3333333333333333,
+              2.0
+            ],
+            [
+              0.6666666666666666,
+              3.0
+            ],
+            [
+              1.0,
+              4.0
+            ]
+          ],
+          "clamp": [
+            1,
+            4
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      0,
-      1
-     ]
-    }
-   ]
-  },
-  "distance": {
-   "default": 0.0,
-   "doc": "near .. far (level)",
-   "map": [
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       -6
-      ],
-      [
-       1,
-       -18
+    },
+    "tempo": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "slower .. quicker spacing when count is more than one (0.5 = the recording's own gaps).",
+      "map": [
+        {
+          "to": "0.tempo",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.7
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.5
+            ]
+          ],
+          "clamp": [
+            0.4,
+            2.5
+          ]
+        }
       ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and remixes the same real stems (never averaged).",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ]
+    },
+    "hardness": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "padded .. hard edge (mapped onto force; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.force",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.3
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              0.3
+            ]
+          ],
+          "clamp": [
+            -3,
+            3
+          ]
+        }
+      ]
+    },
+    "muffle": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "ringing .. held (mapped onto softness; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.soft",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              0.2
+            ]
+          ],
+          "clamp": [
+            0,
+            1.2
+          ]
+        }
+      ]
+    },
+    "hollowness": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "solid .. hollow (no longer used; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.hs_hz",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        }
+      ]
+    },
+    "contact_point": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "edge .. middle (no longer used; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.hs_hz",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        }
+      ]
+    },
+    "material": {
+      "default": "dirt",
+      "doc": "dirt / gravel / grass / stone (kept so older calls still work; the stored source is unchanged).",
+      "choices": {
+        "dirt": [],
+        "gravel": [
+          {
+            "to": "0.legacy_choice",
+            "op": "set",
+            "value": "gravel"
+          }
+        ],
+        "grass": [
+          {
+            "to": "0.legacy_choice",
+            "op": "set",
+            "value": "grass"
+          }
+        ],
+        "stone": [
+          {
+            "to": "0.legacy_choice",
+            "op": "set",
+            "value": "stone"
+          }
+        ]
+      }
     }
-   ]
   },
-  "material": {
-   "default": "dirt",
-   "doc": "dirt / gravel / grass / stone",
-   "choices": {
-    "dirt": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "dirt"
-     }
-    ],
-    "gravel": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "gravel"
-     }
-    ],
-    "grass": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "grass"
-     }
-    ],
-    "stone": [
-     {
-      "to": "0.material",
-      "op": "set",
-      "value": "stone"
-     }
-    ]
-   }
-  }
- },
- "vary": {
-  "0.velocity": {
-   "rel": 0.15
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
   },
-  "0.contact_point": {
-   "abs": 0.1
-  },
-  "0.size": {
-   "rel": 0.06
-  }
- },
- "layers": [
-  {
-   "name": "impact",
-   "model": "material_impact",
-   "params": {
-    "material": "dirt",
-    "striker": "steel",
-    "striker_mass_g": 2500,
-    "velocity": 14.4525,
-    "hardness": 0.5583,
-    "striker_ring": 0.0,
-    "striker_size": 0.2397,
-    "grains": 0.9742,
-    "residual": 2.6851,
-    "muffle": 0.0605,
-    "at": 0.01
-   }
-  }
- ],
- "post": [
-  {
-   "model": "eq",
-   "params": {
-    "curve": [
-     [
-      50,
-      -6.0
-     ],
-     [
-      63,
-      -6.0
-     ],
-     [
-      80,
-      -6.0
-     ],
-     [
-      100,
-      -6.0
-     ],
-     [
-      125,
-      -6.0
-     ],
-     [
-      160,
-      -6.0
-     ],
-     [
-      200,
-      -4.5
-     ],
-     [
-      250,
-      1.6
-     ],
-     [
-      315,
-      2.1
-     ],
-     [
-      400,
-      3.4
-     ],
-     [
-      500,
-      0.9
-     ],
-     [
-      630,
-      0.1
-     ],
-     [
-      800,
-      -0.1
-     ],
-     [
-      1000,
-      2.4
-     ],
-     [
-      1250,
-      4.8
-     ],
-     [
-      1600,
-      5.0
-     ],
-     [
-      2000,
-      5.7
-     ],
-     [
-      2500,
-      6.0
-     ],
-     [
-      3150,
-      6.0
-     ],
-     [
-      4000,
-      6.0
-     ],
-     [
-      5000,
-      6.0
-     ],
-     [
-      6300,
-      6.0
-     ],
-     [
-      8000,
-      6.0
-     ],
-     [
-      10000,
-      6.0
-     ],
-     [
-      12500,
-      6.0
-     ],
-     [
-      16000,
-      6.0
-     ]
-    ]
-   }
-  }
- ],
- "notes": "v0.26: controls fitted to a recorded pickaxe strike into soil (outside the repo); residual eq limited to +-6 dB; loss 0.26-0.32 across the default and three variations."
+  "notes": "v0.34 impact_stems (docs/impact_stems.md): source 'pickaxe_earth', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). A single real hit or short gesture by default. The seed macro (or any variation) remixes the real stems; nothing is averaged, bands are not pitch-shifted (size is tape speed), and there is no freeze, time-squeeze or added smoothing. Older macro names from the previous recipe still parse; hardness, muffle and intensity map lightly onto force and softness, and unused names are accepted as no-ops."
 }

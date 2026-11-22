@@ -13,6 +13,35 @@ from soundlab.batch import batch_export, file_name
 
 ROOT = Path(__file__).resolve().parents[1]
 R = ROOT / "recipes"
+
+# v0.34: the shipped {names} recipes use recording stems; the previous procedural versions live in recipes/impact_model/ (the same arrangement as recipes/creak_model/).
+MOVED = {
+    "footstep",
+    "footstep_wood",
+    "footstep_dirt",
+    "footstep_grass",
+    "footstep_gravel",
+    "footstep_metal",
+    "footstep_stone",
+    "ceramic_break",
+    "coin_jingle",
+    "dowel",
+    "drumstick",
+    "glass_break",
+    "glass_clink",
+    "metal_clang",
+    "pickaxe_earth",
+    "pickaxe_rock",
+    "sword_clash",
+}
+
+
+def recipe_path(name):
+    name = name[:-5] if str(name).endswith(".json") else str(name)
+    if name in MOVED:
+        return R / "impact_model" / f"{name}.json"
+    return R / f"{name}.json"
+
 SR = 48000
 
 
@@ -69,7 +98,7 @@ def test_category_targets():
 
 @pytest.mark.parametrize("name", ["coin", "door_slam", "glass_break", "creature_growl", "splash"])
 def test_exports_land_on_their_category_target(name):
-    raw = soundlab.load_recipe(R / f"{name}.json")
+    raw = soundlab.load_recipe(recipe_path(name))
     y, sr = soundlab.render(raw)
     z, info = F.finish(y, sr, raw)
     assert F.true_peak_db(z) <= -0.95
@@ -109,7 +138,7 @@ def test_trim_keeps_stationary_sound():
 @pytest.mark.parametrize("name,max_s", [("glass_hit_room", 1.2), ("sword_clash", 1.0), ("hit", 0.6),
                                          ("dowel", 0.7), ("door_slam", 0.8)])
 def test_recipe_tails_are_trimmed(name, max_s):
-    raw = soundlab.load_recipe(R / f"{name}.json")
+    raw = soundlab.load_recipe(recipe_path(name))
     y, sr = soundlab.render(raw)
     z, info = F.finish(y, sr, raw)
     assert info["seconds"] < max_s < info["seconds_in"]

@@ -11,6 +11,35 @@ from soundlab.models.impacts import IMPACT_MATERIALS, SHAPES
 from conftest import SR, run
 
 RECIPES = Path(__file__).resolve().parents[1] / "recipes"
+
+# v0.34: the shipped {names} recipes use recording stems; the previous procedural versions live in recipes/impact_model/ (the same arrangement as recipes/creak_model/).
+MOVED = {
+    "footstep",
+    "footstep_wood",
+    "footstep_dirt",
+    "footstep_grass",
+    "footstep_gravel",
+    "footstep_metal",
+    "footstep_stone",
+    "ceramic_break",
+    "coin_jingle",
+    "dowel",
+    "drumstick",
+    "glass_break",
+    "glass_clink",
+    "metal_clang",
+    "pickaxe_earth",
+    "pickaxe_rock",
+    "sword_clash",
+}
+
+
+def recipe_path(name):
+    name = name[:-5] if str(name).endswith(".json") else str(name)
+    if name in MOVED:
+        return RECIPES / "impact_model" / f"{name}.json"
+    return RECIPES / f"{name}.json"
+
 NEW = ["impact_any", "knock", "drop", "bounce", "footstep_wood", "footstep_stone", "footstep_metal", "footstep_dirt",
        "footstep_gravel", "footstep_grass", "pickaxe_earth", "pickaxe_rock", "blade_clash", "glass_clink",
        "ceramic_break", "body_hit"]
@@ -95,7 +124,7 @@ def test_ground_is_not_tonal_and_fracture_adds_debris():
 
 @pytest.mark.parametrize("name", NEW)
 def test_impact_recipes_render_and_vary(name):
-    p = RECIPES / f"{name}.json"
+    p = recipe_path(name)
     r = json.loads(p.read_text())
     assert r["layers"][0]["model"] == "material_impact"
     y0, sr = soundlab.render(p)
@@ -114,6 +143,6 @@ def test_material_macro_switches_material():
 def test_pickaxe_earth_keeps_the_fitted_cues():
     """Fitted to a recorded pick strike into soil: short (40 dB down within ~0.1 s), bright crumble (centroid
     roughly 2.5-6 kHz in the real take)."""
-    y, sr = soundlab.render(RECIPES / "pickaxe_earth.json")
+    y, sr = soundlab.render(recipe_path("pickaxe_earth"))
     assert t60(y, sr) < 0.35
     assert 1500 < centroid(y, sr) < 7000

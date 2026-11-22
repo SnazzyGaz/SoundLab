@@ -4,7 +4,7 @@ Reference recordings are used for tuning during development only and live
 OUTSIDE the repository (soundlab-research/refs). This test fails if any audio file is tracked by git or sits
 anywhere in the working tree, except paths listed in tests/audio_allowlist.txt (empty: nothing is allowed).
 Analysis numbers of credited CC0 recordings are allowed (v0.28 creak_data.py, v0.29 squeal_stems.bin, v0.30 air_stems.bin, v0.31 liquid_stems.bin,
-v0.32 machine_stems.bin, v0.33 fire_stems.bin: partial tracks and band envelopes at frame rate, see THIRD_PARTY.md); no file may hold sample data, whatever its name.
+v0.32 machine_stems.bin, v0.33 fire_stems.bin, v0.34 impact_stems.bin / weapon_stems.bin / foot_stems.bin: partial tracks and band envelopes at frame rate, see THIRD_PARTY.md); no file may hold sample data, whatever its name.
 """
 import subprocess
 from pathlib import Path
@@ -153,3 +153,34 @@ def test_fire_stem_data_has_no_sample_rate_arrays():
             off = np.frombuffer(blob, "<i4", s["ev_off"]["sh"][0], s["ev_off"]["o"])
             ln = np.frombuffer(blob, "<i4", s["ev_len"]["sh"][0], s["ev_len"]["o"])
             assert s["ev_rate"] <= 8000 and np.all(np.diff(off) <= ln * s["ev_rate"] / 44100 + 2), k
+
+
+def test_recstem_data_has_no_sample_rate_arrays():
+    """impact_stems.bin, weapon_stems.bin, foot_stems.bin (v0.34): event band envelopes at most 8 kHz inside
+    event windows, 1 ms noise-bed envelopes, body-mode tracks at 1 kHz, a 128-point log treble ceiling.
+    Concatenated envelopes and tracks may be longer than one clip, but never one value per sample."""
+    import json, lzma, struct
+    root = ROOT / "soundlab" / "models"
+    for name, magic in (("impact_stems.bin", b"SLIMP001"),
+                        ("weapon_stems.bin", b"SLWEP001"),
+                        ("foot_stems.bin", b"SLFTS001")):
+        raw = (root / name).read_bytes()
+        assert raw[:8] == magic
+        p = lzma.decompress(raw[8:])
+        n = struct.unpack("<I", p[:4])[0]
+        hdr = json.loads(p[4:4 + n])
+        concat = {"ev_env", "bed_env", "md_f", "md_amp", "md_ph"}
+        for k, s in hdr["sources"].items():
+            for field, a in s.items():
+                if isinstance(a, dict) and "sh" in a and field not in concat:
+                    assert max(a["sh"]) <= s["n"] / 4 + 8, (name, k, field, a["sh"], s["n"])
+            if "ev_env" in s:
+                assert s["ev_rate"] <= 8000
+                assert s["ev_env"]["sh"][1] <= s["n"] + s["ev_rate"], (name, k, s["ev_env"]["sh"], s["n"])
+            if "bed_env" in s:
+                assert s["bed_env"]["sh"][1] <= s["n"] / 8, (name, k, s["bed_env"]["sh"], s["n"])
+            if "md_amp" in s:
+                assert s["md_amp"]["sh"][0] <= int(s.get("md_n", 1)) * (s["n"] / 40 + 8) + 8, (
+                    name, k, s["md_amp"]["sh"], s.get("md_n"), s["n"])
+            if "hf_f" in s:
+                assert max(s["hf_f"]["sh"]) <= 256

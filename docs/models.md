@@ -1299,6 +1299,77 @@ Fire, crackle and electricity rebuilt from stems of CC0 recordings (numbers only
 
 Sources: McDermott & Simoncelli 2011 (sound texture statistics); McAulay & Quatieri 1986 (sinusoidal modelling); Hermes 1988 (subharmonic summation); Freesound CC0 recordings (numbers only; THIRD_PARTY.md)
 
+
+### `impact_stems`
+
+Impacts and breaking rebuilt from stems of CC0 recordings (numbers only, no audio): knocks, a dowel, drumsticks, a wood drop, a bouncing ball, a metal clang, a glass clink, pickaxe hits, a coin drop and jingle, a body punch, a ceramic crack and a glass break. Body-mode partial tracks, each recorded hit as 1/8-octave band envelopes, a 1/8-octave 1 ms noise bed, a 1/6-octave colour curve and a static treble ceiling. Fresh takes remix the real stems (never averaged). Speed is tape speed. `force`, `soft` and `distance` are causal. See [impact_stems.md](impact_stems.md).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `source` | `wood_knock` |  | ball_bounce, body_punch, ceramic_break, coin_drop, coin_jingle, dowel, drumstick, glass_break, glass_clink, metal_clang, pickaxe_earth, pickaxe_rock, wood_drop, wood_knock | stored source |
+| `count` | `1` |  | 1 .. 8 | number of real gestures in this take |
+| `tempo` | `1.0` |  | 0.4 .. 2.5 | spacing of a short count (1 = the recording's own gaps) |
+| `which` | `-1` |  | -1 .. 64 | which stored gesture to play (0-based; -1 = pick a typical one) |
+| `early` | `0` |  | 0 .. 1 | prefer the first gestures of the recording (1 = yes) |
+| `force` | `0.0` |  | -3.0 .. 3.0 | event / body level and a 3 kHz shelf; 0 = as recorded |
+| `soft` | `0.0` |  | 0.0 .. 1.2 | softer attack: event-layer low-pass and a 120 Hz low shelf |
+| `speed_cents` | `0.0` | cents | -1200 .. 1200 | tape speed (pitch and time together) |
+| `distance` | `1.0` |  | 0.25 .. 4.0 | 1 = as recorded; further is quieter and duller; nearer has more low end |
+| `hs_hz` | `3000.0` | Hz | 200 .. 16000 | high shelf corner used with force |
+| `legacy_choice` |  |  |  | accepted so older choice macros still parse; unused |
+| `seed` | `0` |  | 0 .. 2147483647 | noise seed (0 with force 0 and soft 0 rebuilds the stored take) |
+| `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the stored take; others reseed a fresh remix of the same stems |
+| `at` | `0.0` | s | 0 .. None |  |
+
+Sources: McDermott & Simoncelli 2011 (sound texture statistics); McAulay & Quatieri 1986 (sinusoidal modelling); Freesound CC0 recordings (numbers only; THIRD_PARTY.md)
+
+### `weapon_stems`
+
+Weapons and combat rebuilt from stems of CC0 recordings (numbers only, no audio): shots, pumps, reloads, blade work, explosions and related one-shots. The same stem method as `impact_stems`. See [weapon_stems.md](weapon_stems.md).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `source` | `pistol_shot` |  | arrow_impact, assault_rifle_burst, assault_rifle_shot, axe_chop, blade_slide, bolt_cycle, bow_release, brass_casings, charging_handle, club_hit, crossbow, distant_gunfire, dry_fire, explosion_close, explosion_distant, firework_bang, hammer_cock, knife_draw, knife_flick, knife_slash, knife_stab, magazine_change, pistol_reload, pistol_shot, revolver_shot, ricochet, rifle_reload, rifle_shot, safety_click, shield_block_metal, shotgun_pump, shotgun_shot, slide_rack, smg_burst, steel_target_ping, suppressed_shot, sword_clash, sword_draw, sword_sheathe, tree_break | stored source |
+| `count` | `1` |  | 1 .. 8 | number of real gestures in this take |
+| `tempo` | `1.0` |  | 0.4 .. 2.5 | spacing of a short count (1 = the recording's own gaps) |
+| `which` | `-1` |  | -1 .. 64 | which stored gesture to play (0-based; -1 = pick a typical one) |
+| `early` | `0` |  | 0 .. 1 | prefer the first gestures of the recording (1 = yes) |
+| `force` | `0.0` |  | -3.0 .. 3.0 | event / body level and a 3 kHz shelf; 0 = as recorded |
+| `soft` | `0.0` |  | 0.0 .. 1.2 | softer attack: event-layer low-pass and a 120 Hz low shelf |
+| `speed_cents` | `0.0` | cents | -1200 .. 1200 | tape speed (pitch and time together) |
+| `distance` | `1.0` |  | 0.25 .. 4.0 | 1 = as recorded; further is quieter and duller; nearer has more low end |
+| `hs_hz` | `3000.0` | Hz | 200 .. 16000 | high shelf corner used with force |
+| `legacy_choice` |  |  |  | accepted so older choice macros still parse; unused |
+| `seed` | `0` |  | 0 .. 2147483647 | noise seed (0 with force 0 and soft 0 rebuilds the stored take) |
+| `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the stored take; others reseed a fresh remix of the same stems |
+| `at` | `0.0` | s | 0 .. None |  |
+
+Sources: McDermott & Simoncelli 2011 (sound texture statistics); McAulay & Quatieri 1986 (sinusoidal modelling); Freesound CC0 recordings (numbers only; THIRD_PARTY.md)
+
+### `foot_stems`
+
+Footsteps rebuilt from stems of CC0 recordings (numbers only, no audio): walks and runs on many surfaces, shoe types on wood, and two jump landings. The same stem method as `impact_stems`. Default recipes use a softer step than the often-forceful recordings (`force` below 0 and `soft` above 0). `surface` and `shoe` select a stored source (used by the legacy `footstep` recipe). See [foot_stems.md](foot_stems.md).
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `source` | `wood_floor` |  | concrete_walk, concrete_run, stone_walk, wood_floor, wood_creaky, wood_stairs, gravel_walk, dirt_walk, grass_walk, grass_run, sand_walk, snow_walk, mud_walk, puddle_walk, metal_walk, metal_stairs, tile_walk, carpet_walk, leaves_walk, boots_walk, heels_walk, trainers_walk, barefoot_wood, jump_land, jump_land_rock | stored source |
+| `surface` |  |  |  | optional surface name; remaps `source` (wood, stone, steel, dirt, gravel, grass, leaves, concrete, sand, snow, mud, tile, carpet) |
+| `shoe` |  |  |  | optional shoe name; remaps `source` (trainer, boot, heel, barefoot) |
+| `count` | `1` |  | 1 .. 8 | number of real steps or landings in this take |
+| `tempo` | `1.0` |  | 0.4 .. 2.5 | spacing of a short walk or run (1 = the recording's own gaps) |
+| `which` | `-1` |  | -1 .. 64 | which stored gesture to play (0-based; -1 = pick a typical one) |
+| `early` | `0` |  | 0 .. 1 | prefer the first gestures of the recording (1 = yes) |
+| `force` | `0.0` |  | -3.0 .. 3.0 | event / body level and a 3 kHz shelf; 0 = as recorded (recipes default lower) |
+| `soft` | `0.0` |  | 0.0 .. 1.2 | softer attack: event-layer low-pass and a 120 Hz low shelf (recipes default above 0) |
+| `speed_cents` | `0.0` | cents | -1200 .. 1200 | tape speed (pitch and time together) |
+| `distance` | `1.0` |  | 0.25 .. 4.0 | 1 = as recorded; further is quieter and duller; nearer has more low end |
+| `hs_hz` | `3000.0` | Hz | 200 .. 16000 | high shelf corner used with force |
+| `seed` | `0` |  | 0 .. 2147483647 | noise seed |
+| `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the stored take; others reseed a fresh remix of the same stems |
+| `at` | `0.0` | s | 0 .. None |  |
+
+Sources: McDermott & Simoncelli 2011 (sound texture statistics); McAulay & Quatieri 1986 (sinusoidal modelling); Freesound CC0 recordings (numbers only; THIRD_PARTY.md)
+
 ## Stage: synth
 
 ### `osc`
