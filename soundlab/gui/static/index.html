@@ -119,8 +119,8 @@
 const $ = (s, el = document) => el.querySelector(s);
 let recipes = [], cur = null, state = {}, audio = new Audio(), lastKey = null, busy = 0, pending = false;
 
-async function api(path, body) {
-  const r = await fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : {});
+async function api(path, body, signal) {
+  const r = await fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body), signal} : {signal});
   const j = await r.json();
   if (!r.ok || j.error) throw new Error(j.error || r.statusText);
   return j;
@@ -169,7 +169,7 @@ function slider(container, o) {  // o: {label, doc, lo, hi, value, log, onchange
   const inp = $("input", row), out = $(".v", row);
   inp.value = Math.round(1000 * Math.min(1, Math.max(0, toPos(o.value))));
   out.textContent = fmt(o.value) + (o.unit ? " " + o.unit : "");
-  inp.oninput = () => { const v = fromPos(inp.value / 1000); out.textContent = fmt(v) + (o.unit ? " " + o.unit : ""); o.oninput && o.oninput(v, row); };
+  inp.oninput = () => { const v = fromPos(inp.value / 1000); out.textContent = fmt(v) + (o.unit ? " " + o.unit : ""); dragging = true; o.onchange(v, row); dragging = false; };
   inp.onchange = () => { o.onchange(fromPos(inp.value / 1000), row); };
   row.ondblclick = () => { inp.value = Math.round(1000 * toPos(o.value)); out.textContent = fmt(o.value); o.onreset && o.onreset(row); };
   container.appendChild(row); return row;
@@ -239,7 +239,16 @@ function req() {
           level: $("#level").value, trim: $("#trim").checked, loop,
           stereo: cur.stereo ? $("#stereo").checked : false};
 }
-function changed() { pending = true; if ($("#auto").checked) render(true); else $("#status").textContent = "changed: press Play"; }
+// Slider moves render live: a short debounce, the previous request is aborted and the server drops any render a newer
+// one has replaced. While dragging the picture updates; letting go (or any other change) plays the result.
+let dragging = false, debounce = null, wantPlay = false;
+function changed() {
+  pending = true;
+  if (!$("#auto").checked) { $("#status").textContent = "changed: press Play"; return; }
+  wantPlay = wantPlay || !dragging;
+  clearTimeout(debounce);
+  debounce = setTimeout(() => { const p = wantPlay; wantPlay = false; render(p); }, 60);
+}
 
 async function run(path, body, done) {
   const msg = $("#msg"); msg.className = ""; msg.textContent = "Working…";
@@ -250,12 +259,15 @@ async function run(path, body, done) {
 }
 async function reloadList(id) { recipes = await api("/api/recipes"); drawList(); }
 
-let seq = 0;
+let seq = 0, inflight = null;
 async function render(play) {
   const my = ++seq; $("#status").textContent = "rendering…"; $("#play").disabled = true;
+  clearTimeout(debounce);
+  if (inflight) inflight.abort();     // the server stops a render a newer one replaces
+  const ctl = inflight = new AbortController();
   try {
-    const r = await api("/api/render", req());
-    if (my !== seq) return;           // a newer render is on its way
+    const r = await api("/api/render", {...req(), supersede: true}, ctl.signal);
+    if (my !== seq || r.superseded) return;           // a newer render is on its way
     lastKey = r.key; pending = false;
     audio.src = r.url; audio.loop = !!req().loop;   // loops play round so the seam can be heard
     const f = r.finish || {};
@@ -264,8 +276,8 @@ async function render(play) {
     $("#status").textContent = `${r.seconds.toFixed(2)} s${req().loop ? " loop" : ""}${r.channels === 2 ? " stereo" : ""} · rendered in ${r.render_s} s · peak ${(20 * Math.log10(r.peak + 1e-9)).toFixed(1)} dBFS${lvl}`;
     drawWave(r.waveform); drawSpec(r.spectrogram);
     if (play) audio.play().catch(() => {});
-  } catch (e) { if (my === seq) $("#status").textContent = "error: " + e.message; }
-  finally { if (my === seq) $("#play").disabled = false; }
+  } catch (e) { if (my === seq && e.name !== "AbortError") $("#status").textContent = "error: " + e.message; }
+  finally { if (my === seq) { $("#play").disabled = false; inflight = null; } }
 }
 
 function drawWave(bins) {

@@ -20,7 +20,9 @@ import numpy as np
 from scipy import signal
 
 from .air_stems import GRID6, _eq_to
-from .machine_stems import SR, _analytic, _bank, _q, _shelf, _tape, _vocoder
+from ..fastpath import memo_arrays
+from .liquid_stems import _interp_rows, _vocoder_passes
+from .machine_stems import SR, _bank, _q, _shelf, _tape, _vocoder
 
 LAST = {}
 
@@ -125,6 +127,7 @@ def minphase_lin(y, f, gdb, N=16384):
     return signal.fftconvolve(y, h)[:len(y)]
 
 
+@memo_arrays
 def voc_ev(env, env_sr, n, seed, i0, iters=8, per_oct=8, imp=1.0):
     rng = np.random.default_rng(seed)
     Hs, _ = _bank(n, per_oct)
@@ -133,16 +136,8 @@ def voc_ev(env, env_sr, n, seed, i0, iters=8, per_oct=8, imp=1.0):
     y = rng.standard_normal(n)
     if imp:
         y[max(0, min(n - 1, int(i0)))] += imp * np.sqrt(n)
-    E = [np.interp(t, te, e) for e in env]
-    for _ in range(iters):
-        Y = np.fft.rfft(y)
-        out = np.zeros(len(Y), complex)
-        for h, e in zip(Hs, E):
-            a = _analytic(Y, h, n)
-            c = a / (np.abs(a) + 1e-9 * (np.abs(a).max() + 1e-30))
-            out += np.fft.rfft((e * c).real) * h
-        y = np.fft.irfft(out, n)
-    return y
+    E = _interp_rows(t, te, env)
+    return _vocoder_passes(y, Hs, E, n, iters)
 
 
 def synth_modes(st, n, a=0, e=None):

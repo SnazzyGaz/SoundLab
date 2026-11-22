@@ -32,6 +32,8 @@ import numpy as np
 
 from . import dsp
 from .core import REGISTRY, Ctx, RecipeError
+from . import fastpath
+from .fastpath import check
 
 FORMAT_VERSION = 1
 
@@ -44,6 +46,26 @@ def load(path_or_obj: Any) -> dict:
 
 
 def _block(ctx: Ctx, spec: dict, x: np.ndarray | None) -> np.ndarray:
+    check()     # the slider app stops a render that a newer one has replaced (no-op elsewhere)
+    if not fastpath.block_memo_on():
+        return _block_run(ctx, spec, x)
+    # slider app: a block whose params, length, random state and input are unchanged gives the same samples and
+    # leaves the random stream where it did, so reuse both (a distance or room move skips the source layers)
+    import json
+    key = ("block", json.dumps(spec, sort_keys=True, default=repr), ctx.sr, ctx.n, ctx.c,
+           json.dumps(ctx.rng.bit_generator.state, sort_keys=True, default=repr),
+           None if x is None else fastpath.digest(x))
+    hit = fastpath.MEMO.get(key)
+    if hit is not None:
+        y, state = hit[0]
+        ctx.rng.bit_generator.state = state
+        return y.copy()
+    y = _block_run(ctx, spec, x)
+    fastpath.MEMO.put(key, (y.copy(), ctx.rng.bit_generator.state), y.nbytes)
+    return y
+
+
+def _block_run(ctx: Ctx, spec: dict, x: np.ndarray | None) -> np.ndarray:
     if "model" not in spec:
         raise RecipeError(f"block without 'model': {spec}")
     name = spec["model"]

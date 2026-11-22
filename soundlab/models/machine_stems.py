@@ -34,7 +34,8 @@ from scipy.ndimage import median_filter, uniform_filter1d
 
 from ..core import Ctx, Param, RecipeError, model
 from .air_stems import GRID6, SR, _eq_to
-from .liquid_stems import _analytic, _bank, _depth
+from ..fastpath import memo_arrays
+from .liquid_stems import _bank, _depth, _interp_rows, _vocoder_passes
 
 DATA = Path(__file__).with_name("machine_stems.bin")
 GESTURE_TAKE = {"power_drill": "power_drill_gesture", "lawn_mower": "lawn_mower_gesture"}
@@ -139,21 +140,15 @@ def _ctrl_to_audio(v, n):
 
 # ---------------------------------------------------------------------------------------------- layers
 
+@memo_arrays
 def _vocoder(env, env_sr, n, ltas6, seed, iters=4, per_oct=8):
     rng = np.random.default_rng(seed)
     Hs, _ = _bank(n, per_oct)
     t = np.arange(n) / SR
     te = np.arange(env.shape[1]) / env_sr
     y = rng.standard_normal(n)
-    E = [np.interp(t, te, e) for e in env]
-    for _ in range(iters):
-        Y = np.fft.rfft(y)
-        out = np.zeros(len(Y), complex)
-        for h, e in zip(Hs, E):
-            a = _analytic(Y, h, n)
-            c = a / (np.abs(a) + 1e-9 * (np.abs(a).max() + 1e-30))
-            out += np.fft.rfft((e * c).real) * h
-        y = np.fft.irfft(out, n)
+    E = _interp_rows(t, te, env)
+    y = _vocoder_passes(y, Hs, E, n, iters)
     return _eq_to(y, ltas6) if ltas6 is not None else y
 
 

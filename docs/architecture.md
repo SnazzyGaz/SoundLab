@@ -62,6 +62,15 @@ took 0.02-0.5 s on the box for 1.5-9 s of audio (faster than real time, but offl
   (returns a WAV URL, waveform and log-frequency spectrogram), `/api/export`, `/api/batch`, `/api/save`.
   Requests carry `{id, macros, overrides, variation, seed}`; overrides are absolute values set after the macros
   (`"L.name"`, `"L.B.name"` for chain block B, `"post.J.name"`).
+- Speed (`soundlab/fastpath.py`; none of it changes a sample, tests/test_fastpath.py checks bit identity):
+  the slider app renders live while a slider is dragged (60 ms debounce). The page aborts the request a newer
+  move replaces and sends `"supersede": true`; the server runs one render at a time and a render that a newer one has
+  replaced stops at its next check (`{"superseded": true}`). Finished renders are kept per request (Play again, undo
+  a slider), recipe blocks whose params, length, random state and input are unchanged are reused, and the
+  band-envelope vocoders of the recording-stem families are memoised (their noise depends on the take, not on most
+  sliders) and run their bands on every core (`SOUNDLAB_THREADS`, default 1 outside the app; `SOUNDLAB_MEMO_MB`,
+  default 512; `SOUNDLAB_MEMO=0` turns the memos off). After a stem recipe is shown, the idle server renders each
+  slider's ends and the next variation ahead, so the slider moves after that only run the cheap stages.
 - `soundlab/gui/static/index.html`, `blindtest.html`: plain HTML + JavaScript, no build step, no CDN.
 - `soundlab/gui/blindtest.py`: `/api/bt/*` (pack info, clips, start/resume a listener, save an answer, results).
 - `soundlab/checkpoint.py`: listening packs and scoring (single-clip `build_pack` / `score_pack`, A/B `build` /

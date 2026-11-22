@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 from scipy.io import wavfile
 
+from soundlab import fastpath
 from soundlab.checkpoint import build_pack, score_pack
 from soundlab.gui import make_server
 from soundlab.gui.server import REPO_RECIPES
@@ -23,6 +24,8 @@ def srv(tmp_path):
     yield base, s, tmp_path
     s.shutdown()
     s.server_close()
+    fastpath.set_threads(None)          # the app's speed settings are per process: leave the other tests as they were
+    fastpath.set_block_memo(False)
 
 
 def get(url):

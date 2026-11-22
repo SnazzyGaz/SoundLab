@@ -12,6 +12,7 @@ import threading
 import time
 import uuid
 import webbrowser
+from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
@@ -48,7 +49,8 @@ def default_out_dir() -> Path:
 class App:
     """Everything the handlers need: recipe folders, output folder, render cache, blind-test pack."""
 
-    def __init__(self, recipe_dirs=None, out_dir=None, pack_dir=None, cache_size: int = 24):
+    def __init__(self, recipe_dirs=None, out_dir=None, pack_dir=None, cache_size: int = 24, results_size: int = 32,
+                 fast: bool = False, threads: int | None = None):
         self.recipe_dirs = [Path(p) for p in (recipe_dirs or [REPO_RECIPES])]
         self.out_dir = Path(out_dir) if out_dir else default_out_dir()
         self.user_recipes = self.out_dir / "recipes"
@@ -57,6 +59,19 @@ class App:
         self.order: list[str] = []
         self.cache_size = cache_size
         self.lock = threading.Lock()
+        # slider app speed: finished renders by request (Play again, undo a slider, step back a variation), a
+        # generation counter so a render the page has replaced stops early, and one render at a time so the newest
+        # gets every core instead of queueing behind stale ones
+        self.results: OrderedDict[str, tuple] = OrderedDict()
+        self.results_size = results_size
+        self.gen = 0
+        self.render_lock = threading.Lock()
+        self.prefetch = fast
+        self.prefetched = None
+        if fast:            # the slider app: band loops on every core, and unchanged blocks reused between renders
+            from .. import fastpath
+            fastpath.set_threads(threads or os.cpu_count() or 1)
+            fastpath.set_block_memo(True)
 
     # ---- recipes
     def recipes(self) -> list[dict]:
@@ -184,21 +199,113 @@ class App:
                             loop=bool(loop))
         return audio, sr, fin
 
+    def _result_key(self, req: dict) -> str:
+        """The request plus the recipe file's identity (a saved recipe can be overwritten on disk)."""
+        p = self.recipe_path(req["id"])
+        st = p.stat()
+        return json.dumps([str(p), st.st_mtime_ns, st.st_size, {k: v for k, v in req.items() if k != "supersede"}],
+                          sort_keys=True, default=str)
+
+    def _produce(self, req: dict, rkey: str, stale) -> tuple:
+        """Finished render + page pictures for one request, one render at a time; raises Superseded once stale()."""
+        from ..fastpath import Superseded, cancel_scope
+        with self.render_lock:
+            if stale():
+                raise Superseded("superseded")
+            with cancel_scope(stale):
+                audio, sr, fin = self.finished_audio(req)
+            mono = audio if audio.ndim == 1 else audio.mean(axis=1)
+            hit = (audio, sr, fin, waveform(mono), spectrogram(mono, sr))
+        with self.lock:
+            self.results[rkey] = hit
+            while len(self.results) > self.results_size:
+                self.results.popitem(last=False)
+        return hit
+
     def render(self, req: dict) -> dict:
+        """Render for the page. With "supersede": true (the slider app) a newer render makes this one stop early and
+        answer {"superseded": true}; renders run one at a time, newest first. Repeated requests come from a cache."""
+        from ..fastpath import Superseded
         t0 = time.time()
-        audio, sr, fin = self.finished_audio(req)
-        dt = time.time() - t0
+        rkey = self._result_key(req)
+        supersede = bool(req.get("supersede"))
+        with self.lock:
+            if supersede:
+                self.gen += 1
+            my = self.gen
+            hit = self.results.get(rkey)
+            if hit is not None:
+                self.results.move_to_end(rkey)
+        stale = (lambda: self.gen != my) if supersede else (lambda: False)
+        if hit is None:
+            try:
+                hit = self._produce(req, rkey, stale)
+            except Superseded:
+                return {"superseded": True}
+        if supersede and self.prefetch:
+            self._start_prefetch(req, my)
+        audio, sr, fin, wave, spec = hit
         key = uuid.uuid4().hex[:12]
         with self.lock:
             self.cache[key] = (audio, sr)
             self.order.append(key)
             while len(self.order) > self.cache_size:
                 self.cache.pop(self.order.pop(0), None)
-        mono = audio if audio.ndim == 1 else audio.mean(axis=1)
         return {"key": key, "url": f"/api/audio/{key}.wav", "sample_rate": sr, "seconds": len(audio) / sr,
                 "channels": 1 if audio.ndim == 1 else audio.shape[1], "finish": fin,
-                "render_s": round(dt, 3), "peak": float(np.max(np.abs(audio)) if len(audio) else 0.0),
-                "waveform": waveform(mono), "spectrogram": spectrogram(mono, sr)}
+                "render_s": round(time.time() - t0, 3), "peak": float(np.max(np.abs(audio)) if len(audio) else 0.0),
+                "waveform": wave, "spectrogram": spec}
+
+    # ---- warm-up while the page is idle
+    def prefetch_requests(self, req: dict) -> list[dict]:
+        """What to render ahead after the page showed `req`, for recipes built on recording stems (their rebuilt
+        noise is the slow part, and it depends on the take, not on most sliders): each slider at both ends, then the
+        next variation. Those leave every stem's noise for this take cached, so the slider moves after them only
+        re-run the cheap stages. Synthesis recipes get nothing (their slow part changes with every slider value)."""
+        raw = load_recipe(self.recipe_path(req["id"]))
+        models = {b.get("model", "") for layer in raw.get("layers", []) for b in (layer.get("chain") or [layer])}
+        if not any(str(m).endswith("_stems") for m in models):
+            return []
+        base = {k: v for k, v in req.items() if k != "supersede"}
+        out = []
+        for name, spec in raw.get("macros", {}).items():
+            if "choices" in spec or any("variation" in str(m.get("to", "")) for m in spec.get("map", [])):
+                continue            # a 'seed' slider: every position is a new take
+            for v in (1.0, 0.0):
+                out.append(dict(base, macros={**(base.get("macros") or {}), name: v}))
+        out.append(dict(base, variation=int(base.get("variation") or 0) + 1))
+        return out
+
+    def _start_prefetch(self, req: dict, my: int) -> None:
+        sig = json.dumps({k: v for k, v in req.items() if k not in ("supersede", "macros")}, sort_keys=True, default=str)
+        with self.lock:
+            if sig == self.prefetched:
+                return
+            self.prefetched = sig
+        threading.Thread(target=self._prefetch, args=(req, my), daemon=True, name="soundlab-prefetch").start()
+
+    def _prefetch(self, req: dict, my: int) -> None:
+        from ..fastpath import Superseded
+        stale = lambda: self.gen != my          # noqa: E731  (any newer page render stops the warm-up)
+        try:
+            todo = self.prefetch_requests(req)
+        except Exception:
+            return
+        for q in todo:
+            try:
+                if stale():
+                    raise Superseded("superseded")
+                rkey = self._result_key(q)
+                with self.lock:
+                    if rkey in self.results:
+                        continue
+                self._produce(q, rkey, stale)
+            except Superseded:
+                with self.lock:         # cut short: the next page render starts it again (done parts are cached)
+                    self.prefetched = None
+                return
+            except Exception:
+                continue
 
     def export_name(self, req: dict, k: int, ext: str) -> str:
         from ..batch import file_name
@@ -273,11 +380,16 @@ def apply_overrides(r: dict, overrides: dict) -> None:
 
 
 def waveform(x: np.ndarray, bins: int = 800) -> list:
+    """[min, max] per bin. Bins tile x, so the non-empty ones are reduceat segments between their starts."""
     if len(x) == 0:
         return []
     edges = np.linspace(0, len(x), bins + 1).astype(int)
-    return [[round(float(x[a:b].min()), 4), round(float(x[a:b].max()), 4)] if b > a else [0, 0]
-            for a, b in zip(edges[:-1], edges[1:])]
+    a, b = edges[:-1], edges[1:]
+    ok = b > a
+    lo, hi = np.zeros(bins), np.zeros(bins)
+    lo[ok] = np.minimum.reduceat(x, a[ok])
+    hi[ok] = np.maximum.reduceat(x, a[ok])
+    return [[round(float(l), 4), round(float(h), 4)] if k else [0, 0] for l, h, k in zip(lo, hi, ok)]
 
 
 def spectrogram(x: np.ndarray, sr: int, frames: int = 240, bands: int = 96) -> dict:
@@ -313,12 +425,15 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
     def _send(self, code: int, body: bytes, ctype: str):
-        self.send_response(code)
-        self.send_header("Content-Type", ctype)
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.send_response(code)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass        # the page dropped the request (a newer slider move replaced it)
 
     def _json(self, obj, code: int = 200):
         self._send(code, json.dumps(obj).encode(), "application/json")
@@ -412,6 +527,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def make_server(port: int = DEFAULT_PORT, host: str = "127.0.0.1", **app_kw) -> ThreadingHTTPServer:
+    app_kw.setdefault("fast", True)
     app = App(**app_kw)
     handler = type("SoundLabHandler", (Handler,), {"app": app})
     srv = ThreadingHTTPServer((host, port), handler)

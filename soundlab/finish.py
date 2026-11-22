@@ -112,6 +112,48 @@ def target_for(recipe: dict | None, loop: bool = False) -> float:
     return TARGETS.get(cat, DEFAULT_TARGET)
 
 
+def _release_loop(seg: list, a: float, start: int = 1) -> list:
+    prev = seg[start - 1]
+    for i in range(start, len(seg)):
+        v = prev * a
+        if v > seg[i]:
+            seg[i] = v
+        prev = seg[i]
+    return seg
+
+
+def _release(seg: np.ndarray, a: float) -> np.ndarray:
+    """y[0] = seg[0]; y[i] = max(seg[i], y[i-1] * a): the limiter's release, bit for bit, without a per-sample
+    Python loop. Runs of decay are found in the log domain, each run is a running product (the same roundings as the
+    loop), and the result is checked against the recursion; anything that does not check out is redone by the loop."""
+    n = len(seg)
+    if n < 2:
+        return seg.copy()
+    la = math.log(a)
+    i = np.arange(n)
+    with np.errstate(divide="ignore"):
+        ls = np.log(seg)
+    ly = np.maximum.accumulate(ls - i * la) + i * la              # ~log y
+    start = np.empty(n, bool)
+    start[0] = True
+    start[1:] = ls[1:] >= ly[:-1] + la                            # seg[i] >= y[i-1] * a: a new run
+    y = np.array(seg, float)
+    s0 = np.flatnonzero(start)
+    s1 = np.r_[s0[1:], n]
+    for k in np.flatnonzero(s1 - s0 > 1):
+        j, e = s0[k], s1[k]
+        buf = np.full(e - j, a)
+        buf[0] = seg[j]
+        y[j:e] = np.multiply.accumulate(buf)
+    v = y[:-1] * a
+    bad = np.flatnonzero(np.where(v > seg[1:], v, seg[1:]) != y[1:])
+    if len(bad):                                                  # a near tie the log domain got wrong: redo from there
+        k = int(bad[0]) + 1
+        out = y[:k].tolist() + seg[k:].tolist()
+        y = np.array(_release_loop(out, a, k))
+    return y
+
+
 def limit(x: np.ndarray, sr: int, ceiling_db: float, lookahead_s: float = 0.0015, release_s: float = 0.06) -> np.ndarray:
     """Look-ahead peak limiter: the gain is already down `lookahead_s` before each peak (a smooth ramp, no
     clipped edges) and recovers over `release_s`."""
@@ -125,12 +167,7 @@ def limit(x: np.ndarray, sr: int, ceiling_db: float, lookahead_s: float = 0.0015
     nz = np.nonzero(red > 0)[0]
     if len(nz):                                                     # release: decay only after the last peak
         i0, i1 = nz[0], min(len(red), nz[-1] + int(10 * release_s * sr))
-        seg = red[i0:i1].copy()
-        for i in range(1, len(seg)):
-            v = seg[i - 1] * a
-            if v > seg[i]:
-                seg[i] = v
-        red[i0:i1] = seg
+        red[i0:i1] = _release(red[i0:i1], a)
     k = np.hanning(2 * la + 1)
     red = np.convolve(red, k / k.sum(), mode="same")                # round the attack corner
     g = 1.0 - np.clip(red, 0, 1)
@@ -154,15 +191,17 @@ def normalize_loudness(x: np.ndarray, sr: int, target: float, measure_by: str = 
         lim_db = min(over, max_limit_db)
         gain -= over - lim_db                       # what the limiter may not take comes off the gain
     y = x * 10 ** (gain / 20)
+    tp_y = None                                    # true peak of y when already measured
     if lim_db > 0:
         y = limit(y, sr, ceiling_dbtp - 0.3)
-        tp2 = true_peak_db(y)
-        if tp2 > ceiling_dbtp:                     # inter-sample overs left: trim the gain a little
-            y = y * 10 ** ((ceiling_dbtp - tp2) / 20)
+        tp_y = true_peak_db(y)
+        if tp_y > ceiling_dbtp:                    # inter-sample overs left: trim the gain a little
+            y = y * 10 ** ((ceiling_dbtp - tp_y) / 20)
+            tp_y = None
     res = meas(y, sr)
     return y, {"gain_db": round(gain, 2), "measured_before": round(now, 2), "target": target,
                "result": round(res, 2), "limited_by_peak": bool(over > 0), "limiter_db": round(lim_db, 2),
-               "measured_by": measure_by, "true_peak": round(true_peak_db(y), 2)}
+               "measured_by": measure_by, "true_peak": round(true_peak_db(y) if tp_y is None else tp_y, 2)}
 
 
 # --------------------------------------------------------------------------------------------- trim

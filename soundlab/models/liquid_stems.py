@@ -25,6 +25,7 @@ import numpy as np
 from scipy import signal
 from scipy.ndimage import uniform_filter1d
 
+from ..fastpath import band_map, memo_arrays, ordered_map
 from ..core import Ctx, Param, RecipeError, model
 from .air_stems import FB, FR, GRID6, H, MS, N, SR, _band_env, _eq_to, _gain, _istft, _stft
 
@@ -134,22 +135,62 @@ def _analytic(X, h, n):
     return np.fft.ifft(Y)
 
 
-def _resynth_env(st, seed, iters=4):
-    rng = np.random.default_rng(seed)
-    n = st["n"]
-    Hs, _ = _bank(n, st["per_oct"])
-    t = np.arange(n) / SR
-    te = np.arange(st["env"].shape[1]) / st["env_sr"]
-    y = rng.standard_normal(n)
-    E = [np.interp(t, te, e) for e in st["env"]]
+def _band_terms(Y, H, E, n):
+    """A block of bands of one vocoder pass: each band's analytic signal, its phase carrier, the target envelope on
+    it, back into the band. Row by row the same arithmetic as _analytic + the per-band loop (numpy's batched FFTs
+    do each row exactly as a single call would), so the passes stay bit-identical."""
+    m = len(Y)
+    Z = np.zeros((len(H), n), complex)
+    Z[:, :m] = Y * H * 2
+    Z[:, 0] *= 0.5
+    if n % 2 == 0:
+        Z[:, m - 1] *= 0.5
+    a = np.fft.ifft(Z, axis=1)
+    del Z
+    mag = np.abs(a)
+    c = a / (mag + 1e-9 * (mag.max(axis=1, keepdims=True) + 1e-30))
+    del a, mag
+    return np.fft.rfft(E * c.real, axis=1) * H     # == rfft((e * c).real) bit for bit, one complex product fewer
+
+
+def _interp_rows(t, te, env):
+    E = np.empty((len(env), len(t)))
+
+    def row(i):
+        E[i] = np.interp(t, te, env[i])
+    band_map(row, [(i,) for i in range(len(env))])
+    return E
+
+
+def _vocoder_passes(y, Hs, E, n, iters):
+    """Impose the band envelopes E on y, `iters` times (the shared core of every band-envelope vocoder). The bands
+    are summed in band order, as the original loop did."""
+    B = max(1, min(8, (1 << 20) // max(1, n)))          # bands per FFT batch (about 16 MB of complex per batch)
+    nb = min(len(Hs), len(E))                           # as zip(Hs, E) did
     for _ in range(iters):
         Y = np.fft.rfft(y)
         out = np.zeros(len(Y), complex)
-        for h, e in zip(Hs, E):
-            a = _analytic(Y, h, n)
-            c = a / (np.abs(a) + 1e-9 * (np.abs(a).max() + 1e-30))
-            out += np.fft.rfft((e * c).real) * h
+        for R in ordered_map(_band_terms, [(Y, Hs[i:min(i + B, nb)], E[i:min(i + B, nb)], n) for i in range(0, nb, B)]):
+            for r in R:
+                out += r
         y = np.fft.irfft(out, n)
+    return y
+
+
+@memo_arrays
+def _env_noise(env, env_sr, n, per_oct, seed, iters):
+    rng = np.random.default_rng(seed)
+    Hs, _ = _bank(n, per_oct)
+    t = np.arange(n) / SR
+    te = np.arange(env.shape[1]) / env_sr
+    y = rng.standard_normal(n)
+    E = _interp_rows(t, te, env)
+    return _vocoder_passes(y, Hs, E, n, iters)
+
+
+def _resynth_env(st, seed, iters=4):
+    n = st["n"]
+    y = _env_noise(st["env"], st["env_sr"], n, st["per_oct"], seed, iters)
     if st["tonal"]:
         y = y + _synth_tracks(st["tonal"], n + BN)[:n]
     return _eq_to(y, st["ltas6"])
