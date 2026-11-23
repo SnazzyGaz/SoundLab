@@ -1,0 +1,23 @@
+{
+  "soundlab": 1,
+  "type": "sequence",
+  "name": "typing",
+  "title": "Typing",
+  "order": 8,
+  "category": "foley",
+  "seed": 1,
+  "doc": "A short sentence typed on a keyboard. Each burst is a real phrase from the recording, and no two bursts in a row are the same take.",
+  "rate": {
+    "interval": 0.85
+  },
+  "humanise": {
+    "timing_ms": 40,
+    "level_db": 1.0
+  },
+  "steps": [
+    {
+      "entry": "interact/keyboard",
+      "repeat": 3
+    }
+  ]
+}

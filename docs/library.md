@@ -23,7 +23,7 @@ Variants are choices inside one entry rather than separate list items:
   three recipes at every setting.
 - **Coin drop**: Shape single (one coin) or spin (the longer spinning drop).
 - **Parts**: where one recording holds two different actions they are a Part choice: wood door latch / swing,
-  deadbolt lock / unlock, bag zip open / close, cupboard open / close.
+  deadbolt lock / unlock, bag zip open / close, cupboard open / close, velcro open / close.
 - **Rain**: Surface (open ground, a roof, or a window) and Intensity (light to heavy on open ground, crossfading
   real recordings). An Intensity curve under Advanced can swell or fade over the length of the bed.
 - **Thunder**: Kind near crack or distant roll.
@@ -42,11 +42,28 @@ they stay in the recipe so existing calls and saved recipes still work.
 take (◀ ▶ step through them, 🎲 picks one). It replaces the separate seed box and the per-recipe seed slider
 (the slider stays in the files, hidden, for older calls).
 
+## Everyday interactions
+
+Camera, drink handling and household interactions from recording stems (`interact_stems`) sit in the existing
+Foley tree:
+
+- **Foley › Camera**: camera shutter, film advance, phone shutter.
+- **Foley › Kitchen & tableware**: a can opening, a bottle cap, a cork, a screw cap, ice in a glass, a plastic
+  lid (alongside the existing cups, glasses, bottles and pour).
+- **Foley › Cloth & bags**: velcro (Part: open / close).
+- **Foley › Household**: a lighter, a phone vibrate, typing, a mouse click, tape, a stapler, scissors and a
+  spray can.
+
+See [interact_stems.md](interact_stems.md). These do not replace the foley pen click, light switch, page turn,
+book close, zips, drawer, cup / glass / bottle put down, or the pour into a glass. Variation 0 is the sound as
+designed; every other number remixes the same real stems (never averaged) and, where the recording holds several
+takes, plays another take.
+
 ## Sequences
 
 The Sequence tab chains entries on a timeline: walk, run, knock xN, door open-close(-lock), gunfire with
-casings, reload, or your own. Every event gets its own take, and export gives one mix or numbered one-shots with
-a cue CSV. See [sequences.md](sequences.md).
+casings, reload, typing a short sentence, opening a can and pouring, or your own. Every event gets its own
+take, and export gives one mix or numbered one-shots with a cue CSV. See [sequences.md](sequences.md).
 
 ## Old ids
 
@@ -67,7 +84,7 @@ Not built yet:
 - **Gaps**: a storm build as a sequence; crowd and office beds; animals (dog, cat, birds, horse);
   non-verbal people (body fall, clothing movement, grabs); bullet impacts on concrete, wood and metal, sword
   swing with a ring, heavy body hits; car start/stop, idle loop, horn, plane, helicopter and train; household
-  (typing, phone ring and vibrate, doorbell, kettle, tap, microwave, toilet flush, alarm clock); more UI sounds
+  (phone ring, doorbell, kettle, tap, microwave, toilet flush, alarm clock); more UI sounds
   (error, back, hover, notification, toggle).
 - Several older synthesis recipes stay in the library until stem rebuilds replace them (the creature growls,
   the animals, engine idle and blips, the scrapes, bullet impact, sword swing). The previous procedural rain
