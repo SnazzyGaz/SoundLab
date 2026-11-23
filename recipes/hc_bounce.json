@@ -1,6 +1,11 @@
 {
   "soundlab": 1,
   "name": "Steel ball bouncing to rest on a hard floor: Hunt-Crossley contacts exciting the ball's own high modes",
+  "title": "Bounce (model)",
+  "library": "Impacts & breaks/Objects",
+  "tags": [
+    "bounce"
+  ],
   "category": "impact",
   "sample_rate": 48000,
   "duration": 3.0,
@@ -130,7 +135,8 @@
             0.99
           ]
         }
-      ]
+      ],
+      "label": "Bounce"
     },
     "height": {
       "default": 0.5,
@@ -154,7 +160,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Height"
     },
     "distance": {
       "default": 0.5,
@@ -182,7 +189,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "notes": "v0.25: fitted to reference recordings (BigSoundBank #2242, #2243 metal ball bounce), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."

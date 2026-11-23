@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Sparkler fizzing",
+  "title": "Sparkler",
+  "library": "Fire",
+  "tags": [
+    "firework",
+    "fizz"
+  ],
   "category": "foley",
   "sample_rate": 48000,
   "duration": 12.3,
@@ -134,7 +140,8 @@
             12
           ]
         }
-      ]
+      ],
+      "label": "Pop density"
     },
     "distance": {
       "default": 0.5,
@@ -249,7 +256,8 @@
             20
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "seed": {
       "default": 0.0,
@@ -264,7 +272,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

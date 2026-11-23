@@ -1,6 +1,13 @@
 {
  "soundlab": 1,
  "name": "Sword swing: aeolian whoosh with edge 'zing' and Doppler as it passes",
+ "title": "Sword swing",
+ "library": "Combat/Blades",
+ "tags": [
+  "sword",
+  "swish",
+  "whoosh"
+ ],
  "category": "whoosh",
  "sample_rate": 48000,
  "duration": 0.7,
@@ -67,7 +74,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Speed"
   },
   "object": {
    "default": 0.5,
@@ -109,7 +117,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Object"
   },
   "zing": {
    "default": 0.5,
@@ -133,7 +142,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Zing"
   },
   "distance": {
    "default": 0.5,
@@ -179,7 +189,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

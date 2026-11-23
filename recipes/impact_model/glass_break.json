@@ -75,7 +75,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -99,7 +100,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "floor": {
    "default": "hard",
@@ -126,7 +128,8 @@
       "value": "soft"
      }
     ]
-   }
+   },
+   "label": "Floor"
   },
   "distance": {
    "default": 0.5,
@@ -172,7 +175,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -185,5 +189,7 @@
   "0.energy": {
    "abs": 0.08
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "glass_break"
 }

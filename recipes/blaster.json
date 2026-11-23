@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Struck guy-wire 'pew' (dispersive string; Burtt's blaster prop, our physics reading)",
+ "title": "Blaster",
+ "library": "Game UI & sci-fi",
+ "tags": [
+  "laser",
+  "gun"
+ ],
  "sample_rate": 48000,
  "duration": 1.5,
  "seed": 1,
@@ -61,7 +67,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -85,7 +92,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "length": {
    "default": 0.5,
@@ -109,7 +117,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   }
  },
  "vary": {

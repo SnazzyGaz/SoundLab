@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Whoosh: a fast swish past the ear (stems of a CC0 recording)",
+  "title": "Whoosh",
+  "library": "Game UI & sci-fi",
+  "tags": [
+    "swish",
+    "transition"
+  ],
   "category": "whoosh",
   "sample_rate": 48000,
   "duration": 1.0,
@@ -62,7 +68,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "size": {
       "default": 0.5,
@@ -104,7 +111,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "pitch": {
       "default": 0.5,
@@ -128,7 +136,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pitch"
     },
     "seed": {
       "default": 0.0,
@@ -143,7 +152,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

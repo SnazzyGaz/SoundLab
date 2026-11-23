@@ -1,6 +1,13 @@
 {
   "soundlab": 1,
   "name": "A steel pipe struck by a hammer",
+  "title": "Metal pipe clang",
+  "library": "Impacts & breaks/Objects",
+  "tags": [
+    "metal",
+    "pipe",
+    "clang"
+  ],
   "category": "impact",
   "sample_rate": 48000,
   "duration": 2.74,
@@ -52,7 +59,8 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "soft": {
       "default": 0.0,
@@ -81,7 +89,9 @@
             1.2
           ]
         }
-      ]
+      ],
+      "label": "Soft",
+      "ui": "advanced"
     },
     "size": {
       "default": 0.5,
@@ -110,7 +120,8 @@
             1200
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "distance": {
       "default": 0.5,
@@ -139,7 +150,8 @@
             4.0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "count": {
       "default": 0.0,
@@ -172,7 +184,9 @@
             4
           ]
         }
-      ]
+      ],
+      "label": "Count",
+      "ui": "advanced"
     },
     "tempo": {
       "default": 0.5,
@@ -201,7 +215,9 @@
             2.5
           ]
         }
-      ]
+      ],
+      "label": "Rate",
+      "ui": "advanced"
     },
     "seed": {
       "default": 0.0,
@@ -216,7 +232,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     },
     "object": {
       "default": "pipe",
@@ -244,7 +262,9 @@
             "value": "sword"
           }
         ]
-      }
+      },
+      "label": "Object",
+      "ui": "hidden"
     },
     "intensity": {
       "default": 0.5,
@@ -273,7 +293,9 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Intensity",
+      "ui": "hidden"
     },
     "ring": {
       "default": 0.5,
@@ -294,7 +316,9 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Ring",
+      "ui": "hidden"
     }
   },
   "vary": {

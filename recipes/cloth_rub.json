@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Cloth rub: fabric rubbed against fabric (a sleeve on a jacket)",
+  "title": "Cloth rub",
+  "library": "Foley/Cloth & bags",
+  "tags": [
+    "fabric",
+    "friction"
+  ],
   "category": "foley",
   "sample_rate": 48000,
   "duration": 1.5,
@@ -32,7 +38,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pressure"
     },
     "speed": {
       "default": 0.5,
@@ -56,7 +63,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "speed_change": {
       "default": 0.5,
@@ -84,7 +92,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Speed change"
     },
     "irregularity": {
       "default": 0.5,
@@ -112,7 +121,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Irregularity"
     },
     "length": {
       "default": 0.5,
@@ -154,7 +164,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Length"
     },
     "distance": {
       "default": 0.0,
@@ -182,7 +193,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {

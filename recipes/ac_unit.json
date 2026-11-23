@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Window air conditioner",
+  "title": "AC unit",
+  "library": "Machines/Household & tools",
+  "tags": [
+    "air conditioning",
+    "hum"
+  ],
   "category": "machines",
   "sample_rate": 48000,
   "duration": 10.3,
@@ -239,7 +245,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Fan"
     },
     "seed": {
       "default": 0.0,
@@ -254,7 +261,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

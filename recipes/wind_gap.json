@@ -1,145 +1,159 @@
 {
- "soundlab": 1,
- "name": "Wind whistling through a gap (edge tone over gusty wind)",
- "category": "ambience",
- "sample_rate": 48000,
- "duration": 8.0,
- "seed": 12,
- "layers": [
-  {
-   "name": "main",
-   "model": "wind",
-   "params": {
-    "speed": 12.0,
-    "gustiness": 0.1,
-    "gust_hz": 0.1,
-    "howl": 0.2,
-    "whistle": 0.6,
-    "gap_mm": 6.0,
-    "trees": 0.0,
-    "rumble": 0.1,
-    "indoors": 0.85
-   }
+  "soundlab": 1,
+  "name": "Wind whistling through a gap (edge tone over gusty wind)",
+  "title": "Wind whistle through a gap",
+  "library": "Weather/Wind",
+  "tags": [
+    "wind",
+    "whistle"
+  ],
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 8.0,
+  "seed": 12,
+  "layers": [
+    {
+      "name": "main",
+      "model": "wind",
+      "params": {
+        "speed": 12.0,
+        "gustiness": 0.1,
+        "gust_hz": 0.1,
+        "howl": 0.2,
+        "whistle": 0.6,
+        "gap_mm": 6.0,
+        "trees": 0.0,
+        "rumble": 0.1,
+        "indoors": 0.85
+      }
+    }
+  ],
+  "post": [],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.5
+  },
+  "macros": {
+    "strength": {
+      "default": 0.5,
+      "doc": "breeze .. gale",
+      "map": [
+        {
+          "to": "0.speed",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              0.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              2.0
+            ]
+          ]
+        }
+      ],
+      "label": "Intensity"
+    },
+    "pitch": {
+      "default": 0.5,
+      "doc": "wide gap (low) .. narrow (high)",
+      "map": [
+        {
+          "to": "0.gap_mm",
+          "op": "mul",
+          "points": [
+            [
+              0,
+              2.5
+            ],
+            [
+              0.5,
+              1
+            ],
+            [
+              1,
+              0.4
+            ]
+          ]
+        }
+      ],
+      "label": "Pitch"
+    },
+    "whistle": {
+      "default": 0.5,
+      "doc": "faint .. strong whistle",
+      "map": [
+        {
+          "to": "0.whistle",
+          "op": "add",
+          "points": [
+            [
+              0,
+              -0.5
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              0.3
+            ]
+          ]
+        }
+      ],
+      "label": "Whistle"
+    },
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ],
+      "label": "Distance"
+    }
+  },
+  "vary": {
+    "0.speed": {
+      "rel": 0.1
+    },
+    "0.gap_mm": {
+      "rel": 0.1
+    }
+  },
+  "loop": {
+    "lead_s": 1.0,
+    "xfade_s": 0.5
+  },
+  "stereo": {
+    "mode": "decorrelate",
+    "width": 0.6,
+    "mono_below_hz": 150
   }
- ],
- "post": [],
- "master": {
-  "normalize_db": -1.0,
-  "fade_out": 0.5
- },
- "macros": {
-  "strength": {
-   "default": 0.5,
-   "doc": "breeze .. gale",
-   "map": [
-    {
-     "to": "0.speed",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       0.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       2.0
-      ]
-     ]
-    }
-   ]
-  },
-  "pitch": {
-   "default": 0.5,
-   "doc": "wide gap (low) .. narrow (high)",
-   "map": [
-    {
-     "to": "0.gap_mm",
-     "op": "mul",
-     "points": [
-      [
-       0,
-       2.5
-      ],
-      [
-       0.5,
-       1
-      ],
-      [
-       1,
-       0.4
-      ]
-     ]
-    }
-   ]
-  },
-  "whistle": {
-   "default": 0.5,
-   "doc": "faint .. strong whistle",
-   "map": [
-    {
-     "to": "0.whistle",
-     "op": "add",
-     "points": [
-      [
-       0,
-       -0.5
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       0.3
-      ]
-     ]
-    }
-   ]
-  },
-  "distance": {
-   "default": 0.5,
-   "doc": "near .. far (level)",
-   "map": [
-    {
-     "to": "master.gain_db",
-     "op": "add",
-     "points": [
-      [
-       0,
-       0
-      ],
-      [
-       0.5,
-       0
-      ],
-      [
-       1,
-       -12
-      ]
-     ],
-     "clamp": [
-      -40,
-      0
-     ]
-    }
-   ]
-  }
- },
- "vary": {
-  "0.speed": {
-   "rel": 0.1
-  },
-  "0.gap_mm": {
-   "rel": 0.1
-  }
- },
- "loop": {
-  "lead_s": 1.0,
-  "xfade_s": 0.5
- },
- "stereo": {"mode": "decorrelate", "width": 0.6, "mono_below_hz": 150}
 }

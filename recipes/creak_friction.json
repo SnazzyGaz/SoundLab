@@ -157,7 +157,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "pressure": {
       "default": 0.5,
@@ -181,7 +182,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pressure"
     },
     "distance": {
       "default": 0.5,
@@ -209,8 +211,11 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
-  "notes": "v0.25: fitted to reference recordings (BigSoundBank #3051, #3052 squeaking parquet); 8 dense board modes 0.4-1 ms decay replace the 4 long low modes (a parquet squeak is a bright, broad stick-slip burst, centroid ~5 kHz, not a low groan). Residual eq +-6 dB."
+  "notes": "v0.25: fitted to reference recordings (BigSoundBank #3051, #3052 squeaking parquet); 8 dense board modes 0.4-1 ms decay replace the 4 long low modes (a parquet squeak is a bright, broad stick-slip burst, centroid ~5 kHz, not a low groan). Residual eq +-6 dB.",
+  "hidden": true,
+  "replaced_by": "floorboard_creak"
 }

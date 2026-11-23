@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Matchbox shaken, then a match struck on it and burning, small room, close mic",
+ "title": "Matchbox shake",
+ "library": "Foley/Household",
+ "tags": [
+  "matches",
+  "rattle"
+ ],
  "sample_rate": 48000,
  "duration": 5.2,
  "seed": 11,
@@ -130,7 +136,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "size": {
    "default": 0.5,
@@ -208,7 +215,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "wetness": {
    "default": 0.0,
@@ -271,7 +279,8 @@
      ]
     }
    ],
-   "jitter": 0.02
+   "jitter": 0.02,
+   "label": "Wetness"
   },
   "distance": {
    "default": 0.5,
@@ -317,7 +326,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

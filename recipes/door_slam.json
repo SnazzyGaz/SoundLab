@@ -57,7 +57,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "size": {
    "default": 0.5,
@@ -99,7 +100,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "rattle": {
    "default": 0.5,
@@ -123,7 +125,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Rattle"
   },
   "distance": {
    "default": 0.5,
@@ -169,7 +172,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -179,5 +183,7 @@
   "0.door_size": {
    "rel": 0.05
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "doors/door_wood_slam"
 }

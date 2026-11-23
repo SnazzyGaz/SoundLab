@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Electric arc: Jacob's ladder",
+  "title": "Electric arc",
+  "library": "Machines/Electrical",
+  "tags": [
+    "spark",
+    "zap"
+  ],
   "category": "foley",
   "sample_rate": 48000,
   "duration": 12.3,
@@ -296,7 +302,8 @@
             1.5
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "seed": {
       "default": 0.0,
@@ -311,7 +318,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

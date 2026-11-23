@@ -32,7 +32,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "length": {
       "default": 0.5,
@@ -74,7 +75,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Length"
     },
     "pitch": {
       "default": 0.5,
@@ -98,7 +100,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pitch"
     },
     "irregularity": {
       "default": 0.5,
@@ -126,7 +129,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Irregularity"
     },
     "body": {
       "default": "door_heavy",
@@ -158,7 +162,8 @@
             "value": "gate"
           }
         ]
-      }
+      },
+      "label": "Body"
     },
     "squeal": {
       "default": 0.5,
@@ -186,7 +191,8 @@
             1.5
           ]
         }
-      ]
+      ],
+      "label": "Squeal"
     },
     "distance": {
       "default": 0.0,
@@ -214,7 +220,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {
@@ -279,5 +286,7 @@
       }
     }
   ],
-  "notes": "v0.28: two-regime creak fitted to CC0 door recordings (see docs/friction.md). Slow swings groan, fast swings squeal."
+  "notes": "v0.28: two-regime creak fitted to CC0 door recordings (see docs/friction.md). Slow swings groan, fast swings squeal.",
+  "hidden": true,
+  "replaced_by": "doors/door_creak"
 }

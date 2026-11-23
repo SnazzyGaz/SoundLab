@@ -1,6 +1,11 @@
 {
  "soundlab": 1,
  "name": "Creature growl: rough low pulses through a large vocal tract, with a chaotic fold layer and an f0/2 ventricular layer (v0.21)",
+ "title": "Creature growl",
+ "library": "Creatures",
+ "tags": [
+  "monster"
+ ],
  "category": "creature",
  "sample_rate": 48000,
  "duration": 3.0,
@@ -132,7 +137,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "roughness": {
    "default": 0.5,
@@ -156,7 +162,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Roughness"
   },
   "snarl": {
    "default": 0.5,
@@ -180,7 +187,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Snarl"
   },
   "length": {
    "default": 0.5,
@@ -222,7 +230,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   },
   "distance": {
    "default": 0.5,
@@ -268,7 +277,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   },
   "uvula": {
    "default": 0.5,
@@ -292,7 +302,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Uvula"
   },
   "wet": {
    "default": 0.5,
@@ -316,7 +327,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Wet"
   }
  },
  "vary": {

@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Bullet impact on a surface (material: concrete/wood/metal), debris and optional ricochet",
+ "title": "Bullet impact",
+ "library": "Combat/Guns",
+ "tags": [
+  "bullet",
+  "hit"
+ ],
  "category": "weapon",
  "sample_rate": 48000,
  "duration": 1.5,
@@ -58,7 +64,8 @@
       "value": "metal"
      }
     ]
-   }
+   },
+   "label": "Material"
   },
   "intensity": {
    "default": 0.5,
@@ -82,7 +89,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "debris": {
    "default": 0.5,
@@ -106,7 +114,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Debris"
   },
   "ricochet": {
    "default": 0.5,
@@ -130,7 +139,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Ricochet"
   },
   "distance": {
    "default": 0.5,
@@ -176,7 +186,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

@@ -1,6 +1,13 @@
 {
   "soundlab": 1,
   "name": "Small electric motor whine",
+  "title": "Small motor",
+  "library": "Machines/Household & tools",
+  "tags": [
+    "servo",
+    "motor",
+    "robot"
+  ],
   "category": "machines",
   "sample_rate": 48000,
   "duration": 12.3,
@@ -22,6 +29,42 @@
     "fade_out": 0.05
   },
   "macros": {
+    "shape": {
+      "default": "running",
+      "label": "Shape",
+      "doc": "running (a steady run) / on-off (starts, holds and stops; the previous separate recipes)",
+      "choices": {
+        "running": [],
+        "on-off": [
+          {
+            "to": "0.gesture",
+            "op": "set",
+            "value": [
+              {
+                "action": "start"
+              },
+              {
+                "action": "hold",
+                "duration": 5.0
+              },
+              {
+                "action": "stop"
+              }
+            ]
+          },
+          {
+            "to": "0.slow_mode",
+            "op": "set",
+            "value": "tape"
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 6.6
+          }
+        ]
+      }
+    },
     "speed": {
       "default": 0.5,
       "jitter": 0.0,
@@ -131,7 +174,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "seed": {
       "default": 0.0,
@@ -146,7 +190,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

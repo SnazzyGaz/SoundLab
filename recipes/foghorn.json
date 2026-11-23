@@ -1,6 +1,13 @@
 {
   "soundlab": 1,
   "name": "Barge/ship air horn, heard across the water from about 250 m",
+  "title": "Ship foghorn",
+  "library": "Vehicles",
+  "tags": [
+    "ship",
+    "horn",
+    "boat"
+  ],
   "sample_rate": 48000,
   "duration": 5.5,
   "seed": 5,
@@ -138,7 +145,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "intensity": {
       "default": 0.5,
@@ -180,7 +188,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "length": {
       "default": 0.5,
@@ -204,7 +213,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Length"
     },
     "distance": {
       "default": 0.5,
@@ -268,7 +278,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {

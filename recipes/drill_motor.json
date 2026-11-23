@@ -74,7 +74,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "distance": {
    "default": 0.5,
@@ -102,7 +103,10 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "power_drill"
 }

@@ -95,7 +95,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -137,7 +138,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "length": {
    "default": 0.5,
@@ -161,7 +163,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   },
   "distance": {
    "default": 0.5,
@@ -225,7 +228,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -235,5 +239,7 @@
   "0.wobble": {
    "rel": 0.2
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "foghorn"
 }

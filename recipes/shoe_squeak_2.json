@@ -33,7 +33,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Brightness"
     },
     "stretch": {
       "default": 0.5,
@@ -75,7 +76,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Stretch"
     },
     "pitch": {
       "default": 0.5,
@@ -99,7 +101,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pitch"
     },
     "motions": {
       "default": 0.4,
@@ -144,7 +147,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Motions"
     },
     "gaps": {
       "default": 0.5,
@@ -187,7 +191,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Gaps"
     },
     "seed": {
       "default": 0.0,
@@ -202,7 +207,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {
@@ -239,5 +246,7 @@
       }
     }
   ],
-  "notes": "v0.29 squeal_stems: stems of CC0 recordings recombined (docs/friction.md). shoe_88502 #8, #9, #11, own stems."
+  "notes": "v0.29 squeal_stems: stems of CC0 recordings recombined (docs/friction.md). shoe_88502 #8, #9, #11, own stems.",
+  "hidden": true,
+  "replaced_by": "shoe_squeak"
 }

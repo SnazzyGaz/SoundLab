@@ -142,7 +142,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "seed": {
       "default": 0.0,
@@ -157,7 +158,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {
@@ -165,5 +168,7 @@
       "abs": 100000
     }
   },
-  "notes": "v0.32 machine_stems (docs/machines.md): source 'sewing_machine', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Gesture timeline (params.gesture): no recorded start or stop: tape ramps with a fade; the stitches play as the run is read in either direction. Actions: start, hold {speed, duration}, change {speed, duration}, stop, pause {duration}; speed 1 = as recorded, by tape speed with a treble roll-off when slower. An empty timeline plays the recording as taken."
+  "notes": "v0.32 machine_stems (docs/machines.md): source 'sewing_machine', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Gesture timeline (params.gesture): no recorded start or stop: tape ramps with a fade; the stitches play as the run is read in either direction. Actions: start, hold {speed, duration}, change {speed, duration}, stop, pause {duration}; speed 1 = as recorded, by tape speed with a treble roll-off when slower. An empty timeline plays the recording as taken.",
+  "hidden": true,
+  "replaced_by": "sewing_machine"
 }

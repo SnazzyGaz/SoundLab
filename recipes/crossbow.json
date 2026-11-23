@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "A crossbow shot and landing",
+  "title": "Crossbow",
+  "library": "Combat/Bows",
+  "tags": [
+    "bolt",
+    "archery"
+  ],
   "category": "weapons",
   "sample_rate": 48000,
   "duration": 3.97,
@@ -52,7 +58,8 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "soft": {
       "default": 0.0,
@@ -81,7 +88,9 @@
             1.2
           ]
         }
-      ]
+      ],
+      "label": "Soft",
+      "ui": "advanced"
     },
     "size": {
       "default": 0.5,
@@ -110,7 +119,8 @@
             1200
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "distance": {
       "default": 0.5,
@@ -139,7 +149,8 @@
             4.0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "count": {
       "default": 0.0,
@@ -168,7 +179,9 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Count",
+      "ui": "advanced"
     },
     "tempo": {
       "default": 0.5,
@@ -197,7 +210,9 @@
             2.5
           ]
         }
-      ]
+      ],
+      "label": "Rate",
+      "ui": "advanced"
     },
     "seed": {
       "default": 0.0,
@@ -212,7 +227,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

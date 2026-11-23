@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Embers: charcoal ticking and popping",
+  "title": "Embers",
+  "library": "Fire",
+  "tags": [
+    "fire",
+    "crackle"
+  ],
   "category": "ambience",
   "sample_rate": 48000,
   "duration": 12.3,
@@ -134,7 +140,8 @@
             3.0
           ]
         }
-      ]
+      ],
+      "label": "Pop density"
     },
     "seed": {
       "default": 0.0,
@@ -149,7 +156,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

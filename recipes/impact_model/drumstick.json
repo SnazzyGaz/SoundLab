@@ -161,7 +161,8 @@
             "value": 0.1
           }
         ]
-      }
+      },
+      "label": "Material"
     },
     "size": {
       "default": 0.5,
@@ -221,7 +222,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "intensity": {
       "default": 0.5,
@@ -263,7 +265,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "hardness": {
       "default": 0.5,
@@ -287,7 +290,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Hardness"
     },
     "distance": {
       "default": 0.5,
@@ -333,7 +337,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {
@@ -353,5 +358,7 @@
       "abs": 0.004
     }
   },
-  "notes": "v0.25: new recipe, the dowel model fitted to reference recordings (BigSoundBank #1488, #1489 drumstick clicks; dowel.json stays the v0.7 hit), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."
+  "notes": "v0.25: new recipe, the dowel model fitted to reference recordings (BigSoundBank #1488, #1489 drumstick clicks; dowel.json stays the v0.7 hit), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB.",
+  "hidden": true,
+  "replaced_by": "drumstick"
 }

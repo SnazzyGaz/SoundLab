@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Power-up: rising PWM arpeggio over a filter-swept supersaw (generic blocks only)",
+ "title": "Power-up",
+ "library": "Game UI & sci-fi",
+ "tags": [
+  "pickup",
+  "level"
+ ],
  "category": "powerup",
  "duration": 1.4,
  "layers": [
@@ -239,7 +245,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Pitch"
   },
   "length": {
    "default": 0.5,
@@ -353,7 +360,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   },
   "brightness": {
    "default": 0.5,
@@ -395,7 +403,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Brightness"
   },
   "size": {
    "default": 0.5,
@@ -437,7 +446,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   }
  },
  "vary": {

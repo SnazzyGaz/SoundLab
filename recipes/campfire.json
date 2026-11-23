@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Campfire crackling",
+  "title": "Campfire",
+  "library": "Fire",
+  "tags": [
+    "fire",
+    "crackle"
+  ],
   "category": "ambience",
   "sample_rate": 48000,
   "duration": 12.3,
@@ -242,7 +248,8 @@
             12
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "distance": {
       "default": 0.5,
@@ -357,7 +364,8 @@
             20
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "seed": {
       "default": 0.0,
@@ -372,7 +380,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

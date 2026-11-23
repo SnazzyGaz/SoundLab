@@ -142,7 +142,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "seed": {
       "default": 0.0,
@@ -157,7 +158,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {
@@ -165,5 +168,7 @@
       "abs": 100000
     }
   },
-  "notes": "v0.32 machine_stems (docs/machines.md): source 'lawn_mower', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Gesture timeline (params.gesture): the real pull-start, the real steady run looped forwards and backwards, the real shut-down. Actions: start, hold {speed, duration}, change {speed, duration}, stop, pause {duration}; speed 1 = as recorded, by tape speed with a treble roll-off when slower. An empty timeline plays the recording as taken."
+  "notes": "v0.32 machine_stems (docs/machines.md): source 'lawn_mower', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Gesture timeline (params.gesture): the real pull-start, the real steady run looped forwards and backwards, the real shut-down. Actions: start, hold {speed, duration}, change {speed, duration}, stop, pause {duration}; speed 1 = as recorded, by tape speed with a treble roll-off when slower. An empty timeline plays the recording as taken.",
+  "hidden": true,
+  "replaced_by": "lawn_mower"
 }

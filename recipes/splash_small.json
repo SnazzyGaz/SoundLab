@@ -184,7 +184,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "distance": {
       "default": 0.3333333333333333,
@@ -307,7 +308,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "tail": {
       "default": 0.5,
@@ -418,7 +420,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Tail"
     },
     "seed": {
       "default": 0.0,
@@ -433,7 +436,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {
@@ -441,5 +446,7 @@
       "abs": 100000
     }
   },
-  "notes": "v0.31 liquid_stems (docs/liquids.md): source 'splash_small', rebuilt from stems of a public-domain / CC0 recording (THIRD_PARTY.md). Size moves the stored bands (band shift) and stretches time; distance lowers level and highs and softens the onset; tail fades faster or slows down."
+  "notes": "v0.31 liquid_stems (docs/liquids.md): source 'splash_small', rebuilt from stems of a public-domain / CC0 recording (THIRD_PARTY.md). Size moves the stored bands (band shift) and stretches time; distance lowers level and highs and softens the onset; tail fades faster or slows down.",
+  "hidden": true,
+  "replaced_by": "splash_large"
 }

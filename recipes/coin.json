@@ -76,7 +76,8 @@
       "value": "stone"
      }
     ]
-   }
+   },
+   "label": "Floor"
   },
   "metal": {
    "default": "cupronickel",
@@ -117,7 +118,8 @@
       "value": "aluminium"
      }
     ]
-   }
+   },
+   "label": "Metal"
   },
   "size": {
    "default": 0.5,
@@ -159,7 +161,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "height": {
    "default": 0.5,
@@ -183,7 +186,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Height"
   },
   "spin": {
    "default": 0.5,
@@ -225,7 +229,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Spin"
   },
   "distance": {
    "default": 0.5,
@@ -271,7 +276,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -290,5 +296,7 @@
   "0.diameter_mm": {
    "rel": 0.01
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "foley/coin_drop"
 }

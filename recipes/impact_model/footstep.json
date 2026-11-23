@@ -65,7 +65,8 @@
       "value": "heel"
      }
     ]
-   }
+   },
+   "label": "Shoe"
   },
   "surface": {
    "default": "wood",
@@ -112,7 +113,8 @@
       "value": "gravel"
      }
     ]
-   }
+   },
+   "label": "Surface"
   },
   "size": {
    "default": 0.5,
@@ -136,7 +138,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -160,7 +163,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "pace": {
    "default": 0.5,
@@ -202,7 +206,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Pace"
   },
   "creak": {
    "default": 0.5,
@@ -226,7 +231,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Creak"
   },
   "distance": {
    "default": 0.5,
@@ -272,7 +278,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -294,5 +301,7 @@
   "0.creak": {
    "abs": 0.1
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "footstep"
 }

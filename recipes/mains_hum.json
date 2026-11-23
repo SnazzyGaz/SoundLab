@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Mains hum: 50 Hz transformer hum with buzz and rattle",
+ "title": "Mains hum, 50 Hz (synth)",
+ "library": "Machines/Electrical",
+ "tags": [
+  "hum",
+  "buzz"
+ ],
  "category": "ambience",
  "sample_rate": 48000,
  "duration": 4.0,
@@ -57,7 +63,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Buzz"
   },
   "distance": {
    "default": 0.5,
@@ -85,7 +92,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  }
 }

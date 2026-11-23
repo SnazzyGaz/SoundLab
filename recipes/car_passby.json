@@ -97,7 +97,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Speed"
   },
   "distance": {
    "default": 0.5,
@@ -161,12 +162,15 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
   "post.0.speed": {
    "rel": 0.1
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "car_drive_by"
 }

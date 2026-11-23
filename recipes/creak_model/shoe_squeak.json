@@ -32,7 +32,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "length": {
       "default": 0.5,
@@ -74,7 +75,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Length"
     },
     "pitch": {
       "default": 0.5,
@@ -98,7 +100,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pitch"
     },
     "irregularity": {
       "default": 0.5,
@@ -126,7 +129,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Irregularity"
     },
     "distance": {
       "default": 0.0,
@@ -154,7 +158,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {
@@ -221,5 +226,7 @@
       }
     }
   ],
-  "notes": "v0.28: contact tick, scuff and a decaying ~2.4 kHz tone fitted to a CC0 sneaker recording."
+  "notes": "v0.28: contact tick, scuff and a decaying ~2.4 kHz tone fitted to a CC0 sneaker recording.",
+  "hidden": true,
+  "replaced_by": "shoe_squeak"
 }

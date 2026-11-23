@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Mallard hen calling, calm series of quacks, about 6 m away outdoors",
+ "title": "Duck",
+ "library": "Animals",
+ "tags": [
+  "bird",
+  "quack"
+ ],
  "sample_rate": 48000,
  "duration": 4.6,
  "seed": 3,
@@ -114,7 +120,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -156,7 +163,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "distance": {
    "default": 0.5,
@@ -220,7 +228,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

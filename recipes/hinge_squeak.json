@@ -1,6 +1,13 @@
 {
   "soundlab": 1,
   "name": "Hinge squeak: one sweep of a small squeaky hinge",
+  "title": "Hinge squeak, small",
+  "library": "Foley/Doors & gates",
+  "tags": [
+    "squeak",
+    "hinge",
+    "creak"
+  ],
   "category": "foley",
   "sample_rate": 48000,
   "duration": 4.73,
@@ -33,7 +40,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Brightness"
     },
     "stretch": {
       "default": 0.5,
@@ -75,7 +83,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Stretch"
     },
     "pitch": {
       "default": 0.5,
@@ -99,7 +108,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pitch"
     },
     "motions": {
       "default": 0.0,
@@ -144,7 +154,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Motions"
     },
     "gaps": {
       "default": 0.5,
@@ -187,7 +198,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Gaps"
     },
     "seed": {
       "default": 0.0,
@@ -202,7 +214,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

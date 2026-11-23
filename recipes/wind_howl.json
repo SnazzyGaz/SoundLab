@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Wind howl: gusts across a pipe opening, locking onto pipe modes as speed changes (SDT WindCavity method)",
+  "title": "Wind howl",
+  "library": "Weather/Wind",
+  "tags": [
+    "wind",
+    "howl"
+  ],
   "category": "ambience",
   "sample_rate": 48000,
   "duration": 6.0,
@@ -121,7 +127,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "size": {
       "default": 0.5,
@@ -145,7 +152,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "distance": {
       "default": 0.5,
@@ -173,7 +181,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "notes": "v0.25: fitted to reference recordings (BigSoundBank #0147, #2443), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."

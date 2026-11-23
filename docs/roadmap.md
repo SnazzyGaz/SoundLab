@@ -156,7 +156,8 @@ recipe sound and at least two listeners who did not tune the recipes.
 
 - Engine: 200-400 Hz still ~6 dB hot against the V8 reference; the long `engine.json` rev to 4500 rpm has no
   reference at that speed.
-- Explosion: one recipe cannot match a 2.5 s blast and a 7 s cinematic one; `explosion_small` covers the first.
+- Explosion: the cinematic `explosion` no longer has a long tail: its roar decays in 4 s (T60) and the sound ends
+  at the -60 dB floor by about 7.5 s (it was 13 s). Short blasts are `explosion_close` and `explosion_distant`.
 - Matchbox shake ~4 dB bright at 6.4-12.8 kHz.
 - The sword clash and bullet impacts follow the CC0 refs' bright balance; check them for tinny tops.
 - The pipe clang rings long (a free pipe does) and is very tonal.

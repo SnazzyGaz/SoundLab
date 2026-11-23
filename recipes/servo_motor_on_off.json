@@ -142,7 +142,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "seed": {
       "default": 0.0,
@@ -157,7 +158,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {
@@ -165,5 +168,7 @@
       "abs": 100000
     }
   },
-  "notes": "v0.32 machine_stems (docs/machines.md): source 'servo_motor', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Gesture timeline (params.gesture): the recording has no start or stop: they are tape ramps (0.3x to 1x in 0.6 s, back down in 0.9 s) with a fade. Actions: start, hold {speed, duration}, change {speed, duration}, stop, pause {duration}; speed 1 = as recorded, by tape speed with a treble roll-off when slower. An empty timeline plays the recording as taken."
+  "notes": "v0.32 machine_stems (docs/machines.md): source 'servo_motor', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). Gesture timeline (params.gesture): the recording has no start or stop: they are tape ramps (0.3x to 1x in 0.6 s, back down in 0.9 s) with a fade. Actions: start, hold {speed, duration}, change {speed, duration}, stop, pause {duration}; speed 1 = as recorded, by tape speed with a treble roll-off when slower. An empty timeline plays the recording as taken.",
+  "hidden": true,
+  "replaced_by": "servo_motor"
 }

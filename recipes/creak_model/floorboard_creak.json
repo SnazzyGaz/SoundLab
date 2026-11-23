@@ -32,7 +32,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "length": {
       "default": 0.5,
@@ -74,7 +75,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Length"
     },
     "pitch": {
       "default": 0.5,
@@ -98,7 +100,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pitch"
     },
     "irregularity": {
       "default": 0.5,
@@ -126,7 +129,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Irregularity"
     },
     "distance": {
       "default": 0.0,
@@ -154,7 +158,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {
@@ -221,5 +226,7 @@
       }
     }
   ],
-  "notes": "v0.28: irregular click bursts through floorboard resonances fitted to CC0 floor-creak recordings."
+  "notes": "v0.28: irregular click bursts through floorboard resonances fitted to CC0 floor-creak recordings.",
+  "hidden": true,
+  "replaced_by": "floorboard_creak"
 }

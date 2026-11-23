@@ -60,7 +60,8 @@
       "value": "belly"
      }
     ]
-   }
+   },
+   "label": "Target"
   },
   "glove": {
    "default": "bare",
@@ -80,7 +81,8 @@
       "value": "glove"
      }
     ]
-   }
+   },
+   "label": "Glove"
   },
   "intensity": {
    "default": 0.5,
@@ -104,7 +106,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "sweeten": {
    "default": 0.5,
@@ -128,7 +131,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Sweeten"
   },
   "distance": {
    "default": 0.5,
@@ -174,7 +178,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -184,5 +189,7 @@
   "0.cloth": {
    "abs": 0.1
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "body_punch"
 }

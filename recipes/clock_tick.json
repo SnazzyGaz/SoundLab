@@ -1,6 +1,13 @@
 {
   "soundlab": 1,
   "name": "Clock ticking",
+  "title": "Clock tick",
+  "library": "Foley/Household",
+  "tags": [
+    "clock",
+    "tick",
+    "time"
+  ],
   "category": "machines",
   "sample_rate": 48000,
   "duration": 10.3,
@@ -80,7 +87,8 @@
             4.0
           ]
         }
-      ]
+      ],
+      "label": "Tick rate"
     },
     "room": {
       "default": 0.0,
@@ -195,7 +203,8 @@
             12
           ]
         }
-      ]
+      ],
+      "label": "Room"
     },
     "seed": {
       "default": 0.0,
@@ -210,7 +219,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

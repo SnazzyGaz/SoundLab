@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Monster roar: pitch swoops up and breaks into chaos, ventricular rasp on top",
+ "title": "Monster roar",
+ "library": "Creatures",
+ "tags": [
+  "monster",
+  "roar"
+ ],
  "category": "creature",
  "sample_rate": 48000,
  "duration": 3.0,
@@ -115,7 +121,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "rough": {
    "default": 0.5,
@@ -143,7 +150,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Rough"
   },
   "pitch": {
    "default": 0.5,
@@ -167,7 +175,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Pitch"
   },
   "distance": {
    "default": 0.5,
@@ -195,7 +204,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

@@ -33,7 +33,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Brightness"
     },
     "stretch": {
       "default": 0.5,
@@ -75,7 +76,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Stretch"
     },
     "pitch": {
       "default": 0.5,
@@ -99,7 +101,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pitch"
     },
     "motions": {
       "default": 0.2,
@@ -144,7 +147,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Motions"
     },
     "gaps": {
       "default": 0.5,
@@ -187,7 +191,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Gaps"
     },
     "seed": {
       "default": 0.0,
@@ -202,7 +207,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     },
     "latch": {
       "default": "on",
@@ -221,7 +228,8 @@
             "value": -0.568
           }
         ]
-      }
+      },
+      "label": "Latch"
     }
   },
   "vary": {
@@ -259,5 +267,7 @@
       }
     }
   ],
-  "notes": "v0.29 squeal_stems: stems of CC0 recordings recombined (docs/friction.md). The hinge_squeak_2 gesture with brightness 1 (+2 st, +2 dB/oct, +3 dB upper partials, dry); latch = gate_207140 #0 and #1, 0.35 s after the squeal, 6 dB under it."
+  "notes": "v0.29 squeal_stems: stems of CC0 recordings recombined (docs/friction.md). The hinge_squeak_2 gesture with brightness 1 (+2 st, +2 dB/oct, +3 dB upper partials, dry); latch = gate_207140 #0 and #1, 0.35 s after the squeal, 6 dB under it.",
+  "hidden": true,
+  "replaced_by": "doors/gate_metal"
 }

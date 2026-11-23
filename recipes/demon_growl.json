@@ -1,6 +1,11 @@
 {
  "soundlab": 1,
  "name": "Demon growl: rough folds with a ventricular layer an octave below, long open throat",
+ "title": "Demon growl",
+ "library": "Creatures",
+ "tags": [
+  "monster"
+ ],
  "category": "creature",
  "sample_rate": 48000,
  "duration": 3.4,
@@ -93,7 +98,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "rough": {
    "default": 0.5,
@@ -121,7 +127,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Rough"
   },
   "pitch": {
    "default": 0.5,
@@ -145,7 +152,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Pitch"
   },
   "distance": {
    "default": 0.5,
@@ -173,7 +181,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

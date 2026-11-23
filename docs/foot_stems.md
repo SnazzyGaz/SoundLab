@@ -14,6 +14,11 @@ Shoes: `boots_walk`, `heels_walk`, `trainers_walk`, `barefoot_wood`.
 
 Landings: `jump_land`, `jump_land_rock`.
 
+In the app's library these are one **Footsteps** entry (the `footstep` recipe) with Surface, Shoe and Pace
+dropdowns; each surface or shoe name plays the same sound as its recipe above (same soft default and length),
+and Pace run uses `concrete_run` / `grass_run` on concrete and grass. The single-surface names stay as hidden
+aliases and render as before. Stairs and the two landings stay separate entries.
+
 The older `footstep`, `footstep_wood`, `footstep_dirt`, `footstep_grass`, `footstep_gravel`, `footstep_metal` and `footstep_stone` recipe names still work and now use `foot_stems` (soft defaults, the same macros plus the previous names, which still parse). The generic `footstep` recipe also has `surface` and `shoe` macros that select among the stored sources. New work should use the dedicated names above.
 
 The previous procedural `footstep` / `footstep_*` recipes stay in `recipes/impact_model/` as a fallback, the same way `recipes/creak_model/` keeps the older creak recipes.

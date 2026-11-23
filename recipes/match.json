@@ -121,7 +121,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "intensity": {
       "default": 0.5,
@@ -163,7 +164,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "wetness": {
       "default": 0.0,
@@ -226,7 +228,8 @@
           ]
         }
       ],
-      "jitter": 0.02
+      "jitter": 0.02,
+      "label": "Wetness"
     },
     "distance": {
       "default": 0.5,
@@ -272,7 +275,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {
@@ -286,5 +290,7 @@
       "rel": 0.1
     }
   },
-  "notes": "v0.24: fitted to two close-miked BigSoundBank matches. The room is almost dry (its early-reflection comb sounded metallic) and the eq takes 10-16 dB off 63-125 Hz (the hand/box thump and woof gave a bass-heavy, clipped boom)."
+  "notes": "v0.24: fitted to two close-miked BigSoundBank matches. The room is almost dry (its early-reflection comb sounded metallic) and the eq takes 10-16 dB off 63-125 Hz (the hand/box thump and woof gave a bass-heavy, clipped boom).",
+  "hidden": true,
+  "replaced_by": "match_strike"
 }

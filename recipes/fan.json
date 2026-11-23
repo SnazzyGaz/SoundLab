@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Fan: a large fan running (blade cycle from a CC0 recording)",
+  "title": "Fan",
+  "library": "Machines/Household & tools",
+  "tags": [
+    "fan",
+    "air"
+  ],
   "category": "ambience",
   "sample_rate": 48000,
   "duration": 6.0,
@@ -62,7 +68,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "size": {
       "default": 0.5,
@@ -86,7 +93,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "seed": {
       "default": 0.0,
@@ -101,7 +109,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

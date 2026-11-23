@@ -1,6 +1,11 @@
 {
   "soundlab": 1,
   "name": "Heavy rain, smooth and dense (fitted to field recordings)",
+  "title": "Steady rain",
+  "library": "Weather/Rain",
+  "tags": [
+    "rain"
+  ],
   "category": "ambience",
   "sample_rate": 48000,
   "duration": 8.0,
@@ -98,7 +103,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {

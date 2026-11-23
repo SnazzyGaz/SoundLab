@@ -1,6 +1,15 @@
 {
   "soundlab": 1,
   "name": "Footstep",
+  "title": "Footsteps",
+  "library": "Foley/Footsteps",
+  "tags": [
+    "steps",
+    "walk",
+    "run",
+    "walking",
+    "footstep"
+  ],
   "category": "impact",
   "sample_rate": 48000,
   "duration": 1.3,
@@ -26,303 +35,10 @@
     "normalize_db": null
   },
   "macros": {
-    "force": {
-      "default": 0.5,
-      "jitter": 0.0,
-      "doc": "softer .. harder (0.5 = a natural soft step; 1 = as hard as a stomp). ",
-      "map": [
-        {
-          "to": "0.force",
-          "op": "set",
-          "points": [
-            [
-              0.0,
-              -1.8
-            ],
-            [
-              0.5,
-              -1.0
-            ],
-            [
-              1.0,
-              1.0
-            ]
-          ],
-          "clamp": [
-            -3,
-            3
-          ]
-        }
-      ]
-    },
-    "soft": {
-      "default": 0.5,
-      "jitter": 0.0,
-      "doc": "sharper .. softer attack (a gentler transient and less heel / thump).",
-      "map": [
-        {
-          "to": "0.soft",
-          "op": "set",
-          "points": [
-            [
-              0.0,
-              0.0
-            ],
-            [
-              0.5,
-              0.7
-            ],
-            [
-              1.0,
-              1.1
-            ]
-          ],
-          "clamp": [
-            0,
-            1.2
-          ]
-        }
-      ]
-    },
-    "size": {
-      "default": 0.5,
-      "jitter": 0.0,
-      "doc": "smaller .. larger (tape speed: smaller is higher and shorter).",
-      "map": [
-        {
-          "to": "0.speed_cents",
-          "op": "set",
-          "points": [
-            [
-              0.0,
-              300.0
-            ],
-            [
-              0.5,
-              0.0
-            ],
-            [
-              1.0,
-              -300.0
-            ]
-          ],
-          "clamp": [
-            -1200,
-            1200
-          ]
-        }
-      ]
-    },
-    "distance": {
-      "default": 0.5,
-      "jitter": 0.0,
-      "doc": "nearer .. further (0.5 = as recorded). Further is quieter and duller.",
-      "map": [
-        {
-          "to": "0.distance",
-          "op": "set",
-          "points": [
-            [
-              0.0,
-              0.7
-            ],
-            [
-              0.5,
-              1.0
-            ],
-            [
-              1.0,
-              2.0
-            ]
-          ],
-          "clamp": [
-            0.25,
-            4.0
-          ]
-        }
-      ]
-    },
-    "count": {
-      "default": 0.0,
-      "jitter": 0.0,
-      "doc": "a short natural count of real gestures (1 .. 4).",
-      "map": [
-        {
-          "to": "0.count",
-          "op": "set",
-          "points": [
-            [
-              0.0,
-              1.0
-            ],
-            [
-              0.3333333333333333,
-              2.0
-            ],
-            [
-              0.6666666666666666,
-              3.0
-            ],
-            [
-              1.0,
-              4.0
-            ]
-          ],
-          "clamp": [
-            1,
-            4
-          ]
-        }
-      ]
-    },
-    "tempo": {
-      "default": 0.5,
-      "jitter": 0.0,
-      "doc": "slower .. quicker spacing when count is more than one (0.5 = the recording's own gaps).",
-      "map": [
-        {
-          "to": "0.tempo",
-          "op": "set",
-          "points": [
-            [
-              0.0,
-              0.7
-            ],
-            [
-              0.5,
-              1.0
-            ],
-            [
-              1.0,
-              1.5
-            ]
-          ],
-          "clamp": [
-            0.4,
-            2.5
-          ]
-        }
-      ]
-    },
-    "seed": {
-      "default": 0.0,
-      "jitter": 0.0,
-      "doc": "another take: reseeds the noise and remixes the same real stems (never averaged).",
-      "map": [
-        {
-          "to": "0.variation",
-          "op": "set",
-          "range": [
-            0,
-            1000
-          ]
-        }
-      ]
-    },
-    "hardness": {
-      "default": 0.5,
-      "jitter": 0.0,
-      "doc": "padded .. hard edge (mapped onto force; kept so older calls still work).",
-      "map": [
-        {
-          "to": "0.force",
-          "op": "add",
-          "points": [
-            [
-              0.0,
-              -0.3
-            ],
-            [
-              0.5,
-              0.0
-            ],
-            [
-              1.0,
-              0.3
-            ]
-          ],
-          "clamp": [
-            -3,
-            3
-          ]
-        }
-      ]
-    },
-    "muffle": {
-      "default": 0.5,
-      "jitter": 0.0,
-      "doc": "ringing .. held (mapped onto softness; kept so older calls still work).",
-      "map": [
-        {
-          "to": "0.soft",
-          "op": "add",
-          "points": [
-            [
-              0.0,
-              0.0
-            ],
-            [
-              0.5,
-              0.0
-            ],
-            [
-              1.0,
-              0.2
-            ]
-          ],
-          "clamp": [
-            0,
-            1.2
-          ]
-        }
-      ]
-    },
-    "hollowness": {
-      "default": 0.5,
-      "jitter": 0.0,
-      "doc": "solid .. hollow (no longer used; kept so older calls still work).",
-      "map": [
-        {
-          "to": "0.hs_hz",
-          "op": "add",
-          "points": [
-            [
-              0.0,
-              0.0
-            ],
-            [
-              1.0,
-              0.0
-            ]
-          ]
-        }
-      ]
-    },
-    "contact_point": {
-      "default": 0.5,
-      "jitter": 0.0,
-      "doc": "edge .. middle (no longer used; kept so older calls still work).",
-      "map": [
-        {
-          "to": "0.hs_hz",
-          "op": "add",
-          "points": [
-            [
-              0.0,
-              0.0
-            ],
-            [
-              1.0,
-              0.0
-            ]
-          ]
-        }
-      ]
-    },
     "surface": {
       "default": 0.0,
       "jitter": 0.0,
-      "doc": "wood / stone / steel / dirt / gravel / grass / leaves (and concrete, sand, snow, mud, tile, carpet).",
+      "doc": "what you walk on (the old 0..1 values still work)",
       "map": [
         {
           "to": "0.surface",
@@ -382,12 +98,496 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Surface",
+      "options": {
+        "wood": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "wood"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 1.3
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "creaky wood": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "creaky_wood"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 1.78
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "concrete": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "concrete"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 1.99
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "stone": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "stone"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 2.08
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "tile": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "tile"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 2.92
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "metal": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "metal"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 1.78
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "carpet": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "carpet"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.8
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 1.1
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 3.67
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "dirt": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "dirt"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 1.69
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "gravel": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "gravel"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 2.68
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "grass": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "grass"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 2.38
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "leaves": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "leaves"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.4
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.9
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 2.53
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "sand": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "sand"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 1.24
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 8.0
+          }
+        ],
+        "snow": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "snow"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 2.8
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "mud": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "mud"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 1.15
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "puddle": [
+          {
+            "to": "0.surface",
+            "op": "set",
+            "value": "puddle"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 1.27
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ]
+      },
+      "default_label": "wood"
     },
     "shoe": {
       "default": 0.0,
       "jitter": 0.0,
-      "doc": "none / trainer / boot / heel / barefoot. A shoe type uses that recording on wood.",
+      "doc": "shoe; overrides the surface (trainer, boot, heel or barefoot steps were recorded on wood)",
       "map": [
         {
           "to": "0.shoe",
@@ -415,7 +615,467 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Shoe",
+      "options": {
+        "normal": [],
+        "trainer": [
+          {
+            "to": "0.shoe",
+            "op": "set",
+            "value": "trainer"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.2
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.8
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 1
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 2.02
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "boot": [
+          {
+            "to": "0.shoe",
+            "op": "set",
+            "value": "boot"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 2.32
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "heel": [
+          {
+            "to": "0.shoe",
+            "op": "set",
+            "value": "heel"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 1.18
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ],
+        "barefoot": [
+          {
+            "to": "0.shoe",
+            "op": "set",
+            "value": "barefoot"
+          },
+          {
+            "to": "0.force",
+            "op": "set",
+            "value": -1.0
+          },
+          {
+            "to": "0.soft",
+            "op": "set",
+            "value": 0.7
+          },
+          {
+            "to": "0.early",
+            "op": "set",
+            "value": 0
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 1.06
+          },
+          {
+            "to": "0.gain_db",
+            "op": "set",
+            "value": 0.0
+          }
+        ]
+      },
+      "default_label": "normal"
+    },
+    "pace": {
+      "default": "walk",
+      "label": "Pace",
+      "doc": "walk / run (run is recorded on concrete and grass; other surfaces walk)",
+      "choices": {
+        "walk": [],
+        "run": [
+          {
+            "to": "0.pace",
+            "op": "set",
+            "value": "run"
+          }
+        ]
+      }
+    },
+    "force": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "softer .. harder (0.5 = a natural soft step; 1 = as hard as a stomp). ",
+      "map": [
+        {
+          "to": "0.force",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              -1.8
+            ],
+            [
+              0.5,
+              -1.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "clamp": [
+            -3,
+            3
+          ]
+        }
+      ],
+      "label": "Intensity"
+    },
+    "soft": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "sharper .. softer attack (a gentler transient and less heel / thump).",
+      "map": [
+        {
+          "to": "0.soft",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.7
+            ],
+            [
+              1.0,
+              1.1
+            ]
+          ],
+          "clamp": [
+            0,
+            1.2
+          ]
+        }
+      ],
+      "label": "Soft",
+      "ui": "advanced"
+    },
+    "size": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "smaller .. larger (tape speed: smaller is higher and shorter).",
+      "map": [
+        {
+          "to": "0.speed_cents",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              300.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              -300.0
+            ]
+          ],
+          "clamp": [
+            -1200,
+            1200
+          ]
+        }
+      ],
+      "label": "Size"
+    },
+    "distance": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "nearer .. further (0.5 = as recorded). Further is quieter and duller.",
+      "map": [
+        {
+          "to": "0.distance",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.7
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            0.25,
+            4.0
+          ]
+        }
+      ],
+      "label": "Distance"
+    },
+    "count": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "a short natural count of real gestures (1 .. 4).",
+      "map": [
+        {
+          "to": "0.count",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.3333333333333333,
+              2.0
+            ],
+            [
+              0.6666666666666666,
+              3.0
+            ],
+            [
+              1.0,
+              4.0
+            ]
+          ],
+          "clamp": [
+            1,
+            4
+          ]
+        }
+      ],
+      "ui": "advanced",
+      "label": "Count"
+    },
+    "tempo": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "slower .. quicker spacing when count is more than one (0.5 = the recording's own gaps).",
+      "map": [
+        {
+          "to": "0.tempo",
+          "op": "set",
+          "points": [
+            [
+              0.0,
+              0.7
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.5
+            ]
+          ],
+          "clamp": [
+            0.4,
+            2.5
+          ]
+        }
+      ],
+      "ui": "advanced",
+      "label": "Rate"
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise and remixes the same real stems (never averaged).",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ],
+      "label": "Seed",
+      "ui": "hidden"
+    },
+    "hardness": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "padded .. hard edge (mapped onto force; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.force",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              -0.3
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              0.3
+            ]
+          ],
+          "clamp": [
+            -3,
+            3
+          ]
+        }
+      ],
+      "label": "Hardness",
+      "ui": "hidden"
+    },
+    "muffle": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "ringing .. held (mapped onto softness; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.soft",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              0.2
+            ]
+          ],
+          "clamp": [
+            0,
+            1.2
+          ]
+        }
+      ],
+      "label": "Muffle",
+      "ui": "hidden"
+    },
+    "hollowness": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "solid .. hollow (no longer used; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.hs_hz",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "label": "Hollowness",
+      "ui": "hidden"
+    },
+    "contact_point": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "edge .. middle (no longer used; kept so older calls still work).",
+      "map": [
+        {
+          "to": "0.hs_hz",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "label": "Contact point",
+      "ui": "hidden"
     }
   },
   "vary": {

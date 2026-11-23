@@ -1,6 +1,11 @@
 {
   "soundlab": 1,
   "name": "Scrape: a stick dragged over a rough board (fractal surface, SDT-style ground trace)",
+  "title": "Scrape (model)",
+  "library": "Foley/Scrapes & rubs",
+  "tags": [
+    "scrape"
+  ],
   "category": "foley",
   "sample_rate": 48000,
   "duration": 0.4345657386690531,
@@ -132,7 +137,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Roughness"
     },
     "pressure": {
       "default": 0.5,
@@ -156,7 +162,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pressure"
     },
     "distance": {
       "default": 0.5,
@@ -184,7 +191,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "notes": "v0.25: fitted to reference recordings (BigSoundBank #0327, #0328 blade on stone), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."

@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Cordless drill: trigger runs (revving, as recorded)",
+  "title": "Power drill",
+  "library": "Machines/Household & tools",
+  "tags": [
+    "drill",
+    "tool"
+  ],
   "category": "machines",
   "sample_rate": 48000,
   "duration": 12.3,
@@ -22,6 +28,80 @@
     "fade_out": 0.05
   },
   "macros": {
+    "shape": {
+      "default": "running",
+      "label": "Shape",
+      "doc": "running (a steady run) / on-off / two speeds (starts, holds and stops; the previous separate recipes)",
+      "choices": {
+        "running": [],
+        "on-off": [
+          {
+            "to": "0.gesture",
+            "op": "set",
+            "value": [
+              {
+                "action": "start"
+              },
+              {
+                "action": "hold",
+                "duration": 3.0
+              },
+              {
+                "action": "stop"
+              }
+            ]
+          },
+          {
+            "to": "0.slow_mode",
+            "op": "set",
+            "value": "tape"
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 3.53
+          }
+        ],
+        "two speeds": [
+          {
+            "to": "0.gesture",
+            "op": "set",
+            "value": [
+              {
+                "action": "start",
+                "speed": 0.8
+              },
+              {
+                "action": "hold",
+                "duration": 2.5
+              },
+              {
+                "action": "change",
+                "speed": 1.15,
+                "duration": 0.6
+              },
+              {
+                "action": "hold",
+                "duration": 2.5
+              },
+              {
+                "action": "stop"
+              }
+            ]
+          },
+          {
+            "to": "0.slow_mode",
+            "op": "set",
+            "value": "tape"
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 6.146
+          }
+        ]
+      }
+    },
     "speed": {
       "default": 0.5,
       "jitter": 0.0,
@@ -131,7 +211,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "seed": {
       "default": 0.0,
@@ -146,7 +227,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

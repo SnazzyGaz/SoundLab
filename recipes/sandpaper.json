@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Sandpaper: one stroke of coarse paper on a wooden board",
+ "title": "Sandpaper",
+ "library": "Foley/Scrapes & rubs",
+ "tags": [
+  "sanding",
+  "scrape"
+ ],
  "category": "foley",
  "sample_rate": 48000,
  "duration": 1.0,
@@ -42,7 +48,8 @@
       "value": "stone"
      }
     ]
-   }
+   },
+   "label": "Material"
   },
   "pressure": {
    "default": 0.5,
@@ -66,7 +73,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Pressure"
   },
   "speed": {
    "default": 0.5,
@@ -90,7 +98,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Speed"
   },
   "speed_change": {
    "default": 0.5,
@@ -118,7 +127,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Speed change"
   },
   "irregularity": {
    "default": 0.5,
@@ -146,7 +156,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Irregularity"
   },
   "size": {
    "default": 0.5,
@@ -170,7 +181,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "hollowness": {
    "default": 0.5,
@@ -198,7 +210,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Hollowness"
   },
   "length": {
    "default": 0.5,
@@ -240,7 +253,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   },
   "distance": {
    "default": 0.0,
@@ -268,7 +282,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

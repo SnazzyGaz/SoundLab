@@ -1,8 +1,15 @@
 {
  "soundlab": 1,
  "name": "Large explosion (cinematic scale) about 150 m away, open ground, distant reflections",
+ "title": "Explosion, cinematic",
+ "library": "Combat/Explosions",
+ "tags": [
+  "bomb",
+  "blast",
+  "boom"
+ ],
  "sample_rate": 48000,
- "duration": 12.0,
+ "duration": 6.0,
  "seed": 21,
  "layers": [
   {
@@ -11,7 +18,7 @@
    "params": {
     "size": 0.95,
     "sub_blasts": 1,
-    "fireball_s": 9.8,
+    "fireball_s": 4.0,
     "roar": 2.2,
     "surge": 0.1,
     "debris": 0.3,
@@ -163,7 +170,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -205,7 +213,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "debris": {
    "default": 0.5,
@@ -229,7 +238,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Debris"
   },
   "distance": {
    "default": 0.5,
@@ -311,7 +321,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

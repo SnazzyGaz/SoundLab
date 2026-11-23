@@ -54,7 +54,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "length": {
    "default": 0.5,
@@ -114,7 +115,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   },
   "distance": {
    "default": 0.5,
@@ -160,7 +162,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -170,5 +173,7 @@
   "0.intensity": {
    "abs": 0.08
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "foley/cloth_handling"
 }

@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Laser zap: falling FM/saw sweep, driven (generic blocks only)",
+ "title": "Laser zap",
+ "library": "Game UI & sci-fi",
+ "tags": [
+  "laser",
+  "zap"
+ ],
  "category": "scifi",
  "duration": 0.5,
  "layers": [
@@ -177,7 +183,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Pitch"
   },
   "length": {
    "default": 0.5,
@@ -327,7 +334,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   },
   "intensity": {
    "default": 0.5,
@@ -369,7 +377,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   }
  },
  "vary": {

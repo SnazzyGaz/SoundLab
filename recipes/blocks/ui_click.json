@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "UI click: tiny pitched tick + noise snap (generic blocks only)",
+ "title": "UI click",
+ "library": "Game UI & sci-fi",
+ "tags": [
+  "button",
+  "menu"
+ ],
  "category": "ui",
  "duration": 0.12,
  "layers": [
@@ -113,7 +119,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Pitch"
   },
   "length": {
    "default": 0.5,
@@ -137,7 +144,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   },
   "brightness": {
    "default": 0.5,
@@ -161,7 +169,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Brightness"
   }
  },
  "vary": {

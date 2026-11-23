@@ -85,7 +85,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {
@@ -106,5 +107,7 @@
     "mono_below_hz": 150
   },
   "fitted": "v0.23: controls fitted to two real recordings of wind in trees and tall grass (BigSoundBank #0904, #0908) on third-octave spectrum and band texture (modulation depth, spikiness, fast flutter)",
-  "notes": "Physical fallback since v0.30: for recorded wind use `wind_trees` (a gale at strength 1, air_stems, docs/air.md); this generic model stays for scenes that steer wind speed live. v0.25.2: the wind model fitted to four BigSoundBank strong-wind recordings (#1450, #1452, #0152, #0153; hold-out #1451, #0154). The wind recipe's strength macro at 0.95 drove speed to 35 m/s with sparse, loud leaf ticks: 3-12 kHz kurtosis 13.9 vs 3.2-4.1 real, a crinkling texture. Here the leaves merge into a roar."
+  "notes": "Physical fallback since v0.30: for recorded wind use `wind_trees` (a gale at strength 1, air_stems, docs/air.md); this generic model stays for scenes that steer wind speed live. v0.25.2: the wind model fitted to four BigSoundBank strong-wind recordings (#1450, #1452, #0152, #0153; hold-out #1451, #0154). The wind recipe's strength macro at 0.95 drove speed to 35 m/s with sparse, loud leaf ticks: 3-12 kHz kurtosis 13.9 vs 3.2-4.1 real, a crinkling texture. Here the leaves merge into a roar.",
+  "hidden": true,
+  "replaced_by": "wind_trees"
 }

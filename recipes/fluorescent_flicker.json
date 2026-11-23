@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Fluorescent tube flickering",
+  "title": "Fluorescent light flicker",
+  "library": "Machines/Electrical",
+  "tags": [
+    "light",
+    "buzz"
+  ],
   "category": "ambience",
   "sample_rate": 48000,
   "duration": 12.3,
@@ -80,7 +86,8 @@
             2
           ]
         }
-      ]
+      ],
+      "label": "Clang density"
     },
     "seed": {
       "default": 0.0,
@@ -95,7 +102,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

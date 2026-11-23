@@ -1,6 +1,13 @@
 {
   "soundlab": 1,
   "name": "A handful of coins shaken together",
+  "title": "Coins jingle",
+  "library": "Foley/Household",
+  "tags": [
+    "coins",
+    "money",
+    "change"
+  ],
   "category": "impact",
   "sample_rate": 48000,
   "duration": 8.0,
@@ -52,7 +59,8 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "soft": {
       "default": 0.0,
@@ -81,7 +89,9 @@
             1.2
           ]
         }
-      ]
+      ],
+      "label": "Soft",
+      "ui": "advanced"
     },
     "size": {
       "default": 0.5,
@@ -110,7 +120,8 @@
             1200
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "distance": {
       "default": 0.5,
@@ -139,7 +150,8 @@
             4.0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "count": {
       "default": 0.0,
@@ -172,7 +184,8 @@
             4
           ]
         }
-      ]
+      ],
+      "label": "Count"
     },
     "tempo": {
       "default": 0.5,
@@ -201,7 +214,8 @@
             2.5
           ]
         }
-      ]
+      ],
+      "label": "Rate"
     },
     "seed": {
       "default": 0.0,
@@ -216,7 +230,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     },
     "metal": {
       "default": "cupronickel",
@@ -251,7 +267,9 @@
             "value": "aluminium"
           }
         ]
-      }
+      },
+      "label": "Metal",
+      "ui": "hidden"
     },
     "coins": {
       "default": 0.5,
@@ -280,7 +298,9 @@
             8
           ]
         }
-      ]
+      ],
+      "label": "Coins",
+      "ui": "hidden"
     },
     "shake": {
       "default": 0.5,
@@ -309,7 +329,9 @@
             2.5
           ]
         }
-      ]
+      ],
+      "label": "Shake",
+      "ui": "hidden"
     },
     "length": {
       "default": 0.5,
@@ -334,7 +356,9 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Length",
+      "ui": "hidden"
     }
   },
   "vary": {

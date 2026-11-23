@@ -1,6 +1,13 @@
 {
   "soundlab": 1,
   "name": "A sword clash",
+  "title": "Sword clash",
+  "library": "Combat/Blades",
+  "tags": [
+    "sword",
+    "blade",
+    "metal"
+  ],
   "category": "weapons",
   "sample_rate": 48000,
   "duration": 1.51,
@@ -53,7 +60,8 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "soft": {
       "default": 0.0,
@@ -82,7 +90,9 @@
             1.2
           ]
         }
-      ]
+      ],
+      "label": "Soft",
+      "ui": "advanced"
     },
     "size": {
       "default": 0.5,
@@ -111,7 +121,8 @@
             1200
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "distance": {
       "default": 0.5,
@@ -140,7 +151,8 @@
             4.0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "count": {
       "default": 0.0,
@@ -169,7 +181,9 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Count",
+      "ui": "advanced"
     },
     "tempo": {
       "default": 0.5,
@@ -198,7 +212,9 @@
             2.5
           ]
         }
-      ]
+      ],
+      "label": "Rate",
+      "ui": "advanced"
     },
     "seed": {
       "default": 0.0,
@@ -213,7 +229,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     },
     "object": {
       "default": "sword",
@@ -241,7 +259,9 @@
             "value": "pan"
           }
         ]
-      }
+      },
+      "label": "Object",
+      "ui": "hidden"
     },
     "intensity": {
       "default": 0.5,
@@ -270,7 +290,9 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Intensity",
+      "ui": "hidden"
     },
     "scrape": {
       "default": 0.5,
@@ -291,7 +313,9 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Scrape",
+      "ui": "hidden"
     },
     "ring": {
       "default": 0.5,
@@ -312,7 +336,9 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Ring",
+      "ui": "hidden"
     }
   },
   "vary": {

@@ -32,7 +32,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "length": {
       "default": 0.5,
@@ -74,7 +75,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Length"
     },
     "pitch": {
       "default": 0.5,
@@ -98,7 +100,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pitch"
     },
     "irregularity": {
       "default": 0.5,
@@ -126,7 +129,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Irregularity"
     },
     "distance": {
       "default": 0.0,
@@ -154,7 +158,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {
@@ -217,5 +222,7 @@
       }
     }
   ],
-  "notes": "v0.28: squeal bursts fitted to CC0 gate and hinge recordings."
+  "notes": "v0.28: squeal bursts fitted to CC0 gate and hinge recordings.",
+  "hidden": true,
+  "replaced_by": "hinge_squeak"
 }

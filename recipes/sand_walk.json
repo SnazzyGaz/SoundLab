@@ -54,7 +54,8 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "soft": {
       "default": 0.5,
@@ -83,7 +84,9 @@
             1.2
           ]
         }
-      ]
+      ],
+      "label": "Soft",
+      "ui": "advanced"
     },
     "size": {
       "default": 0.5,
@@ -112,7 +115,8 @@
             1200
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "distance": {
       "default": 0.5,
@@ -141,7 +145,8 @@
             4.0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "count": {
       "default": 0.0,
@@ -174,7 +179,9 @@
             4
           ]
         }
-      ]
+      ],
+      "label": "Count",
+      "ui": "advanced"
     },
     "tempo": {
       "default": 0.5,
@@ -203,7 +210,9 @@
             2.5
           ]
         }
-      ]
+      ],
+      "label": "Rate",
+      "ui": "advanced"
     },
     "seed": {
       "default": 0.0,
@@ -218,7 +227,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {
@@ -226,5 +237,7 @@
       "abs": 100000
     }
   },
-  "notes": "v0.34 foot_stems (docs/foot_stems.md): source 'sand_walk', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). A single real step (or landing) by default, softer than the often-forceful recording. The seed macro (or any variation) remixes the real stems; nothing is averaged, bands are not pitch-shifted (size is tape speed), and there is no freeze, time-squeeze or added smoothing. count plays a short run of real steps; tempo changes their spacing."
+  "notes": "v0.34 foot_stems (docs/foot_stems.md): source 'sand_walk', rebuilt from stems of a CC0 recording (THIRD_PARTY.md). A single real step (or landing) by default, softer than the often-forceful recording. The seed macro (or any variation) remixes the real stems; nothing is averaged, bands are not pitch-shifted (size is tape speed), and there is no freeze, time-squeeze or added smoothing. count plays a short run of real steps; tempo changes their spacing.",
+  "hidden": true,
+  "replaced_by": "footstep"
 }

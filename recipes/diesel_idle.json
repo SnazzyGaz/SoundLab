@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Diesel van idling",
+  "title": "Diesel idle",
+  "library": "Vehicles",
+  "tags": [
+    "engine",
+    "truck"
+  ],
   "category": "machines",
   "sample_rate": 48000,
   "duration": 10.3,
@@ -347,7 +353,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "seed": {
       "default": 0.0,
@@ -362,7 +369,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

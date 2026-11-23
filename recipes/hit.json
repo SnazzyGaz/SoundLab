@@ -234,7 +234,8 @@
       "value": 0.0
      }
     ]
-   }
+   },
+   "label": "Object"
   },
   "material": {
    "default": "wood",
@@ -312,7 +313,8 @@
       "value": 0.1
      }
     ]
-   }
+   },
+   "label": "Material"
   },
   "size": {
    "default": 0.5,
@@ -372,7 +374,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -414,7 +417,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "hardness": {
    "default": 0.5,
@@ -438,7 +442,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Hardness"
   },
   "distance": {
    "default": 0.5,
@@ -484,7 +489,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -509,5 +515,7 @@
   "0.contact_noise": {
    "rel": 0.2
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "doors/knock_wood"
 }

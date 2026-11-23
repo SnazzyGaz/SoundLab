@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "One jump landing on wood",
+  "title": "Jump landing, wood",
+  "library": "Foley/Footsteps",
+  "tags": [
+    "land",
+    "jump"
+  ],
   "category": "foley",
   "sample_rate": 48000,
   "duration": 2.56,
@@ -53,7 +59,8 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "soft": {
       "default": 0.5,
@@ -82,7 +89,9 @@
             1.2
           ]
         }
-      ]
+      ],
+      "label": "Soft",
+      "ui": "advanced"
     },
     "size": {
       "default": 0.5,
@@ -111,7 +120,8 @@
             1200
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "distance": {
       "default": 0.5,
@@ -140,7 +150,8 @@
             4.0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "count": {
       "default": 0.0,
@@ -169,7 +180,9 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Count",
+      "ui": "advanced"
     },
     "tempo": {
       "default": 0.5,
@@ -198,7 +211,9 @@
             2.5
           ]
         }
-      ]
+      ],
+      "label": "Rate",
+      "ui": "advanced"
     },
     "seed": {
       "default": 0.0,
@@ -213,7 +228,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

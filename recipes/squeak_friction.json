@@ -132,7 +132,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pressure"
     },
     "distance": {
       "default": 0.5,
@@ -160,8 +161,11 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
-  "notes": "v0.25: fitted to reference recordings (BigSoundBank #3447, #3448 shoe squeaks), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."
+  "notes": "v0.25: fitted to reference recordings (BigSoundBank #3447, #3448 shoe squeaks), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB.",
+  "hidden": true,
+  "replaced_by": "shoe_squeak"
 }

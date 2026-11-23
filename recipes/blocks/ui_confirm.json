@@ -1,6 +1,13 @@
 {
  "soundlab": 1,
  "name": "UI confirm: two rising soft blips (generic blocks only)",
+ "title": "UI confirm",
+ "library": "Game UI & sci-fi",
+ "tags": [
+  "button",
+  "menu",
+  "ok"
+ ],
  "category": "ui",
  "duration": 0.45,
  "layers": [
@@ -163,7 +170,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Pitch"
   },
   "length": {
    "default": 0.5,
@@ -223,7 +231,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   },
   "brightness": {
    "default": 0.5,
@@ -283,7 +292,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Brightness"
   }
  },
  "vary": {

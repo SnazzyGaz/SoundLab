@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Rolling: a marble rolling across a wooden table (ground trace with micro-bounces)",
+ "title": "Rolling object (model)",
+ "library": "Foley/Scrapes & rubs",
+ "tags": [
+  "roll",
+  "ball"
+ ],
  "category": "foley",
  "sample_rate": 48000,
  "duration": 3.0,
@@ -80,7 +86,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "roughness": {
    "default": 0.5,
@@ -108,7 +115,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Roughness"
   },
   "distance": {
    "default": 0.5,
@@ -136,7 +144,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  }
 }

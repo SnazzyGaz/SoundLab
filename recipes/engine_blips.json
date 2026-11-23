@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "V8 idling, three throttle blips (idle, blip shape after a real V8 recording), 4 m away",
+ "title": "Engine blips",
+ "library": "Vehicles",
+ "tags": [
+  "engine",
+  "rev"
+ ],
  "sample_rate": 48000,
  "duration": 7.0,
  "seed": 11,
@@ -192,7 +198,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Rpm"
   },
   "load": {
    "default": 0.5,
@@ -216,7 +223,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "size": {
    "default": 0.5,
@@ -258,7 +266,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -300,7 +309,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "distance": {
    "default": 0.5,
@@ -364,7 +374,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

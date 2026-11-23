@@ -115,7 +115,8 @@
       "value": 0.1
      }
     ]
-   }
+   },
+   "label": "Material"
   },
   "size": {
    "default": 0.5,
@@ -175,7 +176,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -217,7 +219,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "hardness": {
    "default": 0.5,
@@ -241,7 +244,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Hardness"
   },
   "distance": {
    "default": 0.5,
@@ -287,7 +291,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -306,5 +311,7 @@
   "0.at": {
    "abs": 0.004
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "dowel"
 }

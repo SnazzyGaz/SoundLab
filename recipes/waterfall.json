@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Waterfall: a small waterfall close up, bright and steady",
+  "title": "Waterfall",
+  "library": "Water",
+  "tags": [
+    "water",
+    "cascade"
+  ],
   "category": "water",
   "sample_rate": 48000,
   "duration": 8.0,
@@ -134,7 +140,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "seed": {
       "default": 0.0,
@@ -149,7 +156,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {

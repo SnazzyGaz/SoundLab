@@ -1,6 +1,13 @@
 {
  "soundlab": 1,
  "name": "Cross-plane V8: idle, rev to 4500 rpm, lift off, back to idle",
+ "title": "V8 engine, idle and rev (synth)",
+ "library": "Vehicles",
+ "tags": [
+  "engine",
+  "car",
+  "v8"
+ ],
  "sample_rate": 48000,
  "duration": 8.0,
  "seed": 11,
@@ -132,7 +139,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Rpm"
   },
   "load": {
    "default": 0.5,
@@ -156,7 +164,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "size": {
    "default": 0.5,
@@ -198,7 +207,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -240,7 +250,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "distance": {
    "default": 0.5,
@@ -304,7 +315,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

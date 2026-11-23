@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "A pickaxe on rock",
+  "title": "Pickaxe on rock",
+  "library": "Impacts & breaks/Tools & wood",
+  "tags": [
+    "mining",
+    "stone"
+  ],
   "category": "impact",
   "sample_rate": 48000,
   "duration": 1.27,
@@ -52,7 +58,8 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Intensity"
     },
     "soft": {
       "default": 0.0,
@@ -81,7 +88,9 @@
             1.2
           ]
         }
-      ]
+      ],
+      "label": "Soft",
+      "ui": "advanced"
     },
     "size": {
       "default": 0.5,
@@ -110,7 +119,8 @@
             1200
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "distance": {
       "default": 0.5,
@@ -139,7 +149,8 @@
             4.0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "count": {
       "default": 0.0,
@@ -172,7 +183,9 @@
             4
           ]
         }
-      ]
+      ],
+      "label": "Count",
+      "ui": "advanced"
     },
     "tempo": {
       "default": 0.5,
@@ -201,7 +214,9 @@
             2.5
           ]
         }
-      ]
+      ],
+      "label": "Rate",
+      "ui": "advanced"
     },
     "seed": {
       "default": 0.0,
@@ -216,7 +231,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     },
     "hardness": {
       "default": 0.5,
@@ -245,7 +262,9 @@
             3
           ]
         }
-      ]
+      ],
+      "label": "Hardness",
+      "ui": "hidden"
     },
     "muffle": {
       "default": 0.5,
@@ -274,7 +293,9 @@
             1.2
           ]
         }
-      ]
+      ],
+      "label": "Muffle",
+      "ui": "hidden"
     },
     "hollowness": {
       "default": 0.5,
@@ -295,7 +316,9 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Hollowness",
+      "ui": "hidden"
     },
     "contact_point": {
       "default": 0.5,
@@ -316,7 +339,9 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Contact point",
+      "ui": "hidden"
     },
     "material": {
       "default": "stone",
@@ -344,7 +369,9 @@
             "value": "dirt"
           }
         ]
-      }
+      },
+      "label": "Material",
+      "ui": "hidden"
     }
   },
   "vary": {

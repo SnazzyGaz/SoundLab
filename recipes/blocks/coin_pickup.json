@@ -1,6 +1,12 @@
 {
  "soundlab": 1,
  "name": "Coin pickup: retro square blip B5 -> E6 (generic blocks only)",
+ "title": "Coin pickup",
+ "library": "Game UI & sci-fi",
+ "tags": [
+  "pickup",
+  "collect"
+ ],
  "category": "pickup",
  "duration": 0.6,
  "layers": [
@@ -109,7 +115,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Pitch"
   },
   "length": {
    "default": 0.5,
@@ -169,7 +176,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   },
   "brightness": {
    "default": 0.5,
@@ -211,7 +219,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Brightness"
   }
  },
  "vary": {

@@ -57,7 +57,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Speed"
   },
   "material": {
    "default": 0.5,
@@ -81,7 +82,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Material"
   },
   "distance": {
    "default": 0.5,
@@ -109,7 +111,10 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "foley/paper_crumple"
 }

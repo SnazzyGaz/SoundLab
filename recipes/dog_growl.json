@@ -1,6 +1,11 @@
 {
   "soundlab": 1,
   "name": "Dog growl: low pulsed rumble with tremor, mouth nearly shut, a little rasp",
+  "title": "Dog growl",
+  "library": "Animals",
+  "tags": [
+    "dog"
+  ],
   "category": "animal",
   "sample_rate": 48000,
   "duration": 1.4202898961924828,
@@ -135,7 +140,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Size"
     },
     "rough": {
       "default": 0.5,
@@ -163,7 +169,8 @@
             1
           ]
         }
-      ]
+      ],
+      "label": "Rough"
     },
     "pitch": {
       "default": 0.5,
@@ -187,7 +194,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Pitch"
     },
     "distance": {
       "default": 0.5,
@@ -215,7 +223,8 @@
             0
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     }
   },
   "vary": {

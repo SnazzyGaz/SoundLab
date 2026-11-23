@@ -52,7 +52,8 @@
       "value": "shotgun"
      }
     ]
-   }
+   },
+   "label": "Calibre"
   },
   "space": {
    "default": "street",
@@ -79,7 +80,8 @@
       "value": "open"
      }
     ]
-   }
+   },
+   "label": "Space"
   },
   "body": {
    "default": 0.5,
@@ -103,7 +105,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Body"
   },
   "crack": {
    "default": 0.5,
@@ -127,7 +130,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Crack"
   },
   "distance": {
    "default": 0.5,
@@ -173,7 +177,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -183,5 +188,7 @@
   "0.body": {
    "abs": 0.05
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "pistol_shot"
 }

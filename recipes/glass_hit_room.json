@@ -75,7 +75,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "intensity": {
    "default": 0.5,
@@ -99,7 +100,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "distance": {
    "default": 0.5,
@@ -145,7 +147,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -155,5 +158,6 @@
   "0.1.strike_pos": {
    "abs": 0.05
   }
- }
+ },
+ "hidden": true
 }

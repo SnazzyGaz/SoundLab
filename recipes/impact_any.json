@@ -1,6 +1,13 @@
 {
  "soundlab": 1,
  "name": "Impact: any material and shape (material_impact showcase recipe)",
+ "title": "Material sandbox (synth)",
+ "library": "Impacts & breaks/Objects",
+ "tags": [
+  "impact",
+  "hit",
+  "material"
+ ],
  "category": "impact",
  "sample_rate": 48000,
  "duration": 1.2,
@@ -32,7 +39,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "force": {
    "default": 0.5,
@@ -56,7 +64,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "hardness": {
    "default": 0.5,
@@ -84,7 +93,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Hardness"
   },
   "hollowness": {
    "default": 0.5,
@@ -112,7 +122,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Hollowness"
   },
   "muffle": {
    "default": 0.5,
@@ -140,7 +151,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Muffle"
   },
   "contact_point": {
    "default": 0.5,
@@ -168,7 +180,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Contact point"
   },
   "distance": {
    "default": 0.0,
@@ -196,7 +209,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   },
   "material": {
    "default": "wood_hard",
@@ -307,7 +321,8 @@
       "value": "leaves"
      }
     ]
-   }
+   },
+   "label": "Material"
   },
   "shape": {
    "default": "plate",
@@ -369,7 +384,8 @@
       "value": "ball"
      }
     ]
-   }
+   },
+   "label": "Shape"
   }
  },
  "vary": {

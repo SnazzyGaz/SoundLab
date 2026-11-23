@@ -76,7 +76,8 @@
       "value": "aluminium"
      }
     ]
-   }
+   },
+   "label": "Metal"
   },
   "coins": {
    "default": 0.5,
@@ -100,7 +101,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Coins"
   },
   "shake": {
    "default": 0.5,
@@ -124,7 +126,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Shake"
   },
   "length": {
    "default": 0.5,
@@ -166,7 +169,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Length"
   },
   "distance": {
    "default": 0.5,
@@ -212,7 +216,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {
@@ -222,5 +227,7 @@
   "0.count": {
    "abs": 1
   }
- }
+ },
+ "hidden": true,
+ "replaced_by": "coin_jingle"
 }

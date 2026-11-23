@@ -32,7 +32,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "force": {
    "default": 0.5,
@@ -56,7 +57,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Intensity"
   },
   "hardness": {
    "default": 0.5,
@@ -84,7 +86,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Hardness"
   },
   "hollowness": {
    "default": 0.5,
@@ -112,7 +115,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Hollowness"
   },
   "muffle": {
    "default": 0.5,
@@ -140,7 +144,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Muffle"
   },
   "contact_point": {
    "default": 0.5,
@@ -168,7 +173,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Contact point"
   },
   "distance": {
    "default": 0.0,
@@ -196,7 +202,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   },
   "material": {
    "default": "wood_hard",
@@ -230,7 +237,8 @@
       "value": "steel"
      }
     ]
-   }
+   },
+   "label": "Material"
   }
  },
  "vary": {
@@ -309,5 +317,7 @@
    }
   }
  ],
- "notes": "v0.26: controls fitted to one of the CC0 recorded knocks on wood and doors (outside the repo), residual eq limited to +-6 dB; loss on that take 0.964 -> 0.699, on held-out takes [1.031, 1.386] -> [0.855, 1.205]."
+ "notes": "v0.26: controls fitted to one of the CC0 recorded knocks on wood and doors (outside the repo), residual eq limited to +-6 dB; loss on that take 0.964 -> 0.699, on held-out takes [1.031, 1.386] -> [0.855, 1.205].",
+ "hidden": true,
+ "replaced_by": "doors/knock_wood"
 }

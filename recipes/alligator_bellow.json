@@ -1,6 +1,11 @@
 {
  "soundlab": 1,
  "name": "Alligator bellow: chaotic very low roar through a long closed-mouth tract (after CHIMERA's alligator)",
+ "title": "Alligator bellow",
+ "library": "Animals",
+ "tags": [
+  "reptile"
+ ],
  "category": "animal",
  "sample_rate": 48000,
  "duration": 3.0,
@@ -79,7 +84,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Size"
   },
   "rough": {
    "default": 0.5,
@@ -107,7 +113,8 @@
       1
      ]
     }
-   ]
+   ],
+   "label": "Rough"
   },
   "pitch": {
    "default": 0.5,
@@ -131,7 +138,8 @@
       ]
      ]
     }
-   ]
+   ],
+   "label": "Pitch"
   },
   "distance": {
    "default": 0.5,
@@ -159,7 +167,8 @@
       0
      ]
     }
-   ]
+   ],
+   "label": "Distance"
   }
  },
  "vary": {

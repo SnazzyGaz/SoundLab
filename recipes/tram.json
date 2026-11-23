@@ -1,6 +1,12 @@
 {
   "soundlab": 1,
   "name": "Tram approaching and passing",
+  "title": "Tram",
+  "library": "Vehicles",
+  "tags": [
+    "train",
+    "streetcar"
+  ],
   "category": "machines",
   "sample_rate": 48000,
   "duration": 12.3,
@@ -135,7 +141,8 @@
             20
           ]
         }
-      ]
+      ],
+      "label": "Distance"
     },
     "speed": {
       "default": 0.5,
@@ -246,7 +253,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "label": "Speed"
     },
     "seed": {
       "default": 0.0,
@@ -261,7 +269,9 @@
             1000
           ]
         }
-      ]
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
   "vary": {
