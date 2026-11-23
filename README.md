@@ -69,7 +69,7 @@ What's in it:
   glasses, bottles, cutlery, keys, a coin, a phone, a pen click, a light switch, a chair scrape and a cupboard
   (23 recipes in `recipes/foley/`), rebuilt the same way from CC0 recordings (numbers only, no audio);
   see [docs/foley_stems.md](docs/foley_stems.md).
-- **Everyday interactions from recording stems** (`interact_stems`): camera shutters, a film advance, a can
+- **Everyday interactions from recording stems** (`interact_stems`, v0.36): camera shutters, a film advance, a can
   opening, bottle caps, a cork, ice in a glass, velcro, a lighter, a plastic lid, a phone vibrate, typing, a
   mouse, tape, a stapler, scissors and a spray can (18 recipes in `recipes/interact/`), rebuilt the same way
   from CC0 recordings (numbers only, no audio); see [docs/interact_stems.md](docs/interact_stems.md).
@@ -79,7 +79,7 @@ What's in it:
 - **Sequences** (v0.35): library sounds on a timeline (`soundlab sequence`, and a Sequence tab in the slider app).
   Presets for a walk, a run, knocks, a door, gunfire, a reload, typing, and opening a can and pouring. Export a mix or numbered one-shots with a cue CSV;
   see [docs/sequences.md](docs/sequences.md).
-- **Weather and ambience from recording stems** (`weather_stems`): `rain` (surface, intensity, and an intensity
+- **Weather and ambience from recording stems** (`weather_stems`, v0.36): `rain` (surface, intensity, and an intensity
   curve that can swell or fade), `rain_drips`, `thunder` (near or distant), `ocean_waves`, `wind_breeze` (intensity from a gentle breeze to gusty),
   `wind_howl`, `forest_day`, `night_insects`, `city_street` and `room_tone`. Beds loop to any length. See
   [docs/weather.md](docs/weather.md). The previous procedural rain and wind-howl recipes remain under

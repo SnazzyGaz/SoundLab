@@ -19,6 +19,12 @@ Advanced panel. Sequences put library entries on a timeline (`soundlab sequence`
 with presets for a walk, a run, knocks, a door, gunfire and a reload, and export a mix or numbered one-shots with a
 cue CSV; see [sequences.md](sequences.md).
 
+v0.36: weather and ambience from recording stems (`weather_stems`: rain, drips, thunder, wind, ocean waves,
+and looping forest, night, city and room-tone beds; an intensity curve can swell or fade by crossfading real
+recordings; numbers only) and everyday interaction stems (`interact_stems`: camera, drinks and household
+handling; 18 recipes), plus typing and can-and-pour sequence presets. See [weather.md](weather.md) and
+[interact_stems.md](interact_stems.md).
+
 v0.34: impacts, weapons and footsteps from recording stems (`impact_stems`, `weapon_stems`, `foot_stems`: body-mode
 partial tracks, each recorded hit or step as its own 1/8-octave band envelopes, a 1/8-octave 1 ms noise bed, a
 1/6-octave colour curve and a static treble ceiling; numbers only). 14 impact, 40 weapon and 25 footstep recipes
