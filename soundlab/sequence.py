@@ -32,7 +32,8 @@ events of an alternating step swing left and right by "alternate" (pan units). T
 generators (sequence seed, step key or index, purpose), so the takes stay put when only timing or levels change.
 
 Events are rendered as the slider app plays a single entry (sources ring out, the silent tail is trimmed, then the
-loudness for the entry's category), so a step at gain 0 sounds as it does on its own. Event renders are cached by
+loudness gain for the entry's category), so a step at gain 0 sits at the level the entry has on its own. The peak
+limiter runs once, on the finished mix. Event renders are cached by
 their concrete recipe and seed: a timing, gain, pan or jitter change only re-mixes cached events. Event onsets (the
 first sample within 30 dB of the peak) land on the timeline. Takes are real distinct takes: for the recording-stem
 families the gesture each variation plays is checked, so consecutive events of an entry use different recorded
@@ -238,16 +239,21 @@ def event_key(r: dict, seed, sr, level) -> tuple:
 
 
 def render_event(r: dict, seed: int | None, sr: int | None = None, level: str = "lufs") -> tuple[np.ndarray, int, int]:
-    """One event as the slider app plays the entry on its own: ring out, trim the silent tail, loudness for the
-    entry's category (level 'lufs') or the raw render ('raw'). Cached. Returns (mono audio, sr, onset index)."""
+    """One event as the slider app plays the entry on its own: ring out, trim the silent tail, the loudness gain for
+    the entry's category (level 'lufs'; no limiter here, so peaks may pass 0 dBFS until the mix is finished) or the
+    raw render ('raw'). Cached. Returns (mono audio, sr, onset index)."""
     key = event_key(r, seed, sr, level)
     hit = EVENTS.get(key)
     if hit is not None:
         return hit
-    from .finish import finish
+    from .finish import finish, momentary_max_lufs, target_for
     from .recipe import render
     y, rsr = render(r, sample_rate=sr, seed=seed, ring_out=True)
-    y, _ = finish(np.asarray(y, float), rsr, r, level="lufs" if level == "lufs" else "peak", trim=True)
+    y, _ = finish(np.asarray(y, float), rsr, r, level="peak", trim=True)        # trim only
+    if level == "lufs":         # the entry's loudness gain, without its limiter: the mix is limited once, at the end
+        now = momentary_max_lufs(y, rsr)
+        if np.isfinite(now):
+            y = y * 10 ** ((target_for(r) - now) / 20)
     y = np.ascontiguousarray(y, dtype=float)
     val = (y, rsr, onset_index(y, rsr))
     EVENTS.put(key, val)
@@ -454,7 +460,7 @@ def write_cues(path: Path, rows: list[dict]) -> Path:
 def export(seq: Any, out: str | Path, resolver: Callable[[str], Path] | None = None, mp3: bool = False,
            oneshots: bool = False, level: str | None = None, sample_rate: int | None = None, bits: int = 24) -> dict:
     """Write the mix (out.wav, and out.mp3 with mp3=True) and, with oneshots=True, a folder out_oneshots/ of
-    numbered event files (as rendered, before step gain and pan) plus cues.csv: time (the event onset in the mix,
+    numbered event files (as rendered, before step gain and pan, peaking at -1 dBFS at most) plus cues.csv: time (the event onset in the mix,
     s), start (where its file starts in the mix, s), entry, take (the entry's variation number: the same take in
     the slider app or `soundlab render --variation`), gain_db (gain to apply to the file to rebuild the mix,
     including the mix's level change), pan."""
@@ -480,8 +486,10 @@ def export(seq: Any, out: str | Path, resolver: Callable[[str], Path] | None = N
         for row, buf in zip(info["events"], info.pop("_buffers")):
             slug = re.sub(r"[^a-z0-9]+", "_", Path(row["entry"]).name.lower()).strip("_")
             name = f"{row['index']:03d}_{slug}_t{row['take']}.wav"
-            write_wav(folder / name, buf, sr, bits)
-            rows.append(dict(row, file=name))
+            pk = float(np.max(np.abs(buf))) if len(buf) else 0.0
+            k = min(1.0, 10 ** (-1 / 20) / pk) if pk > 0 else 1.0       # files peak at -1 dBFS at most
+            write_wav(folder / name, buf * k, sr, bits)
+            rows.append(dict(row, file=name, gain_db=round(row["gain_db"] - 20 * np.log10(k), 3)))
         res["oneshots"] = str(folder)
         res["cues"] = str(write_cues(folder / "cues.csv", rows))
     info.pop("_buffers", None)

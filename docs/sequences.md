@@ -84,8 +84,9 @@ last one.
 ## Rendering and speed
 
 Each event renders the way the slider app plays the entry on its own: sources ring out, the silent tail is
-trimmed, and the loudness for the entry's category is applied. A step at gain 0 therefore sounds as the entry
-does alone. Each event's first sample within 30 dB of its peak lands on the timeline. If timing jitter or a
+trimmed, and the loudness gain for the entry's category is applied. A step at gain 0 therefore sits at the level
+the entry has alone. The peak limiter is not applied per event; it runs once, on the finished mix, so transients
+are not limited twice. Each event's first sample within 30 dB of its peak lands on the timeline. If timing jitter or a
 long lead-in would start an event before 0, the whole timeline moves later by the same amount.
 
 Event audio is cached by its concrete recipe and seed (`SOUNDLAB_SEQ_CACHE_MB`, default 256). Edits that only
@@ -98,7 +99,7 @@ the uncached events render side by side. The samples are the same either way.
 - One mixed file: WAV (24-bit), plus MP3 with ffmpeg. The mix is mono unless an event is panned, in which case
   it is stereo.
 - Numbered one-shots: a folder `<name>_oneshots/` with `001_footstep_t78500.wav`, ... (each event as rendered,
-  before its step gain and pan) and `cues.csv`.
+  before its step gain and pan, peaking at -1 dBFS at most) and `cues.csv`.
 
 `cues.csv` columns:
 

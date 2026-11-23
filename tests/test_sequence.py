@@ -214,6 +214,18 @@ def test_cli_list_and_render(tmp_path, capsys):
     assert (tmp_path / "r.wav").exists()
 
 
+def test_events_get_the_loudness_gain_but_no_limiter():
+    from soundlab.finish import finish
+    raw = json.loads(S.default_resolver("doors/knock_wood").read_text())
+    r, seed = S.concrete(raw, {}, {"0.hit": -2}, 31)
+    y, sr, _ = S.render_event(r, seed)
+    ref, rsr = render_recipe(r, seed=seed, ring_out=True)
+    ref, _ = finish(ref, rsr, r, level="peak", trim=True)
+    assert len(ref) == len(y)
+    k = y[np.argmax(np.abs(ref))] / ref[np.argmax(np.abs(ref))]
+    assert np.allclose(y, ref * k, atol=1e-9)          # one gain for the whole event: transients untouched
+
+
 # ------------------------------------------------------------------ slider app endpoints
 @pytest.fixture()
 def srv(tmp_path):
@@ -270,3 +282,4 @@ def test_gui_sequence_endpoints(srv):
     assert code == 400 and "error" in err
     code, page = get(base + "/")
     assert b'id="seqtpl"' in page and b"/api/sequence/render" in page
+
