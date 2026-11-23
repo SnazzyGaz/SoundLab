@@ -1355,6 +1355,7 @@ Footsteps rebuilt from stems of CC0 recordings (numbers only, no audio): walks a
 | `source` | `wood_floor` |  | concrete_walk, concrete_run, stone_walk, wood_floor, wood_creaky, wood_stairs, gravel_walk, dirt_walk, grass_walk, grass_run, sand_walk, snow_walk, mud_walk, puddle_walk, metal_walk, metal_stairs, tile_walk, carpet_walk, leaves_walk, boots_walk, heels_walk, trainers_walk, barefoot_wood, jump_land, jump_land_rock | stored source |
 | `surface` |  |  |  | optional surface name; remaps `source` (wood, stone, steel, dirt, gravel, grass, leaves, concrete, sand, snow, mud, tile, carpet) |
 | `shoe` |  |  |  | optional shoe name; remaps `source` (trainer, boot, heel, barefoot) |
+| `pace` | `` |  |  | optional 'run' for the generic footstep recipe (concrete and grass have runs; others walk) |
 | `count` | `1` |  | 1 .. 8 | number of real steps or landings in this take |
 | `tempo` | `1.0` |  | 0.4 .. 2.5 | spacing of a short walk or run (1 = the recording's own gaps) |
 | `which` | `-1` |  | -1 .. 64 | which stored gesture to play (0-based; -1 = pick a typical one) |
@@ -1365,6 +1366,52 @@ Footsteps rebuilt from stems of CC0 recordings (numbers only, no audio): walks a
 | `distance` | `1.0` |  | 0.25 .. 4.0 | 1 = as recorded; further is quieter and duller; nearer has more low end |
 | `hs_hz` | `3000.0` | Hz | 200 .. 16000 | high shelf corner used with force |
 | `seed` | `0` |  | 0 .. 2147483647 | noise seed |
+| `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the stored take; others reseed a fresh remix of the same stems |
+| `at` | `0.0` | s | 0 .. None |  |
+
+Sources: McDermott & Simoncelli 2011 (sound texture statistics); McAulay & Quatieri 1986 (sinusoidal modelling); Freesound CC0 recordings (numbers only; THIRD_PARTY.md)
+
+## Stage: synth
+
+### `foley_stems`
+
+Everyday handling sounds rebuilt from stems of CC0 recordings. Real events as band envelopes, a per-gesture noise bed, body-mode tracks where the object rings. Fresh takes remix the real stems (never averaged). Speed is tape speed. force, soft and distance are causal.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `source` | `cloth_handling` |  | cloth_handling, cloth_heavy, zipper_bag, zipper_jacket, keys_jingle, keys_down, paper_rustle, paper_crumple, page_turn, book_close, cup_down, glass_down, bottle_down, cutlery, bag_down, backpack_handle, cupboard, coin_drop, phone_down, chair_scrape, pen_click, light_switch, plastic_bag | stored source |
+| `count` | `1` |  | 1 .. 8 | number of real gestures in this take |
+| `tempo` | `1.0` |  | 0.4 .. 2.5 | spacing of a short count (1 = the recording's own gaps) |
+| `which` | `-1` |  | -1 .. 64 | which stored gesture to play (0-based; -1 = pick a typical one) |
+| `early` | `0` |  | 0 .. 1 | prefer the earlier gestures of the recording (1 = yes) |
+| `force` | `0.0` |  | -3.0 .. 3.0 | event / body level and a 3 kHz shelf; 0 = as recorded |
+| `soft` | `0.0` |  | 0.0 .. 1.2 | softer attack: event-layer low-pass and a 120 Hz low shelf |
+| `speed_cents` | `0.0` | cents | -1200 .. 1200 | tape speed (pitch and time together) |
+| `distance` | `1.0` |  | 0.25 .. 4.0 | 1 = as recorded; further is quieter and duller; nearer has more low end |
+| `hs_hz` | `3000.0` | Hz | 200 .. 16000 | high shelf corner used with force |
+| `seed` | `0` |  | 0 .. 2147483647 | noise seed (0 with force 0 and soft 0 rebuilds the stored take) |
+| `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the stored take; others reseed a fresh remix of the same stems |
+| `at` | `0.0` | s | 0 .. None |  |
+
+Sources: McDermott & Simoncelli 2011 (sound texture statistics); McAulay & Quatieri 1986 (sinusoidal modelling); Freesound CC0 recordings (numbers only; THIRD_PARTY.md)
+
+### `door_stems`
+
+Doors, locks, knocks and gates rebuilt from stems of CC0 recordings. Real events as band envelopes, a per-gesture noise bed, body-mode tracks for metal rings and a harmonic hinge-squeak voice (as mode tracks). Fresh takes remix the real stems (never averaged). Speed is tape speed. force, soft and distance are causal.
+
+| control | default | unit | range / choices | meaning |
+|---|---|---|---|---|
+| `source` | `door_wood_close` |  | door_wood_open, door_wood_close, door_wood_slam, door_creak, door_creak_small, door_heavy, door_metal_close, door_metal_slam, door_handle, key_lock, deadbolt, knock_wood_muffled, knock_wood, knock_metal, door_sliding, door_glass, door_screen, car_door, cupboard_door, wardrobe_door, gate_wood, gate_metal, drawer, garage_door | stored source |
+| `count` | `1` |  | 1 .. 8 | number of real gestures in this take |
+| `tempo` | `1.0` |  | 0.4 .. 2.5 | spacing of a short count (1 = the recording's own gaps) |
+| `which` | `-1` |  | -1 .. 64 | which stored gesture to play (0-based; -1 = pick a typical one) |
+| `early` | `0` |  | 0 .. 1 | prefer the earlier gestures of the recording (1 = yes) |
+| `force` | `0.0` |  | -3.0 .. 3.0 | event / body level and a 3 kHz shelf; 0 = as recorded |
+| `soft` | `0.0` |  | 0.0 .. 1.2 | softer attack: event-layer low-pass and a 120 Hz low shelf |
+| `speed_cents` | `0.0` | cents | -1200 .. 1200 | tape speed (pitch and time together) |
+| `distance` | `1.0` |  | 0.25 .. 4.0 | 1 = as recorded; further is quieter and duller; nearer has more low end |
+| `hs_hz` | `3000.0` | Hz | 200 .. 16000 | high shelf corner used with force |
+| `seed` | `0` |  | 0 .. 2147483647 | noise seed (0 with force 0 and soft 0 rebuilds the stored take) |
 | `variation` | `0` |  | -1000000.0 .. 1000000.0 | 0 = the stored take; others reseed a fresh remix of the same stems |
 | `at` | `0.0` | s | 0 .. None |  |
 

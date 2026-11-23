@@ -260,6 +260,69 @@ new noise.
 | jump_land (1.3-2.1 s) | Jumping Onto Wooden Floor.wav | krnash | Freesound #389800 | https://freesound.org/people/krnash/sounds/389800/ | CC0 |
 | jump_land_rock (0-4.9 s) | Footsteps_Mountain_Boots_Rock_Jump_Sequence_Mono.wav | Nox_Sound | Freesound #558477 | https://freesound.org/people/Nox_Sound/sounds/558477/ | CC0 |
 
+
+
+## Recordings decomposed into stems for `foley_stems` (numbers only, no audio included)
+
+`soundlab/models/foley_stems.bin` holds analysis numbers of gestures from these CC0 1.0 recordings on Freesound. No samples are stored; renders use new noise and the stored envelopes, tracks and level caps. The foley drawer was not kept (the door_stems drawer is used).
+
+| Source (cut) | Title | Author | Site | URL | Licence |
+|---|---|---|---|---|---|
+| cloth_handling (4.35-6.75 s) | Clothing Ruffle 01.wav | WhiteFire43 | Freesound #641383 | https://freesound.org/people/WhiteFire43/sounds/641383/ | CC0 |
+| cloth_heavy (1.65-4.6 s) | Jacket / Campera de Cuerina | IENBA | Freesound #483943 | https://freesound.org/people/IENBA/sounds/483943/ | CC0 |
+| zipper_bag (0.25-4.15 s) | Opening & closing zipper on a bag | randbsoundbites | Freesound #829757 | https://freesound.org/people/randbsoundbites/sounds/829757/ | CC0 |
+| zipper_jacket (2.12-3.05 s) | Zipper_01.wav | RobSp1derp1g | Freesound #615428 | https://freesound.org/people/RobSp1derp1g/sounds/615428/ | CC0 |
+| keys_jingle (1.55-4.25 s) | Keys Jingling | bwarpus99 | Freesound #443863 | https://freesound.org/people/bwarpus99/sounds/443863/ | CC0 |
+| keys_down (0.35-1.37 s) | Put Down Keys.wav | sophiehall3535 | Freesound #248046 | https://freesound.org/people/sophiehall3535/sounds/248046/ | CC0 |
+| paper_rustle (0.25-2.56 s) | rustling paper.wav | keweldog | Freesound #181774 | https://freesound.org/people/keweldog/sounds/181774/ | CC0 |
+| paper_crumple (0-2.19 s) | Crumpling Paper | OwlStorm | Freesound #151231 | https://freesound.org/people/OwlStorm/sounds/151231/ | CC0 |
+| page_turn (0-1.78 s) | Book Page Turning | EminYILDIRIM | Freesound #535358 | https://freesound.org/people/EminYILDIRIM/sounds/535358/ | CC0 |
+| book_close (1.18-2.4 s) | Closing book | ondondvo | Freesound #195795 | https://freesound.org/people/ondondvo/sounds/195795/ | CC0 |
+| cup_down (0.95-2.4 s) | Mug On Table: Setting Down and Picking Up | haus.the.child | Freesound #839346 | https://freesound.org/people/haus.the.child/sounds/839346/ | CC0 |
+| glass_down (0-1 s) | Put Down Glass Object.flac | qubodup | Freesound #171939 | https://freesound.org/people/qubodup/sounds/171939/ | CC0 |
+| bottle_down (3.25-5.2 s) | glass bottle on a wooden table | ventousawins | Freesound #681410 | https://freesound.org/people/ventousawins/sounds/681410/ | CC0 |
+| cutlery (0.1-3.5 s) | Dropping silverware | cb9382 | Freesound #873865 | https://freesound.org/people/cb9382/sounds/873865/ | CC0 |
+| bag_down (5.1-6.22 s) | Bag Of Flour Dropped On Counter Top.wav | bbrocer | Freesound #382642 | https://freesound.org/people/bbrocer/sounds/382642/ | CC0 |
+| backpack_handle (0-2.4 s) | Backpack Pickup Putdown | j1987 | Freesound #237046 | https://freesound.org/people/j1987/sounds/237046/ | CC0 |
+| cupboard (0-1.75 s) | Magnetic latch cupboard door | wlabarron | Freesound #509112 | https://freesound.org/people/wlabarron/sounds/509112/ | CC0 |
+| coin_drop (0.15-2.65 s) | Dropping Single Coin On Floor 4.wav | keatonmarek | Freesound #533774 | https://freesound.org/people/keatonmarek/sounds/533774/ | CC0 |
+| phone_down (0-1.08 s) | phone cordless plastic put down on table.flac | kyles | Freesound #637747 | https://freesound.org/people/kyles/sounds/637747/ | CC0 |
+| chair_scrape (0.15-1.7 s) | Wooden Chair Move.mp3 | harrietniamh | Freesound #219677 | https://freesound.org/people/harrietniamh/sounds/219677/ | CC0 |
+| pen_click (0.3-1.6 s) | pen_clicking_sound_effect(custom) | 8bid9537 | Freesound #753411 | https://freesound.org/people/8bid9537/sounds/753411/ | CC0 |
+| light_switch (0.45-1.4 s) | Light switch.wav | boop_7 | Freesound #684372 | https://freesound.org/people/boop_7/sounds/684372/ | CC0 |
+| plastic_bag (0-2.86 s) | Noisy Little Plastic Bag | TheWandermiles | Freesound #697256 | https://freesound.org/people/TheWandermiles/sounds/697256/ | CC0 |
+
+## Recordings decomposed into stems for `door_stems` (numbers only, no audio included)
+
+`soundlab/models/door_stems.bin` holds analysis numbers of gestures from these CC0 1.0 recordings on Freesound. No samples are stored; renders use new noise and the stored envelopes, tracks and level caps.
+
+| Source (cut) | Title | Author | Site | URL | Licence |
+|---|---|---|---|---|---|
+| door_wood_open (0-1.55 s) | wooden door open, close | doppido01 | Freesound #805974 | https://freesound.org/people/doppido01/sounds/805974/ | CC0 |
+| door_wood_close (4.76-5.4 s) | Door Slam | AlyssaB2043 | Freesound #466850 | https://freesound.org/people/AlyssaB2043/sounds/466850/ | CC0 |
+| door_wood_slam (4.05-5.35 s) | A wooden door being opened and closed | serøutōnin--deprivəd | Freesound #725396 | https://freesound.org/people/ser%C3%B8ut%C5%8Dnin--depriv%C9%99d/sounds/725396/ | CC0 |
+| door_creak (0-3.84 s) | Heavy Door Creaking_05.wav | rambler52 | Freesound #455324 | https://freesound.org/people/rambler52/sounds/455324/ | CC0 |
+| door_creak_small (1.6-2.6 s) | Door squeak | TiesWijnen | Freesound #455539 | https://freesound.org/people/TiesWijnen/sounds/455539/ | CC0 |
+| door_heavy (0.15-3.12 s) | Heavy_wooden_door_close_mansion.wav | elliott.klein | Freesound #367221 | https://freesound.org/people/elliott.klein/sounds/367221/ | CC0 |
+| door_metal_close (5.06-5.83 s) | Metal Shed Door Close 2 | Yoyodaman234 | Freesound #334682 | https://freesound.org/people/Yoyodaman234/sounds/334682/ | CC0 |
+| door_metal_slam (0.15-1.17 s) | metaldoorslam | saha213131 | Freesound #730196 | https://freesound.org/people/saha213131/sounds/730196/ | CC0 |
+| door_handle (0.05-2.07 s) | Opening Door Handle | amholma | Freesound #344355 | https://freesound.org/people/amholma/sounds/344355/ | CC0 |
+| key_lock (0-1.13 s) | Locking Door with Key.wav | baidonovan | Freesound #187352 | https://freesound.org/people/baidonovan/sounds/187352/ | CC0 |
+| deadbolt (0.1-1.6 s) | Light Metal Deadbolt Lock Unlock | loganzsound | Freesound #873133 | https://freesound.org/people/loganzsound/sounds/873133/ | CC0 |
+| knock_wood_muffled (0-1.2 s) | Door Knock - 42.wav | Ligidium | Freesound #193873 | https://freesound.org/people/Ligidium/sounds/193873/ | CC0 |
+| knock_wood (0.25-1.35 s) | Apartment Door Knock | Ultra-Edward | Freesound #828194 | https://freesound.org/people/Ultra-Edward/sounds/828194/ | CC0 |
+| knock_metal (0-1.2 s) | door knock.wav | clothespeg | Freesound #628576 | https://freesound.org/people/clothespeg/sounds/628576/ | CC0 |
+| door_sliding (0-3.6 s) | Door sliding along a metal track | wlabarron | Freesound #509114 | https://freesound.org/people/wlabarron/sounds/509114/ | CC0 |
+| door_glass (0.2-1.73 s) | Wooden/Glass door slammed  48000 Hz 24 bit Stereo | diogorusso | Freesound #612598 | https://freesound.org/people/diogorusso/sounds/612598/ | CC0 |
+| door_screen (6.1-8.4 s) | screen door slam.wav | 3dm0nd_M | Freesound #380036 | https://freesound.org/people/3dm0nd_M/sounds/380036/ | CC0 |
+| car_door (8.7-9.9 s) | car door.wav | pawsound | Freesound #154832 | https://freesound.org/people/pawsound/sounds/154832/ | CC0 |
+| cupboard_door (5.2-6.6 s) | Cupboard.wav | willsauntsounddesign | Freesound #564031 | https://freesound.org/people/willsauntsounddesign/sounds/564031/ | CC0 |
+| wardrobe_door (4.6-6.5 s) | Door_wood_wardrobe_1.WAV | o_ciz | Freesound #475488 | https://freesound.org/people/o_ciz/sounds/475488/ | CC0 |
+| gate_wood (1.99-3.05 s) | Wooden Gate | RealSquink | Freesound #788015 | https://freesound.org/people/RealSquink/sounds/788015/ | CC0 |
+| gate_metal (0-1.5 s) | Gate made out of metal and wire close | zxz41 | Freesound #241931 | https://freesound.org/people/zxz41/sounds/241931/ | CC0 |
+| drawer (1.6-2.9 s) | Drawer Open Close.wav | ThunderQuads | Freesound #467194 | https://freesound.org/people/ThunderQuads/sounds/467194/ | CC0 |
+| garage_door (0.45-3.1 s) | Garage door closing | Walking.With.Microphones | Freesound #624397 | https://freesound.org/people/Walking.With.Microphones/sounds/624397/ | CC0 |
+
 ## Methods adopted from other projects and papers (no code copied)
 
 v0.28 `creak`: the creaking door as stick-slip events through a fixed wood formant bank (A. Farnell, *Designing

@@ -1,12 +1,13 @@
-"""Shared renderer for impact_stems, weapon_stems and foot_stems (v0.34).
+"""Shared renderer for impact_stems, weapon_stems, foot_stems, foley_stems and door_stems.
 
 Numbers-only recording stems: body-mode partial tracks, real transient events as
 1/8-octave envelopes (rebuilt with an impulse-plus-noise vocoder), and a 1/8-octave
 1 ms sub-band vocoder bed per inter-hit segment. No band pitch-shifts (size is tape
 speed), no freeze frames, no time-squeeze, no smoothing that adds hiss.
 
-This module is the engine; the three family modules load their own .bin and register
-a model. See docs/impact_stems.md, docs/weapon_stems.md and docs/foot_stems.md.
+This module is the engine; each family module loads its own .bin and registers a model.
+See docs/impact_stems.md, docs/weapon_stems.md, docs/foot_stems.md, docs/foley_stems.md and
+docs/door_stems.md.
 """
 from __future__ import annotations
 
@@ -70,6 +71,10 @@ def _unpack_source(s, blob):
         st["ev_energy"] = _arr(blob, s["ev_energy"]).astype(np.float32)
     if "ev_eq6" in s:
         st["ev_eq6"] = _arr(blob, s["ev_eq6"]).astype(np.float32)
+    if "ev_cap" in s:       # optional (foley_stems, door_stems): grain lengths and the grain level cap
+        st["ev_glen"] = _arr(blob, s["ev_glen"]).astype(np.int32)
+        st["ev_cap"] = _q(_arr(blob, s["ev_cap"]), s["ev_cap_lo"]).astype(np.float32, copy=False)
+        st["ev_cap_off"] = _arr(blob, s["ev_cap_off"]).astype(np.int32)
     if "md_amp" in s:
         st["md_nom"] = _arr(blob, s["md_nom"]).astype(np.float32)
         st["md_t0"] = _arr(blob, s["md_t0"]).astype(np.float32)
@@ -157,6 +162,9 @@ def synth_modes(st, n, a=0, e=None):
         # shift so window start a is t=0 in the output
         t_abs = ta + a / SR
         phi = 2 * np.pi * np.cumsum(np.interp(t_abs, te, fr)) / SR
+        if st.get("md_abs") and a > 0:
+            # families whose mode phases are measured from the start of the recording (foley, doors)
+            phi = phi + 2 * np.pi * np.sum(np.interp(np.arange(a) / SR, te, fr)) / SR
         y += np.interp(t_abs, te, amp) * np.cos(phi + np.interp(t_abs, te, ph))
     return y
 
@@ -185,16 +193,40 @@ def render_events(st, n, a, e, seed, evg=1.0, identity=True):
         fd = int(0.0005 * SR)
         if P + fd <= len(mk):
             mk[P:P + fd] = np.sin(np.linspace(0, np.pi / 2, fd)) ** 2
+        if "ev_cap" in st:
+            w = _cap_event(st, j, w, mk, P)
+            mk = 1.0
         # place into window: source s0 maps to output s0-a
         o = s0 - a
+        w = w * mk
         if o < 0:
-            w, mk, o = w[-o:], mk[-o:], 0
+            w, o = w[-o:], 0
         m = min(len(w), n - o)
         if m > 0:
-            y[o:o + m] += (w * mk)[:m] * evg
+            y[o:o + m] += w[:m] * evg
     if st.get("ev_eq6") is not None and np.any(y):
         y = minphase_eq(y, st["ev_eq6"])
     return y
+
+
+def _cap_event(st, j, w, mk, P):
+    """Event end and level as the approved rebuilds (families that store a grain cap): a 3 ms fade at the end
+    of the real grain, then the 1 ms RMS envelope of the rebuilt event held at or under the grain's own."""
+    from scipy.ndimage import uniform_filter1d
+    e0 = P + int(st["ev_glen"][j]); fo = int(0.003 * SR)
+    mk = mk.copy()
+    k = len(mk[e0:e0 + fo])
+    if k > 0:
+        mk[e0:e0 + fo] *= np.cos(np.linspace(0, np.pi / 2, k)) ** 2
+    mk[e0 + fo:] = 0
+    w = w * mk
+    hop = int(st.get("ev_cap_hop", 11))
+    c = st["ev_cap"][int(st["ev_cap_off"][j]):int(st["ev_cap_off"][j + 1])]
+    eg = np.interp(np.arange(len(w)), np.arange(len(c)) * hop, c)
+    ew = np.sqrt(np.maximum(uniform_filter1d(w ** 2, 44), 0)) + 1e-12
+    cg = np.minimum(1.0, eg / ew)
+    cg = np.minimum(cg, uniform_filter1d(cg, 44))
+    return w * cg
 
 
 def render_bed(st, n, a, e, seed, bdg=1.0, identity=True):
@@ -216,11 +248,18 @@ def render_bed(st, n, a, e, seed, bdg=1.0, identity=True):
         t = np.arange(a0, b1) / SR
         # original used pads and wk from residual; here E already includes pads.
         # Zero before the inner start if we can infer it; use a short fade at the edges of the overlap.
-        mk = np.ones(len(w))
         fd = int(0.0005 * SR)
-        if fd > 1:
-            mk[:fd] *= np.sin(np.linspace(0, np.pi / 2, fd)) ** 2
-            mk[-fd:] *= np.cos(np.linspace(0, np.pi / 2, fd)) ** 2
+        if st.get("bed_exact") and len(st.get("bounds") or []) > k + 1:
+            # the approved rebuilds' mask: zero before the segment start, 0.5 ms in, 4 ms out ending 1 ms early
+            ba, bb = int(st["bounds"][k]), int(st["bounds"][k + 1])
+            mk = np.clip((t - ba / SR) / 0.001 + 1, 0, 1) * np.clip((bb / SR - 0.001 - t) / 0.004, 0, 1)
+            i0 = max(0, ba - a0); mk[:i0] = 0
+            mk[i0:i0 + fd] = np.sin(np.linspace(0, np.pi / 2, fd))[:len(mk[i0:i0 + fd])] ** 2
+        else:
+            mk = np.ones(len(w))
+            if fd > 1:
+                mk[:fd] *= np.sin(np.linspace(0, np.pi / 2, fd)) ** 2
+                mk[-fd:] *= np.cos(np.linspace(0, np.pi / 2, fd)) ** 2
         o = a0 - a
         if o < 0:
             w, mk, o = w[-o:], mk[-o:], 0
@@ -333,7 +372,26 @@ def render_window(st, a, e, seed, force=0.0, soft=0.0, identity=True):
     y = (bed + mo + ev) * float(st.get("stem_gain", 1.0) or 1.0)
     if "hf_f" in st:
         y = minphase_lin(y, st["hf_f"], st["hf_db"])
+    if st.get("sil_fr"):
+        y = y * _silence_gate(st, A, n)
     return y
+
+
+def _silence_gate(st, A, n):
+    """Gain mask for source samples [A, A+n): 0 where the recording itself is digital silence (stored as
+    frame ranges, >= 100 dB under its peak for >= 20 ms), 1 elsewhere, 5 ms ramps inside the silent stretch.
+    Sources without silent stretches skip this entirely."""
+    hop = int(st.get("sil_hop", 44))
+    g = np.ones(n)
+    hit = False
+    for a, b in st["sil_fr"]:
+        i0, i1 = max(0, a * hop - A), min(n, b * hop - A)
+        if i1 > i0:
+            g[i0:i1] = 0.0; hit = True
+    if not hit:
+        return 1.0
+    k = int(0.005 * SR)
+    return np.maximum(g, np.convolve(g, np.ones(k) / k, "same"))
 
 
 def render(st, p, rng=None):
