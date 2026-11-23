@@ -65,7 +65,15 @@ What's in it:
   (numbers only, no audio). Defaults are a softer, more natural step than the often-forceful recordings; `force` and
   `soft` stay as macros. The older `footstep` / `footstep_*` names still work;
   see [docs/foot_stems.md](docs/foot_stems.md).
-- **Featured recipes** for game sound (219 recipe files in all): footsteps on many surfaces and shoes, knocks, coins, wind, whooshes, arrows, fans,
+- **Household foley from recording stems** (`foley_stems`): cloth, zips, bags, paper, a page turn, a book, cups,
+  glasses, bottles, cutlery, keys, a coin, a phone, a pen click, a light switch, a chair scrape and a cupboard
+  (23 recipes in `recipes/foley/`), rebuilt the same way from CC0 recordings (numbers only, no audio);
+  see [docs/foley_stems.md](docs/foley_stems.md).
+- **Doors, locks, knocks and gates from recording stems** (`door_stems`): wood, heavy, metal, glass, screen,
+  sliding, car, cupboard and wardrobe doors, a drawer, a garage door, two gates, a key in a lock, a deadbolt, three
+  knocks and a hinge squeak (24 recipes in `recipes/doors/`); see [docs/door_stems.md](docs/door_stems.md).
+- **Featured recipes** for game sound (272 recipe files in all; the app lists 180, the rest are old ids kept as
+  hidden aliases, see [docs/library.md](docs/library.md)): footsteps on many surfaces and shoes, knocks, coins, wind, whooshes, arrows, fans,
   rain, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splashes, drips, a pour, a stream, a river, a waterfall, boiling and sloshing, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.
@@ -139,9 +147,11 @@ soundlab gui
 is reachable from other computers) and opens your browser. Options: `--port 8766` (AIDAW uses 8765), `--out
 <folder>` (default `~/SoundLab`, or the `SOUNDLAB_OUT` environment variable), `--no-browser`.
 
-- Recipes listed by category with a search box; your own saved recipes appear with a ★.
-- Each recipe's macro sliders and choice menus; an "Advanced" panel with every underlying model control.
-- Variation number (0 = as written, 1, 2, 3... = random takes) and seed.
+- Sounds listed by what you look for (Foley › Doors & gates › Wood door, close), plain names and a search box
+  that matches plain words; your own saved recipes appear under My recipes. See [docs/library.md](docs/library.md).
+- A few plain controls per sound (Intensity, Size, Distance, choices such as Surface or Shape); an "Advanced"
+  panel with the finer controls and every underlying model control.
+- Variation: 0 = the sound as designed, any other number = another take (◀ ▶, 🎲 for a random one).
 - Play renders fast and plays in the browser; moving a slider re-renders and plays when you let go.
 - Waveform and spectrogram of the current sound.
 - Export WAV (and MP3 with ffmpeg) to `<out>/exports/`, named like `weapon_gunshot_calibreshotgun_v01.wav`;
