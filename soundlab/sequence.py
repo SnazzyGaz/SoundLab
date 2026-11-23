@@ -24,10 +24,12 @@ Step keys
              (default: one base interval), or "gap": seconds after the previous step's last event ends
              (negative overlaps). The first step starts at 0 unless it says otherwise.
   gain_db, pan (-1 left .. 1 right), alternate (true/false: left/right alternation; default true for footsteps)
+  key        optional number the step's random draws are keyed on (default: its position), so a moved step keeps
+             its takes and jitter
 
 Humanise: every event gets a uniform timing offset within +-timing_ms and a level offset within +-level_db; the
 events of an alternating step swing left and right by "alternate" (pan units). The draws come from their own
-generators (sequence seed, step index, purpose), so the takes stay put when only timing or levels change.
+generators (sequence seed, step key or index, purpose), so the takes stay put when only timing or levels change.
 
 Events are rendered as the slider app plays a single entry (sources ring out, the silent tail is trimmed, then the
 loudness for the entry's category), so a step at gain 0 sounds as it does on its own. Event renders are cached by
@@ -281,6 +283,13 @@ def render_events(events: list[dict], sample_rate: int | None = None, level: str
 
 
 # --------------------------------------------------------------------------------------------- planning
+def step_key(step: dict, index: int) -> int:
+    """What a step's random draws are keyed on: its "key" if it has one (the app gives every step a key, so
+    moving a step keeps its takes and jitter), else its position."""
+    k = step.get("key")
+    return abs(int(k)) if isinstance(k, (int, float)) or (isinstance(k, str) and k.isdigit()) else index
+
+
 def plan(seq: dict, resolver: Callable[[str], Path] | None = None) -> list[dict]:
     """The events of a sequence (entry, concrete recipe, seed, take), before timing. Deterministic for the
     sequence seed; depends only on the steps' entries, settings, take choices and repeat counts."""
@@ -301,7 +310,7 @@ def plan(seq: dict, resolver: Callable[[str], Path] | None = None) -> list[dict]
             raise RecipeError(f"step {si}: {entry!r} is not a sound recipe")
         macros, overrides = step.get("macros") or {}, step.get("overrides") or {}
         take = step.get("take", "auto")
-        rng = np.random.default_rng([sseed, si, 11])
+        rng = np.random.default_rng([sseed, step_key(step, si), 11])
         for k in range(int(step.get("repeat", 1) or 1)):
             if take not in (None, "auto"):
                 v = int(take)
@@ -354,8 +363,8 @@ def schedule(seq: dict, events: list[dict], lengths: list[float], onsets: list[f
         else:
             t0 = float(step.get("offset", 0.0)) if "offset" in step else 0.0
         iv = float(step.get("interval", base))
-        trng = np.random.default_rng([sseed, si, 22])
-        lrng = np.random.default_rng([sseed, si, 33])
+        trng = np.random.default_rng([sseed, step_key(step, si), 22])
+        lrng = np.random.default_rng([sseed, step_key(step, si), 33])
         alt_on = step.get("alternate")
         if alt_on is None:
             alt_on = str(events[idx[0]]["recipe"].get("library", "")).startswith("Foley/Footsteps")

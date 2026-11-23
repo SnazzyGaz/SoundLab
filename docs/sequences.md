@@ -53,6 +53,7 @@ Step keys:
 | `gain_db`, `pan` | level, and position from -1 (left) to 1 (right) |
 | `alternate` | left/right alternation for this step (default: on for footsteps, off otherwise) |
 | `take` | `"auto"` (the default) or a variation number used for every event (0 = the entry as designed) |
+| `key` | optional number the step's random draws are keyed on (default: its position). The app gives every step one, so moving a step keeps its takes and jitter. |
 
 ## Takes
 
@@ -67,8 +68,8 @@ The cue list's `take` is the entry's variation number. The same number in the sl
 `soundlab render recipes/<entry>.json --variation N`, gives the same take, provided the step's own macros and
 overrides (such as `0.hit`) are also applied.
 
-The draws come from separate generators keyed on the sequence seed, the step index and their purpose (takes,
-timing, level). Changing the rate, jitter, gain or pan, or adding events at the end of a step, keeps every
+The draws come from separate generators keyed on the sequence seed, the step (its `key`, else its position) and
+their purpose (takes, timing, level). Changing the rate, jitter, gain or pan, or adding events at the end of a step, keeps every
 earlier event's take.
 
 ### One hit of a knock

@@ -417,6 +417,7 @@ function loadPreset(i) {
   const p = presetsList[i]; if (!p) return;
   S = JSON.parse(JSON.stringify(p.sequence)); S.humanise = Object.assign({timing_ms: 0, level_db: 0, alternate: 0}, S.humanise || {});
   if (!S.rate) S.rate = {interval: 0.5};
+  S.steps.forEach((st, k) => { if (st.key === undefined) st.key = k; });    // moving a step keeps its takes
   $("#preset").value = i; drawSeq();
 }
 function drawGlobals() {
@@ -438,7 +439,8 @@ function drawSeq() {
 async function addStep(id) {
   const d = await describe(id);
   if (!S.steps.length) { S.category = d.category || "sfx"; if (S.name === "my_sequence") S.title = d.title + " sequence"; }
-  S.steps.push(S.steps.length ? {entry: id, gap: 0.2} : {entry: id});
+  const key = S.steps.reduce((m, st) => Math.max(m, (st.key ?? -1) + 1), S.steps.length);
+  S.steps.push(S.steps.length ? {entry: id, gap: 0.2, key} : {entry: id, key});
   drawSteps(); schanged(true);
 }
 function startOf(st) { return "at" in st ? "at" : "gap" in st ? "gap" : "offset"; }

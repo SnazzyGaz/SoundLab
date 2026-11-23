@@ -83,6 +83,14 @@ def test_single_gesture_entry_still_gets_fresh_takes():
     assert all(a != b for a, b in zip(takes, takes[1:]))  # every event a different remix of it
 
 
+def test_step_key_keeps_takes_when_steps_move():
+    a = seq([{"entry": FAST, "repeat": 2, "key": 0}, {"entry": "sword_swing", "repeat": 2, "key": 1}])
+    b = dict(a, steps=[a["steps"][1], a["steps"][0]])
+    ta = {(e["entry"], e["take"]) for e in S.plan(a)}
+    tb = {(e["entry"], e["take"]) for e in S.plan(b)}
+    assert ta == tb
+
+
 def test_fixed_take_is_used_for_every_event():
     ev = S.plan(seq([{"entry": FAST, "repeat": 3, "take": 5}]))
     assert [e["take"] for e in ev] == [5, 5, 5]
