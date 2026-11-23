@@ -24,6 +24,7 @@ from .. import __version__
 from ..core import REGISTRY, RecipeError
 from ..recipe import load as load_recipe
 from ..recipe import render as render_recipe
+from ..recipe import apply_overrides  # noqa: F401  (moved; kept importable from here)
 from ..recipe import resolve
 
 DEFAULT_PORT = 8766            # AIDAW uses 8765
@@ -269,6 +270,107 @@ class App:
                 "render_s": round(time.time() - t0, 3), "peak": float(np.max(np.abs(audio)) if len(audio) else 0.0),
                 "waveform": wave, "spectrogram": spec}
 
+    # ---- sequences (soundlab/sequence.py): library entries on a timeline
+    def sequences(self) -> list[dict]:
+        from .. import sequence as S
+        out = [dict(d, user=False) for d in S.presets()]
+        user = self.out_dir / "sequences"
+        for d in S.presets(user) if user.is_dir() else []:
+            out.append(dict(d, id="my/" + d["id"], user=True))
+        return out
+
+    def _seq_key(self, seq: dict, level) -> str:
+        """The sequence plus the identity of every entry file it uses (a saved recipe can change on disk)."""
+        files = []
+        for e in sorted({str(s.get("entry")) for s in seq.get("steps") or []}):
+            p = self.recipe_path(e)
+            st = p.stat()
+            files.append([e, str(p), st.st_mtime_ns, st.st_size])
+        return json.dumps(["seq", seq, level, files], sort_keys=True, default=str)
+
+    def render_sequence(self, req: dict) -> dict:
+        """Render a sequence for the page, like render(): "supersede": true makes a newer request stop this one,
+        one render at a time, finished results cached. Event buffers are cached by the engine, so a timing, gain,
+        pan or jitter change only re-mixes."""
+        from .. import sequence as S
+        from ..fastpath import Superseded, cancel_scope
+        t0 = time.time()
+        seq = req.get("sequence") or {}
+        level = req.get("level") or None
+        rkey = self._seq_key(seq, level)
+        supersede = bool(req.get("supersede"))
+        with self.lock:
+            if supersede:
+                self.gen += 1
+            my = self.gen
+            hit = self.results.get(rkey)
+            if hit is not None:
+                self.results.move_to_end(rkey)
+        stale = (lambda: self.gen != my) if supersede else (lambda: False)
+        if hit is None:
+            try:
+                with self.render_lock:
+                    if stale():
+                        raise Superseded("superseded")
+                    with cancel_scope(stale):
+                        audio, sr, info = S.render(seq, resolver=self.recipe_path, level=level)
+                    mono = audio if audio.ndim == 1 else audio.mean(axis=1)
+                    hit = (audio, sr, info, waveform(mono), spectrogram(mono, sr))
+            except Superseded:
+                return {"superseded": True}
+            with self.lock:
+                self.results[rkey] = hit
+                while len(self.results) > self.results_size:
+                    self.results.popitem(last=False)
+            counts = {"events_rendered": hit[2]["events_rendered"], "events_cached": hit[2]["events_cached"]}
+        else:
+            counts = {"events_rendered": 0, "events_cached": 0, "result_cached": True}
+        audio, sr, info, wave, spec = hit
+        key = uuid.uuid4().hex[:12]
+        with self.lock:
+            self.cache[key] = (audio, sr)
+            self.order.append(key)
+            while len(self.order) > self.cache_size:
+                self.cache.pop(self.order.pop(0), None)
+        return {"key": key, "url": f"/api/audio/{key}.wav", "sample_rate": sr, "seconds": len(audio) / sr,
+                "channels": 1 if audio.ndim == 1 else audio.shape[1], "finish": info["finish"],
+                "render_s": round(time.time() - t0, 3), "peak": float(np.max(np.abs(audio)) if len(audio) else 0.0),
+                "events": info["events"], "waveform": wave, "spectrogram": spec, **counts}
+
+    @staticmethod
+    def _seq_name(req: dict) -> str:
+        seq = req.get("sequence") or {}
+        name = re.sub(r"[^a-z0-9_]+", "_", str(req.get("name") or seq.get("name") or "sequence").strip().lower())
+        return name.strip("_") or "sequence"
+
+    def export_sequence(self, req: dict) -> dict:
+        """The mix as WAV (and MP3), and with "oneshots": true a folder of numbered event files and cues.csv."""
+        from .. import sequence as S
+        folder = self.out_dir / "exports" / "sequences"
+        base = folder / f"{self._seq_name(req)}.wav"
+        k = 1
+        while base.exists() or base.with_name(base.stem + "_oneshots").exists():
+            k += 1
+            base = folder / f"{self._seq_name(req)}_{k:02d}.wav"
+        return S.export(req.get("sequence") or {}, base, resolver=self.recipe_path, mp3=bool(req.get("mp3")),
+                        oneshots=bool(req.get("oneshots")), level=req.get("level") or None)
+
+    def save_sequence(self, req: dict) -> dict:
+        from .. import sequence as S
+        seq = dict(req.get("sequence") or {})
+        errs = S.validate(seq)
+        if errs:
+            raise RecipeError("; ".join(errs))
+        name = re.sub(r"[^a-z0-9_]+", "_", (req.get("name") or "").strip().lower()).strip("_")
+        if not name:
+            raise RecipeError("give the sequence a name (letters, digits, _)")
+        seq.update(name=name, title=req.get("title") or name.replace("_", " "))
+        folder = self.out_dir / "sequences"
+        folder.mkdir(parents=True, exist_ok=True)
+        p = folder / f"{name}.json"
+        p.write_text(json.dumps(seq, indent=1), encoding="utf-8")
+        return {"path": str(p), "id": f"my/{name}"}
+
     # ---- warm-up while the page is idle
     def prefetch_requests(self, req: dict) -> list[dict]:
         """What to render ahead after the page showed `req`, for recipes built on recording stems (their rebuilt
@@ -384,18 +486,6 @@ def audio_channels(req: dict, raw: dict) -> int:
     return 2 if wants_stereo(raw, bool(req.get("loop")), req.get("stereo")) else 1
 
 
-def apply_overrides(r: dict, overrides: dict) -> None:
-    """Set controls by key: 'L.name' (single-model layer), 'L.B.name' (block B of a chain), 'post.J.name'."""
-    for key, val in overrides.items():
-        parts = key.split(".")
-        if parts[0] == "post":
-            blk = r["post"][int(parts[1])]
-        else:
-            layer = r["layers"][int(parts[0])]
-            blk = layer["chain"][int(parts[1])] if layer.get("chain") and len(parts) == 3 else layer
-        blk.setdefault("params", {})[parts[-1]] = val
-
-
 def waveform(x: np.ndarray, bins: int = 800) -> list:
     """[min, max] per bin. Bins tile x, so the non-empty ones are reduceat segments between their starts."""
     if len(x) == 0:
@@ -495,6 +585,8 @@ class Handler(BaseHTTPRequestHandler):
                                    "pack_dir": str(self.app.pack_dir)})
             if path == "/api/recipes":
                 return self._json(self.app.recipes())
+            if path == "/api/sequences":
+                return self._json(self.app.sequences())
             if path == "/api/recipe":
                 return self._json(self.app.describe(q.get("id", "")))
             m = re.fullmatch(r"/api/audio/([0-9a-f]{12})\.wav", path)
@@ -524,6 +616,12 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(self.app.export(req))
             if path == "/api/batch":
                 return self._json(self.app.batch(req))
+            if path == "/api/sequence/render":
+                return self._json(self.app.render_sequence(req))
+            if path == "/api/sequence/export":
+                return self._json(self.app.export_sequence(req))
+            if path == "/api/sequence/save":
+                return self._json(self.app.save_sequence(req))
             if path == "/api/save":
                 return self._json(self.app.save(req))
             if path.startswith("/api/bt/"):

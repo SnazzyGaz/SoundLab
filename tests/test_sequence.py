@@ -1,12 +1,16 @@
 """Sequences (soundlab/sequence.py): plan determinism, distinct takes per event, timing, the event cache (timing-only
-edits re-mix), export (mix, one-shots, cue CSV), and the CLI."""
+edits re-mix), export (mix, one-shots, cue CSV), the CLI and the slider app endpoints."""
 import csv
 import json
+import threading
+import urllib.error
+import urllib.request
 
 import numpy as np
 import pytest
 from scipy.io import wavfile
 
+from soundlab import fastpath
 from soundlab import sequence as S
 from soundlab.cli import main as cli_main
 from soundlab.core import RecipeError
@@ -200,3 +204,61 @@ def test_cli_list_and_render(tmp_path, capsys):
     assert len(rows) == 3 and float(rows[1]["time"]) - float(rows[0]["time"]) == pytest.approx(0.2, abs=1e-3)
     assert cli_main(["render", str(p), "-o", str(tmp_path / "r.wav")]) == 0      # render takes a sequence too
     assert (tmp_path / "r.wav").exists()
+
+
+# ------------------------------------------------------------------ slider app endpoints
+@pytest.fixture()
+def srv(tmp_path):
+    from soundlab.gui import make_server
+    from soundlab.gui.server import REPO_RECIPES
+    s = make_server(0, recipe_dirs=[REPO_RECIPES], out_dir=tmp_path / "out", pack_dir=tmp_path / "pack")
+    t = threading.Thread(target=s.serve_forever, daemon=True)
+    t.start()
+    yield f"http://127.0.0.1:{s.server_address[1]}", s, tmp_path
+    s.shutdown()
+    s.server_close()
+    fastpath.set_threads(None)
+    fastpath.set_block_memo(False)
+
+
+def get(url):
+    with urllib.request.urlopen(url) as r:
+        return r.status, r.read()
+
+
+def post(url, body):
+    rq = urllib.request.Request(url, json.dumps(body).encode(), {"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(rq) as r:
+            return r.status, json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        return e.code, json.loads(e.read())
+
+
+def test_gui_sequence_endpoints(srv):
+    base, _, tmp = srv
+    S.EVENTS.clear()
+    code, body = get(base + "/api/sequences")
+    presets = json.loads(body)
+    assert code == 200 and "walk" in {p["id"] for p in presets}
+    s = seq([{"entry": FAST, "repeat": 3}, {"entry": "sword_swing", "gap": 0.1}])
+    code, r = post(base + "/api/sequence/render", {"sequence": s, "supersede": True})
+    assert code == 200 and len(r["events"]) == 4 and r["events_rendered"] == 4
+    code, wav = get(base + r["url"])
+    assert code == 200 and wav[:4] == b"RIFF"
+    code, r2 = post(base + "/api/sequence/render", {"sequence": s, "supersede": True})
+    assert r2.get("result_cached")
+    s2 = dict(s, rate={"interval": 0.5})
+    code, r3 = post(base + "/api/sequence/render", {"sequence": s2, "supersede": True})
+    assert code == 200 and r3["events_rendered"] == 0 and r3["events_cached"] == 4
+    assert r3["events"][1]["time"] - r3["events"][0]["time"] == pytest.approx(0.5, abs=1e-3)
+    code, ex = post(base + "/api/sequence/export", {"sequence": s2, "oneshots": True, "name": "my walk"})
+    assert code == 200 and ex["wav"].endswith("my_walk.wav") and ex["events"] == 4
+    assert len(list((tmp / "out" / "exports" / "sequences" / "my_walk_oneshots").glob("*.wav"))) == 4
+    code, sv = post(base + "/api/sequence/save", {"sequence": s2, "name": "Test Seq"})
+    assert code == 200 and sv["id"] == "my/test_seq"
+    assert "my/test_seq" in {p["id"] for p in json.loads(get(base + "/api/sequences")[1])}
+    code, err = post(base + "/api/sequence/render", {"sequence": seq([{"entry": "nope/none"}])})
+    assert code == 400 and "error" in err
+    code, page = get(base + "/")
+    assert b'id="seqtpl"' in page and b"/api/sequence/render" in page

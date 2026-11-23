@@ -51,18 +51,35 @@
   .blk span { color:var(--mute); font-weight:400; }
   .row.changed label { color:var(--acc); font-weight:600; }
   #msg { white-space:pre-wrap; font-size:13px; margin-top:8px; color:var(--mute); }
-  #msg.err { color:#b3261e; }
+  #msg.err, #smsg.err { color:#b3261e; }
+  .tabs button { padding:5px 12px; }
+  .tabs button.on { background:var(--acc2); border-color:var(--acc); color:var(--acc); font-weight:600; }
+  .addhint { display:none; margin:0 10px 6px; font-size:12px; color:var(--acc); }
+  body.seqmode .addhint { display:block; }
+  #seqwave { height:120px; }
+  .step { border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin:8px 0; background:#fcfcfb; }
+  .step .head { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .step .head b { min-width:150px; }
+  .step .head .n { color:var(--mute); width:22px; }
+  .step input[type=number] { width:68px; padding:4px 6px; border:1px solid var(--line); border-radius:6px; font:inherit; }
+  .step select { font:inherit; padding:3px; }
+  .step button { padding:3px 8px; }
+  .step .ctl { margin-top:6px; display:none; }
+  .step.open .ctl { display:block; }
+  .smsg { white-space:pre-wrap; font-size:13px; margin-top:8px; color:var(--mute); }
 </style>
 </head>
 <body>
 <header>
   <h1>SoundLab</h1><span id="ver" class="hint"></span>
+  <span class="tabs"><button id="tabsound" class="on">Sounds</button> <button id="tabseq">Sequence</button></span>
   <span class="sp"></span>
   <a href="/blindtest">Blind test</a>
 </header>
 <div class="wrap">
   <aside>
     <input id="search" type="search" placeholder="Search sounds… (door, gravel, gun)" autocomplete="off">
+    <div class="addhint">Click a sound to add it as a step.</div>
     <div id="list"></div>
   </aside>
   <main id="main"><div class="empty">Pick a sound on the left.</div></main>
@@ -114,6 +131,50 @@
   </div>
 </template>
 
+<template id="seqtpl">
+  <div class="card">
+    <div class="top">
+      <button id="splay" class="primary">▶ Play</button>
+      <div><h2 id="stitle">Sequence</h2><div class="hint" id="ssub"></div></div>
+      <span class="sp" style="flex:1"></span>
+      <label class="inline hint"><input type="checkbox" id="sauto" checked> play on change</label>
+    </div>
+    <div style="margin-top:12px"><canvas id="seqwave" width="1600" height="240"></canvas></div>
+    <div id="sstatus" style="margin-top:6px">&nbsp;</div>
+  </div>
+  <div class="card"><h3>Sequence</h3>
+    <div class="inline" style="margin-bottom:8px">
+      <span>Start from</span><select id="preset"></select>
+      <button id="sclear">Empty</button>
+    </div>
+    <div class="row"><label>Rate</label><div class="inline"><select id="ratemode"><option value="spm">steps per minute</option><option value="interval">seconds between events</option></select>
+      <input type="number" id="rate" min="0.01" step="any"></div><span></span></div>
+    <div id="hum"></div>
+    <div class="inline" style="margin-top:10px">
+      <span>Variation</span>
+      <button id="sprev">◀</button><input type="number" id="sseed" min="0" value="1"><button id="snext">▶</button>
+      <button id="sdice">🎲 Random</button>
+    </div>
+    <p class="hint" style="margin:6px 0 0">Every event draws its own take (never the same take twice in a row); Variation picks a different set of takes and jitter.</p>
+  </div>
+  <div class="card"><h3>Steps</h3>
+    <div id="steps"></div>
+    <p class="hint">Add a step: click a sound in the library on the left. Start: after the previous step starts (+ s), after it ends (gap s, negative overlaps) or at a fixed time. Blank interval = the rate above.</p>
+  </div>
+  <div class="card"><h3>Export</h3>
+    <div class="inline">
+      <span>Level</span><select id="slevel"><option value="lufs">Loudness per category (game-ready)</option><option value="peak">Peak -1 dBFS (raw)</option></select>
+      <button id="sexp">Export</button>
+      <label class="inline"><input type="checkbox" id="smp3"> also MP3</label>
+      <label class="inline"><input type="checkbox" id="sone"> numbered one-shots + cue CSV</label>
+    </div>
+    <div class="inline" style="margin-top:10px">
+      <input type="text" id="sname" placeholder="sequence_name"><button id="ssave">Save sequence</button>
+    </div>
+    <div id="smsg" class="smsg"></div>
+  </div>
+</template>
+
 <script>
 const $ = (s, el = document) => el.querySelector(s);
 let recipes = [], cur = null, state = {}, audio = new Audio(), lastKey = null, busy = 0, pending = false;
@@ -133,6 +194,9 @@ async function init() {
   recipes = await api("/api/recipes");
   drawList();
   $("#search").addEventListener("input", drawList);
+  $("#tabsound").onclick = () => setMode("sound");
+  $("#tabseq").onclick = () => setMode("seq");
+  if (location.hash === "#sequence") { setMode("seq"); return; }
   const want = decodeURIComponent(location.hash.slice(1));
   if (want && recipes.some(r => r.id === want)) select(want);     // old (hidden) ids still open by link
 }
@@ -159,10 +223,11 @@ function drawList() {
             ` <small>· ${fmt(r.duration)} s</small></div>`;
   }
   $("#list").innerHTML = html || '<div class="empty">No match.</div>';
-  for (const el of document.querySelectorAll(".item")) el.onclick = () => select(el.dataset.id);
+  for (const el of document.querySelectorAll(".item")) el.onclick = () => mode === "seq" ? addStep(el.dataset.id) : select(el.dataset.id);
 }
 
 async function select(id) {
+  if (mode !== "sound") setMode("sound", true);
   cur = await api("/api/recipe?id=" + encodeURIComponent(id));
   location.hash = encodeURIComponent(id);
   state = {macros: {}, overrides: {}, variation: 0};
@@ -314,6 +379,157 @@ function drawSpec(s) {
   g.imageSmoothingEnabled = true; g.clearRect(0, 0, c.width, c.height); g.drawImage(tmp, 0, 0, c.width, c.height);
   g.fillStyle = "rgba(255,255,255,.6)"; g.font = "20px Segoe UI, sans-serif";
   g.fillText(Math.round(s.fmax / 1000) + " kHz", 8, 24); g.fillText(s.fmin + " Hz", 8, c.height - 8);
+}
+
+// ------------------------------------------------------------------ Sequence: library entries on a timeline
+// Every change re-renders with the same debounce / abort / supersede as the sliders. The server keeps each event's
+// audio, so timing, gain, pan and jitter changes only re-mix; a new step or new settings render just those events.
+let mode = "sound", S = null, presetsList = [], described = {}, sqn = 0, sinflight = null, sdebounce = null, sPending = true, sLast = null;
+async function setMode(m, quiet) {
+  mode = m; document.body.classList.toggle("seqmode", m === "seq");
+  $("#tabsound").classList.toggle("on", m === "sound"); $("#tabseq").classList.toggle("on", m === "seq");
+  if (quiet) return;
+  if (m === "seq") { location.hash = "sequence"; await openSequence(); }
+  else { drawList(); if (cur) select(cur.id); else $("#main").innerHTML = '<div class="empty">Pick a sound on the left.</div>'; }
+}
+async function describe(id) { return described[id] || (described[id] = await api("/api/recipe?id=" + encodeURIComponent(id))); }
+async function openSequence() {
+  const main = $("#main"); main.innerHTML = ""; main.appendChild($("#seqtpl").content.cloneNode(true));
+  presetsList = await api("/api/sequences");
+  $("#preset").innerHTML = presetsList.map((p, i) => `<option value="${i}">${esc(p.title)}${p.user ? " (mine)" : ""}</option>`).join("");
+  $("#preset").onchange = () => loadPreset(+$("#preset").value);
+  $("#sclear").onclick = () => { S = {soundlab: 1, type: "sequence", name: "my_sequence", title: "My sequence", category: "sfx", seed: 1,
+                                     rate: {interval: 0.5}, humanise: {timing_ms: 0, level_db: 0, alternate: 0}, steps: []}; drawSeq(); };
+  $("#ratemode").onchange = () => { const v = +$("#rate").value || 1; S.rate = $("#ratemode").value === "spm" ? {spm: S.rate.interval ? Math.round(60 / S.rate.interval) : v} : {interval: S.rate.spm ? +(60 / S.rate.spm).toFixed(3) : v}; drawGlobals(); schanged(); };
+  $("#rate").oninput = () => { const v = +$("#rate").value; if (v > 0) { S.rate = {[$("#ratemode").value]: v}; schanged(); } };
+  $("#sseed").onchange = e => { S.seed = Math.max(0, Math.round(+e.target.value) || 0); $("#sseed").value = S.seed; schanged(); };
+  $("#sprev").onclick = () => { $("#sseed").value = S.seed = Math.max(0, S.seed - 1); schanged(); };
+  $("#snext").onclick = () => { $("#sseed").value = ++S.seed; schanged(); };
+  $("#sdice").onclick = () => { $("#sseed").value = S.seed = 1 + Math.floor(Math.random() * 9999); schanged(); };
+  $("#slevel").onchange = schanged;
+  $("#splay").onclick = () => { if (audio.src && sLast && !sPending) { audio.currentTime = 0; audio.play(); } else srender(true); };
+  $("#sexp").onclick = () => srun("/api/sequence/export", {sequence: S, level: $("#slevel").value, mp3: $("#smp3").checked, oneshots: $("#sone").checked},
+    r => "Saved " + r.wav + (r.mp3 ? "\n      " + r.mp3 : "") + (r.mp3_error ? "\nMP3 skipped: " + r.mp3_error : "") + (r.oneshots ? `\n${r.events} one-shots + cues.csv in ${r.oneshots}` : ""));
+  $("#ssave").onclick = () => srun("/api/sequence/save", {sequence: S, name: $("#sname").value}, r => "Saved sequence " + r.path);
+  if (S) drawSeq(); else loadPreset(0);
+}
+function loadPreset(i) {
+  const p = presetsList[i]; if (!p) return;
+  S = JSON.parse(JSON.stringify(p.sequence)); S.humanise = Object.assign({timing_ms: 0, level_db: 0, alternate: 0}, S.humanise || {});
+  if (!S.rate) S.rate = {interval: 0.5};
+  $("#preset").value = i; drawSeq();
+}
+function drawGlobals() {
+  const mode_ = S.rate.spm ? "spm" : "interval"; $("#ratemode").value = mode_; $("#rate").value = S.rate[mode_];
+  $("#sseed").value = S.seed ?? 1; $("#slevel").value = S.level || "lufs";
+  const hum = $("#hum"); hum.innerHTML = "";
+  const H = S.humanise;
+  slider(hum, {label: "Timing jitter", doc: "each event moves by up to ± this many milliseconds (double-click: 0)", lo: 0, hi: 80, value: H.timing_ms || 0, unit: "ms",
+               onchange: v => { H.timing_ms = Math.round(v); schanged(); }, onreset: () => { H.timing_ms = 0; drawGlobals(); schanged(); }});
+  slider(hum, {label: "Level jitter", doc: "each event's level moves by up to ± this many dB (double-click: 0)", lo: 0, hi: 6, value: H.level_db || 0, unit: "dB",
+               onchange: v => { H.level_db = +v.toFixed(2); schanged(); }, onreset: () => { H.level_db = 0; drawGlobals(); schanged(); }});
+  slider(hum, {label: "Left / right", doc: "footsteps (and steps set to alternate) swing left and right by this much (double-click: 0)", lo: 0, hi: 1, value: H.alternate || 0,
+               onchange: v => { H.alternate = +v.toFixed(2); schanged(); }, onreset: () => { H.alternate = 0; drawGlobals(); schanged(); }});
+}
+function drawSeq() {
+  $("#stitle").textContent = S.title || S.name || "Sequence"; $("#ssub").textContent = S.doc || "";
+  drawGlobals(); drawSteps(); schanged(true);
+}
+async function addStep(id) {
+  const d = await describe(id);
+  if (!S.steps.length) { S.category = d.category || "sfx"; if (S.name === "my_sequence") S.title = d.title + " sequence"; }
+  S.steps.push(S.steps.length ? {entry: id, gap: 0.2} : {entry: id});
+  drawSteps(); schanged(true);
+}
+function startOf(st) { return "at" in st ? "at" : "gap" in st ? "gap" : "offset"; }
+function drawSteps() {
+  const box = $("#steps"); box.innerHTML = "";
+  if (!S.steps.length) box.innerHTML = '<p class="hint">No steps yet.</p>';
+  S.steps.forEach((st, i) => {
+    const el = document.createElement("div"); el.className = "step";
+    const sm = startOf(st), sv = st[sm] ?? "";
+    el.innerHTML = `<div class="head"><span class="n">${i + 1}</span><b>${esc(st.entry)}</b>
+      <span>start</span><select class="sm"><option value="offset">after previous starts +</option><option value="gap">after previous ends, gap</option><option value="at">at</option></select>
+      <input type="number" class="sv" step="0.01" placeholder="rate" value="${sv}"> s
+      <span>×</span><input type="number" class="rep" min="1" max="256" step="1" value="${st.repeat || 1}">
+      <span>every</span><input type="number" class="iv" min="0.01" step="0.01" placeholder="rate" value="${st.interval ?? ""}"> s
+      <span>gain</span><input type="number" class="g" step="0.5" value="${st.gain_db || 0}"> dB
+      <span>pan</span><input type="number" class="pan" min="-1" max="1" step="0.05" value="${st.pan || 0}">
+      <span>take</span><input type="number" class="take" min="0" step="1" placeholder="auto" value="${st.take === undefined || st.take === "auto" ? "" : st.take}">
+      <button class="set" title="this step's controls">⚙</button><button class="up" title="move up">↑</button><button class="dn" title="move down">↓</button><button class="rm" title="remove">✕</button></div>
+      <div class="ctl"></div>`;
+    $(".sm", el).value = sm;
+    describe(st.entry).then(d => { $("b", el).textContent = d.title || d.name; $("b", el).title = st.entry; });
+    const num = (sel, key, opt = {}) => { $(sel, el).oninput = e => { const v = e.target.value.trim();
+      if (v === "" || isNaN(+v)) { if (opt.blank) delete st[key]; else return; } else st[key] = opt.int ? Math.max(1, Math.round(+v)) : +v;
+      schanged(); }; };
+    num(".rep", "repeat", {int: true}); num(".iv", "interval", {blank: true}); num(".g", "gain_db", {blank: true}); num(".pan", "pan", {blank: true});
+    $(".take", el).oninput = e => { const v = e.target.value.trim(); if (v === "") delete st.take; else if (!isNaN(+v)) st.take = Math.max(0, Math.round(+v)); schanged(); };
+    const setStart = () => { delete st.at; delete st.gap; delete st.offset; const v = $(".sv", el).value.trim(); if (v !== "" && !isNaN(+v)) st[$(".sm", el).value] = +v; else if ($(".sm", el).value !== "offset") st[$(".sm", el).value] = 0; schanged(); };
+    $(".sm", el).onchange = setStart; $(".sv", el).oninput = setStart;
+    $(".up", el).onclick = () => { if (i) { [S.steps[i - 1], S.steps[i]] = [S.steps[i], S.steps[i - 1]]; drawSteps(); schanged(true); } };
+    $(".dn", el).onclick = () => { if (i < S.steps.length - 1) { [S.steps[i + 1], S.steps[i]] = [S.steps[i], S.steps[i + 1]]; drawSteps(); schanged(true); } };
+    $(".rm", el).onclick = () => { S.steps.splice(i, 1); drawSteps(); schanged(true); };
+    $(".set", el).onclick = async () => { el.classList.toggle("open"); if (el.classList.contains("open") && !$(".ctl", el).children.length) await stepControls(st, $(".ctl", el)); };
+    box.appendChild(el);
+  });
+}
+async function stepControls(st, box) {
+  const d = await describe(st.entry); st.macros = st.macros || {};
+  const front = d.macros.filter(m => (m.ui || "front") === "front" && !/^(count|tempo)$/.test(m.name));
+  if (!front.length) box.innerHTML = '<p class="hint">No controls.</p>';
+  for (const m of front) {
+    const label = m.label || m.name, val = st.macros[m.name];
+    if (m.choices) dropdown(box, label, m.doc, m.choices, val ?? m.default, v => { st.macros[m.name] = v; schanged(); });
+    else if (m.options) dropdown(box, label, m.doc, m.options, val ?? m.default_label ?? m.options[0], v => {
+      if (v === m.default_label) delete st.macros[m.name]; else st.macros[m.name] = v; schanged(); });
+    else slider(box, {label, doc: m.doc + " (double-click to reset)", lo: 0, hi: 1, value: typeof val === "number" ? val : m.default,
+                      onchange: v => { st.macros[m.name] = +v.toFixed(3); schanged(); },
+                      onreset: () => { delete st.macros[m.name]; schanged(); }});
+  }
+}
+function schanged(now) {
+  sPending = true;
+  if (!$("#sauto") || !$("#sauto").checked) { if ($("#sstatus")) $("#sstatus").textContent = "changed: press Play"; return; }
+  const play = !dragging;
+  clearTimeout(sdebounce);
+  sdebounce = setTimeout(() => srender(play), now ? 0 : 60);
+}
+function sreq() { return {sequence: Object.assign({}, S, {level: $("#slevel").value}), level: $("#slevel").value}; }
+async function srender(play) {
+  if (!S || !S.steps.length) { $("#sstatus").textContent = "Add a step: click a sound on the left."; const c = $("#seqwave"); c.getContext("2d").clearRect(0, 0, c.width, c.height); return; }
+  const my = ++sqn; $("#sstatus").textContent = "rendering…"; clearTimeout(sdebounce);
+  if (sinflight) sinflight.abort();
+  const ctl = sinflight = new AbortController();
+  try {
+    const r = await api("/api/sequence/render", {...sreq(), supersede: true}, ctl.signal);
+    if (my !== sqn || r.superseded) return;
+    sLast = r.key; sPending = false; audio.src = r.url; audio.loop = false;
+    const f = r.finish || {};
+    const fresh = r.result_cached ? "from cache" : r.events_rendered ? `${r.events_rendered} new event${r.events_rendered > 1 ? "s" : ""} rendered, ${r.events_cached} reused` : `re-mixed ${r.events_cached} cached events`;
+    $("#sstatus").textContent = `${r.seconds.toFixed(2)} s${r.channels === 2 ? " stereo" : ""} · ${r.events.length} events · ${fresh} in ${r.render_s} s` +
+      (f.result !== undefined ? ` · ${f.result} LUFS, target ${f.target}` : "");
+    drawSeqWave(r);
+    if (play) audio.play().catch(() => {});
+  } catch (e) { if (my === sqn && e.name !== "AbortError") $("#sstatus").textContent = "error: " + e.message; }
+  finally { if (my === sqn) sinflight = null; }
+}
+function drawSeqWave(r) {
+  const c = $("#seqwave"), g = c.getContext("2d"), W = c.width, H = c.height, bins = r.waveform;
+  g.clearRect(0, 0, W, H); g.strokeStyle = "#e2e2df"; g.beginPath(); g.moveTo(0, H / 2); g.lineTo(W, H / 2); g.stroke();
+  g.fillStyle = "#2a62d9"; const w = W / bins.length;
+  bins.forEach(([lo, hi], i) => { const y1 = H / 2 - hi * H / 2, y2 = H / 2 - lo * H / 2; g.fillRect(i * w, y1, Math.max(1, w), Math.max(1, y2 - y1)); });
+  g.font = "18px Segoe UI, sans-serif";
+  const hues = ["#d9532a", "#2a9d5c", "#8a2ad9", "#d9a52a", "#2ab3d9", "#d92a8a"];
+  for (const e of r.events) {
+    const x = e.time / r.seconds * W; g.fillStyle = hues[(e.step - 1) % hues.length];
+    g.fillRect(x, 0, 2, H); g.fillText(String(e.index), x + 4, 18);
+  }
+}
+async function srun(path, body, done) {
+  const msg = $("#smsg"); msg.className = "smsg"; msg.textContent = "Working…";
+  try { msg.textContent = done(await api(path, body)); if (path.endsWith("save")) presetsList = await api("/api/sequences"); }
+  catch (e) { msg.className = "smsg err"; msg.textContent = e.message; }
 }
 
 init().catch(e => { $("#main").innerHTML = `<div class="empty">Could not start: ${esc(e.message)}</div>`; });
