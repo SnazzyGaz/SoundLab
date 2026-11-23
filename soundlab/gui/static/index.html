@@ -16,8 +16,9 @@
   aside { width:270px; min-width:220px; border-right:1px solid var(--line); background:var(--panel); display:flex; flex-direction:column; }
   aside input { margin:10px; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font:inherit; }
   #list { overflow:auto; flex:1; padding-bottom:10px; }
-  .cat { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); padding:10px 12px 3px; }
-  .item { padding:5px 14px; cursor:pointer; border-left:3px solid transparent; }
+  .cat { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); padding:12px 12px 3px; font-weight:600; }
+  .sub { font-size:12px; color:var(--mute); padding:6px 14px 2px; }
+  .item { padding:4px 14px 4px 22px; cursor:pointer; border-left:3px solid transparent; }
   .item:hover { background:#f2f2f0; }
   .item.on { background:var(--acc2); border-left-color:var(--acc); }
   .item small { color:var(--mute); }
@@ -61,7 +62,7 @@
 </header>
 <div class="wrap">
   <aside>
-    <input id="search" type="search" placeholder="Search recipes…" autocomplete="off">
+    <input id="search" type="search" placeholder="Search sounds… (door, gravel, gun)" autocomplete="off">
     <div id="list"></div>
   </aside>
   <main id="main"><div class="empty">Pick a sound on the left.</div></main>
@@ -78,19 +79,17 @@
     <div style="margin-top:12px"><canvas id="wave" width="1600" height="220"></canvas><canvas id="spec" width="960" height="300"></canvas></div>
     <div id="status" style="margin-top:6px">&nbsp;</div>
   </div>
-  <div class="card"><h3>Sliders</h3><div id="macros"></div>
+  <div class="card"><h3>Controls</h3><div id="macros"></div>
     <div class="inline" style="margin-top:12px">
-      <span>Variation</span><input type="number" id="variation" min="0" value="0">
-      <button id="prev">◀</button><button id="next">▶</button>
-      <span class="hint">0 = the recipe as written; 1, 2, 3… = random takes</span>
+      <span>Variation</span>
+      <button id="prev">◀</button><input type="number" id="variation" min="0" value="0"><button id="next">▶</button>
+      <button id="dice">🎲 Random</button><button id="reset">Reset all</button>
     </div>
-    <div class="inline" style="margin-top:8px">
-      <span>Seed</span><input type="number" id="seed" placeholder="auto">
-      <button id="dice">🎲 New seed</button><button id="reset">Reset all</button>
-    </div>
+    <p class="hint" style="margin:6px 0 0">0 is the sound as designed; every other number is a different take of the same sound.</p>
   </div>
-  <div class="card"><details id="adv"><summary>Advanced: every model control</summary>
-    <p class="hint">These set exact values and win over the sliders above for the same setting. Changed ones turn blue.</p>
+  <div class="card"><details id="adv"><summary>Advanced</summary>
+    <div id="advmacros"></div>
+    <p class="hint">Every model control. These set exact values and win over the controls above for the same setting. Changed ones turn blue.</p>
     <div id="advanced"></div></details></div>
   <div class="card"><h3>Export</h3>
     <div class="inline" style="margin-bottom:10px">
@@ -135,17 +134,29 @@ async function init() {
   drawList();
   $("#search").addEventListener("input", drawList);
   const want = decodeURIComponent(location.hash.slice(1));
-  if (want && recipes.some(r => r.id === want)) select(want);
+  if (want && recipes.some(r => r.id === want)) select(want);     // old (hidden) ids still open by link
 }
 
+// The library: Domain › Thing, plain names. Old ids that were merged or replaced stay as hidden aliases (they still
+// render and open by link) and are not listed.
+const TOP = ["Foley", "Impacts & breaks", "Combat", "Fire", "Water", "Weather", "Machines", "Vehicles", "Animals",
+             "Creatures", "Game UI & sci-fi", "My recipes", "Other"];
+const SUB = {"Foley": ["Footsteps", "Doors & gates", "Cloth & bags", "Paper & books", "Kitchen & tableware", "Household", "Scrapes & rubs"],
+             "Combat": ["Guns", "Blades", "Bows", "Melee", "Explosions"]};
+function rank(list, x) { const i = list ? list.indexOf(x) : -1; return i < 0 ? 999 : i; }
 function drawList() {
-  const q = $("#search").value.trim().toLowerCase();
-  let html = "", last = null;
-  for (const r of recipes) {
-    if (q && !(r.id + " " + r.name + " " + r.category).toLowerCase().includes(q)) continue;
-    if (r.category !== last) { html += `<div class="cat">${esc(r.category)}</div>`; last = r.category; }
-    html += `<div class="item ${cur && cur.id === r.id ? "on" : ""}" data-id="${esc(r.id)}">${esc(r.id.replace(/^blocks\//, "blocks / ").replace(/^my\//, "★ "))}` +
-            (r.macros ? ` <small>· ${r.macros} sliders</small>` : "") + `</div>`;
+  const words = $("#search").value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const shown = recipes.filter(r => !r.hidden && words.every(w =>
+    [r.title, r.id, r.library, r.name, ...(r.tags || [])].join(" ").toLowerCase().includes(w)));
+  const key = r => { const [top, sub = ""] = (r.library || "Other").split("/"); return [rank(TOP, top), top, rank(SUB[top], sub), sub, r.title.toLowerCase()]; };
+  shown.sort((a, b) => { const x = key(a), y = key(b); for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i] < y[i] ? -1 : 1; return 0; });
+  let html = "", lastTop = null, lastSub = null;
+  for (const r of shown) {
+    const [top, sub = ""] = (r.library || "Other").split("/");
+    if (top !== lastTop) { html += `<div class="cat">${esc(top)}</div>`; lastTop = top; lastSub = null; }
+    if (sub && sub !== lastSub) { html += `<div class="sub">${esc(sub)}</div>`; lastSub = sub; }
+    html += `<div class="item ${cur && cur.id === r.id ? "on" : ""}" data-id="${esc(r.id)}" title="${esc(r.name)}">${esc(r.title)}` +
+            ` <small>· ${fmt(r.duration)} s</small></div>`;
   }
   $("#list").innerHTML = html || '<div class="empty">No match.</div>';
   for (const el of document.querySelectorAll(".item")) el.onclick = () => select(el.dataset.id);
@@ -154,10 +165,11 @@ function drawList() {
 async function select(id) {
   cur = await api("/api/recipe?id=" + encodeURIComponent(id));
   location.hash = encodeURIComponent(id);
-  state = {macros: {}, overrides: {}, variation: 0, seed: ""};
+  state = {macros: {}, overrides: {}, variation: 0};
   const main = $("#main"); main.innerHTML = ""; main.appendChild($("#tpl").content.cloneNode(true));
-  $("#title").textContent = cur.name;
-  $("#sub").textContent = cur.category + " · " + cur.id + " · " + cur.duration + " s";
+  $("#title").textContent = cur.title || cur.name;
+  $("#sub").textContent = (cur.library ? cur.library.replace("/", " › ") + " · " : "") + cur.name + " · " + cur.duration + " s" +
+    (cur.hidden ? " · old id kept so existing files and calls still work" + (cur.replaced_by ? "; the library entry is " + cur.replaced_by : "") : "");
   buildMacros(); buildAdvanced(); wire(); drawList(); render(false);
 }
 
@@ -182,14 +194,21 @@ function dropdown(container, label, doc, choices, value, onchange) {
 }
 
 function buildMacros() {
+  // front: the few plain controls; Advanced: the rest that still do something; hidden: aliases and the old seed slider
+  const front = cur.macros.filter(m => (m.ui || "front") === "front"), adv = cur.macros.filter(m => m.ui === "advanced");
   const box = $("#macros");
-  if (!cur.macros.length) { box.innerHTML = '<p class="hint">This recipe has no sliders; use Advanced below.</p>'; return; }
-  for (const m of cur.macros) {
-    if (m.choices) dropdown(box, m.name, m.doc, m.choices, m.default, v => { state.macros[m.name] = v; changed(); });
-    else slider(box, {label: m.name, doc: m.doc + " (double-click to reset)", lo: 0, hi: 1, value: m.default,
-                      onchange: v => { state.macros[m.name] = +v.toFixed(3); changed(); },
-                      onreset: () => { delete state.macros[m.name]; changed(); }});
-  }
+  if (!front.length) box.innerHTML = '<p class="hint">' + (adv.length ? "Fine controls are under Advanced below." : "No controls; use Advanced below.") + "</p>";
+  for (const m of front) macroControl(box, m);
+  for (const m of adv) macroControl($("#advmacros"), m);
+}
+function macroControl(box, m) {
+  const label = m.label || m.name;
+  if (m.choices) dropdown(box, label, m.doc, m.choices, m.default, v => { state.macros[m.name] = v; changed(); });
+  else if (m.options) dropdown(box, label, m.doc, m.options, m.default_label ?? m.options[0], v => {
+    if (v === m.default_label) delete state.macros[m.name]; else state.macros[m.name] = v; changed(); });
+  else slider(box, {label, doc: m.doc + " (double-click to reset)", lo: 0, hi: 1, value: m.default,
+                    onchange: v => { state.macros[m.name] = +v.toFixed(3); changed(); },
+                    onreset: () => { delete state.macros[m.name]; changed(); }});
 }
 
 function buildAdvanced() {
@@ -218,11 +237,10 @@ function buildAdvanced() {
 
 function wire() {
   $("#play").onclick = () => { if (audio.src && lastKey && !pending) { audio.currentTime = 0; audio.play(); } else render(true); };
-  $("#variation").onchange = e => { state.variation = Math.max(0, +e.target.value || 0); changed(); };
+  $("#variation").onchange = e => { state.variation = Math.max(0, Math.round(+e.target.value) || 0); $("#variation").value = state.variation; changed(); };
   $("#prev").onclick = () => { $("#variation").value = state.variation = Math.max(0, state.variation - 1); changed(); };
   $("#next").onclick = () => { $("#variation").value = ++state.variation; changed(); };
-  $("#seed").onchange = e => { state.seed = e.target.value; changed(); };
-  $("#dice").onclick = () => { $("#seed").value = state.seed = String(Math.floor(Math.random() * 1e6)); changed(); };
+  $("#dice").onclick = () => { $("#variation").value = state.variation = 1 + Math.floor(Math.random() * 9999); changed(); };
   $("#reset").onclick = () => select(cur.id);
   $("#loopbox").style.display = cur.loopable ? "" : "none";
   $("#stereobox").style.display = cur.stereo ? "" : "none";
@@ -235,7 +253,7 @@ function wire() {
 
 function req() {
   const loop = cur.loopable && $("#loopon").checked ? Math.max(1, +$("#loops").value || 10) : 0;
-  return {id: cur.id, macros: state.macros, overrides: state.overrides, variation: state.variation, seed: state.seed,
+  return {id: cur.id, macros: state.macros, overrides: state.overrides, variation: state.variation,
           level: $("#level").value, trim: $("#trim").checked, loop,
           stereo: cur.stereo ? $("#stereo").checked : false};
 }

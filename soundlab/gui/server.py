@@ -92,9 +92,16 @@ class App:
                 if "layers" not in r:
                     continue
                 seen.add(rel)
+                user = root == self.user_recipes
                 out.append({"id": rel, "name": r.get("name") or Path(rel).name, "category": r.get("category", "sfx"),
-                            "user": root == self.user_recipes, "macros": len(r.get("macros", {})),
-                            "duration": r.get("duration", 3.0)})
+                            "user": user, "macros": len(r.get("macros", {})),
+                            "duration": r.get("duration", 3.0),
+                            # library view: plain name, place in the tree, search words; hidden = an old id kept
+                            # as an alias (still renders, not listed)
+                            "title": r.get("title") or r.get("name") or Path(rel).name,
+                            "library": r.get("library") or ("My recipes" if user else "Other"),
+                            "tags": r.get("tags", []), "hidden": bool(r.get("hidden")),
+                            "replaced_by": r.get("replaced_by")})
         return sorted(out, key=lambda d: (d["category"], d["id"]))
 
     def recipe_path(self, rid: str) -> Path:
@@ -120,9 +127,13 @@ class App:
         r = load_recipe(self.recipe_path(rid))
         macros = []
         for name, spec in r.get("macros", {}).items():
-            d = {"name": name, "default": spec.get("default", 0.5), "doc": spec.get("doc", "")}
+            d = {"name": name, "default": spec.get("default", 0.5), "doc": spec.get("doc", ""),
+                 "label": spec.get("label", name), "ui": spec.get("ui", "front")}
             if "choices" in spec:
                 d["choices"] = list(spec["choices"])
+            elif "options" in spec:
+                d["options"] = list(spec["options"])
+                d["default_label"] = spec.get("default_label")
             macros.append(d)
         advanced = []
         for li, layer in enumerate(r["layers"]):
@@ -133,6 +144,8 @@ class App:
         for j, b in enumerate(r.get("post", [])):
             advanced.append(self._block_controls(f"post.{j}", "post", b))
         return {"id": rid, "name": r.get("name") or Path(rid).name, "category": r.get("category", "sfx"),
+                "title": r.get("title") or r.get("name") or Path(rid).name, "library": r.get("library", ""),
+                "hidden": bool(r.get("hidden")), "replaced_by": r.get("replaced_by"),
                 "duration": r.get("duration", 3.0), "seed": r.get("seed", 0), "macros": macros,
                 "loopable": bool(r.get("loop")), "stereo": bool(r.get("stereo")),
                 "advanced": advanced, "vary": r.get("vary", {})}
@@ -269,8 +282,9 @@ class App:
         base = {k: v for k, v in req.items() if k != "supersede"}
         out = []
         for name, spec in raw.get("macros", {}).items():
-            if "choices" in spec or any("variation" in str(m.get("to", "")) for m in spec.get("map", [])):
-                continue            # a 'seed' slider: every position is a new take
+            if "choices" in spec or "options" in spec or spec.get("ui") == "hidden" or \
+                    any("variation" in str(m.get("to", "")) for m in spec.get("map", [])):
+                continue            # a 'seed' slider: every position is a new take; dropdowns and hidden aliases
             for v in (1.0, 0.0):
                 out.append(dict(base, macros={**(base.get("macros") or {}), name: v}))
         out.append(dict(base, variation=int(base.get("variation") or 0) + 1))
@@ -349,6 +363,9 @@ class App:
             raise RecipeError("give the new recipe a name (letters, digits, _)")
         r["name"] = name
         r["based_on"] = req["id"]
+        for k in ("hidden", "replaced_by", "library", "tags"):
+            r.pop(k, None)              # your copy is listed under My recipes, by its own name
+        r["title"] = name
         if raw.get("macros"):
             r["macros"] = copy.deepcopy(raw["macros"])     # sliders now move relative to the saved sound
         if raw.get("vary"):
