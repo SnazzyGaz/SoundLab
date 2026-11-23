@@ -32,10 +32,15 @@ MOVED = {
 }
 
 
+SYNTH_MOVED = {"rain", "rain_roof", "rain_steady", "wind_howl"}
+
+
 def recipe_path(name):
     name = name[:-5] if str(name).endswith(".json") else str(name)
     if name in MOVED:
         return RECIPES / "impact_model" / f"{name}.json"
+    if name in SYNTH_MOVED:
+        return RECIPES / "synth_model" / f"{name}.json"
     return RECIPES / f"{name}.json"
 
 SR = 48000

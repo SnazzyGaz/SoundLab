@@ -75,9 +75,14 @@ What's in it:
 - **Sequences** (v0.35): library sounds on a timeline (`soundlab sequence`, and a Sequence tab in the slider app).
   Presets for a walk, a run, knocks, a door, gunfire and a reload. Export a mix or numbered one-shots with a cue CSV;
   see [docs/sequences.md](docs/sequences.md).
-- **Featured recipes** for game sound (272 recipe files in all; the app lists 180, the rest are old ids kept as
+- **Weather and ambience from recording stems** (`weather_stems`): `rain` (surface, intensity, and an intensity
+  curve that can swell or fade), `rain_drips`, `thunder` (near or distant), `ocean_waves`, `wind_breeze` (intensity from a gentle breeze to gusty),
+  `wind_howl`, `forest_day`, `night_insects`, `city_street` and `room_tone`. Beds loop to any length. See
+  [docs/weather.md](docs/weather.md). The previous procedural rain and wind-howl recipes remain under
+  `recipes/synth_model/`. `wind_gust` and `wind_trees` stay as `air_stems` recipes.
+- **Featured recipes** for game sound (295 recipe files in all; the app lists 197, the rest are old ids kept as
   hidden aliases, see [docs/library.md](docs/library.md)): footsteps on many surfaces and shoes, knocks, coins, wind, whooshes, arrows, fans,
-  rain, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
+  rain, thunder, ocean waves, forest and night beds, a city street, room tone, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splashes, drips, a pour, a stream, a river, a waterfall, boiling and sloshing, engines, explosions, fire, water,
   a duck, a foghorn, a match, plus 7 demos of the generic synth blocks.
 - **Macro sliders** on every recipe (size, distance, intensity, material, ...), **seeded variations** and

@@ -24,6 +24,11 @@ Variants are choices inside one entry rather than separate list items:
 - **Coin drop**: Shape single (one coin) or spin (the longer spinning drop).
 - **Parts**: where one recording holds two different actions they are a Part choice: wood door latch / swing,
   deadbolt lock / unlock, bag zip open / close, cupboard open / close.
+- **Rain**: Surface (open ground, a roof, or a window) and Intensity (light to heavy on open ground, crossfading
+  real recordings). An Intensity curve under Advanced can swell or fade over the length of the bed.
+- **Thunder**: Kind near crack or distant roll.
+- **Wind**: Intensity from a gentle breeze to gusty (crossfading real recordings). Wind howl stays a separate
+  entry (a whistling, moaning wind). `wind_gust` and `wind_trees` stay as `air_stems` recipes.
 
 ## Controls
 
@@ -51,16 +56,19 @@ recipes are folded into Footsteps the same way. `glass_hit_room` is kept as a hi
 
 ## Next steps
 
+Weather and ambience beds (`weather_stems`, [weather.md](weather.md)) cover rain (light, steady, heavy, on a
+roof or a window, plus drips), thunder (near and distant), a gentle breeze and a howling wind, shore waves,
+a forest afternoon, night insects, a city street and a quiet room. Rain and wind can follow an intensity curve
+that crossfades real recordings (no stretching). `wind_gust` and `wind_trees` stay as `air_stems` recipes.
+Sequences themselves are built: see [sequences.md](sequences.md).
+
 Not built yet:
 
-- **Intensity-curve beds**: long beds that follow an intensity curve (rain from light to heavy), crossfading
-  real recordings at several intensities with no stretching. This waits on the weather rebuild. Sequences
-  themselves are built: see [sequences.md](sequences.md).
-- **Gaps**: real rain (light, heavy, on a roof, on a window), thunder, a storm build, sea waves; ambience beds
-  (room tone, traffic, forest, crowd, office); animals (dog, cat, birds, horse, insects); non-verbal people
-  (body fall, clothing movement, grabs); bullet impacts on concrete, wood and metal, sword swing with a ring,
-  heavy body hits; car start/stop, idle loop, horn, plane, helicopter and train; household (typing, phone ring
-  and vibrate, doorbell, kettle, tap, microwave, toilet flush, alarm clock); more UI sounds (error, back, hover,
-  notification, toggle).
-- Several older synthesis recipes stay in the library until stem rebuilds replace them (rain, wind howl and
-  whistle, the creature growls, the animals, engine idle and blips, the scrapes, bullet impact, sword swing).
+- **Gaps**: a storm build as a sequence; crowd and office beds; animals (dog, cat, birds, horse);
+  non-verbal people (body fall, clothing movement, grabs); bullet impacts on concrete, wood and metal, sword
+  swing with a ring, heavy body hits; car start/stop, idle loop, horn, plane, helicopter and train; household
+  (typing, phone ring and vibrate, doorbell, kettle, tap, microwave, toilet flush, alarm clock); more UI sounds
+  (error, back, hover, notification, toggle).
+- Several older synthesis recipes stay in the library until stem rebuilds replace them (the creature growls,
+  the animals, engine idle and blips, the scrapes, bullet impact, sword swing). The previous procedural rain
+  and wind-howl recipes remain under `recipes/synth_model/`.

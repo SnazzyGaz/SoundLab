@@ -1,102 +1,26 @@
 {
   "soundlab": 1,
-  "name": "Wind howl: gusts across a pipe opening, locking onto pipe modes as speed changes (SDT WindCavity method)",
+  "name": "Wind howl: a moaning whistle through a gap",
   "title": "Wind howl",
   "library": "Weather/Wind",
   "tags": [
     "wind",
-    "howl"
+    "howl",
+    "weather"
   ],
   "category": "ambience",
   "sample_rate": 48000,
-  "duration": 6.0,
-  "seed": 19,
+  "duration": 24.0,
+  "seed": 1,
   "layers": [
     {
-      "name": "howl",
-      "model": "wind_cavity",
+      "name": "weather",
+      "model": "weather_stems",
       "params": {
-        "length": 2.4389022406213905,
-        "diameter": 0.020189028718047203,
-        "wind_speed": [
-          [
-            0,
-            3.104598723190701
-          ],
-          [
-            1.5,
-            9.313796169572102
-          ],
-          [
-            3,
-            5.433047765583726
-          ],
-          [
-            4.5,
-            12.418394892762803
-          ],
-          [
-            6,
-            4.656898084786051
-          ]
-        ],
-        "q": 35.80131542037229,
-        "strouhal": 0.38227163136949677,
-        "floor": 0.015270816247700159
-      }
-    }
-  ],
-  "post": [
-    {
-      "model": "eq",
-      "params": {
-        "curve": [
-          [
-            63,
-            6.0
-          ],
-          [
-            125,
-            -6.0
-          ],
-          [
-            250,
-            -6.0
-          ],
-          [
-            500,
-            6.0
-          ],
-          [
-            1000,
-            6.0
-          ],
-          [
-            2000,
-            5.5
-          ],
-          [
-            4000,
-            -5.8
-          ],
-          [
-            8000,
-            -6.0
-          ],
-          [
-            16000,
-            -6.0
-          ]
-        ]
-      }
-    },
-    {
-      "model": "room",
-      "params": {
-        "volume": 40,
-        "absorption": 0.35,
-        "source_distance": 1.5,
-        "wet": 0.651241528163234
+        "source": "wind_howl",
+        "seed": 0,
+        "intensity": 0.5,
+        "at": 0.0
       }
     }
   ],
@@ -105,85 +29,312 @@
     "fade_out": 0.05
   },
   "macros": {
-    "strength": {
+    "intensity": {
       "default": 0.5,
-      "doc": "breeze .. gale",
+      "jitter": 0.0,
+      "doc": "light .. heavy (crossfades real recordings at several intensities; no stretching)",
       "map": [
         {
-          "to": "0.wind_speed",
-          "op": "mul",
+          "to": "0.intensity",
+          "op": "set",
           "points": [
             [
-              0,
-              0.5
+              0.0,
+              0.0
             ],
             [
-              0.5,
-              1
-            ],
-            [
-              1,
-              1.6
+              1.0,
+              1.0
             ]
+          ],
+          "clamp": [
+            0.0,
+            1.0
           ]
         }
       ],
       "label": "Intensity"
     },
-    "size": {
+    "distance": {
       "default": 0.5,
-      "doc": "small bottle .. long pipe",
+      "jitter": 0.0,
+      "doc": "nearer .. further (distance 0.7 .. 2): further is quieter (-6 dB per doubling) and duller (high shelf -5 dB per doubling, softer low-pass); nearer has more low end",
       "map": [
         {
-          "to": "0.length",
+          "to": "0.distance",
           "op": "mul",
           "points": [
             [
-              0,
-              0.4
+              0.0,
+              0.7
+            ],
+            [
+              0.1,
+              0.7518
+            ],
+            [
+              0.2,
+              0.8073
+            ],
+            [
+              0.3,
+              0.867
+            ],
+            [
+              0.4,
+              0.9311
             ],
             [
               0.5,
-              1
+              1.0
             ],
             [
-              1,
-              2.5
+              0.6,
+              1.1487
+            ],
+            [
+              0.7,
+              1.3195
+            ],
+            [
+              0.8,
+              1.5157
+            ],
+            [
+              0.9,
+              1.7411
+            ],
+            [
+              1.0,
+              2.0
             ]
+          ],
+          "clamp": [
+            0.25,
+            4.0
           ]
-        }
-      ],
-      "label": "Size"
-    },
-    "distance": {
-      "default": 0.5,
-      "doc": "near .. far (level)",
-      "map": [
+        },
         {
           "to": "master.gain_db",
           "op": "add",
           "points": [
             [
-              0,
-              0
+              0.0,
+              3.0874
+            ],
+            [
+              0.1,
+              2.47
+            ],
+            [
+              0.2,
+              1.8525
+            ],
+            [
+              0.3,
+              1.235
+            ],
+            [
+              0.4,
+              0.6175
             ],
             [
               0.5,
-              0
+              -0.0
             ],
             [
-              1,
-              -12
+              0.6,
+              -1.2
+            ],
+            [
+              0.7,
+              -2.4
+            ],
+            [
+              0.8,
+              -3.6
+            ],
+            [
+              0.9,
+              -4.8
+            ],
+            [
+              1.0,
+              -6.0
             ]
           ],
           "clamp": [
-            -40,
-            0
+            -20,
+            20
           ]
         }
       ],
       "label": "Distance"
+    },
+    "curve": {
+      "default": "constant",
+      "doc": "intensity over time: steady, a linear change, or a swell that rises and falls",
+      "choices": {
+        "constant": [
+          {
+            "to": "0.curve",
+            "op": "set",
+            "value": "constant"
+          }
+        ],
+        "linear": [
+          {
+            "to": "0.curve",
+            "op": "set",
+            "value": "linear"
+          }
+        ],
+        "swell": [
+          {
+            "to": "0.curve",
+            "op": "set",
+            "value": "swell"
+          }
+        ]
+      },
+      "label": "Intensity curve",
+      "ui": "advanced"
+    },
+    "curve_start": {
+      "default": 0.15,
+      "doc": "linear/swell: intensity at the start",
+      "map": [
+        {
+          "to": "0.curve_start",
+          "op": "set",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ],
+      "label": "Curve start",
+      "ui": "advanced"
+    },
+    "curve_end": {
+      "default": 0.3,
+      "doc": "linear/swell: intensity at the end",
+      "map": [
+        {
+          "to": "0.curve_end",
+          "op": "set",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ],
+      "label": "Curve end",
+      "ui": "advanced"
+    },
+    "curve_peak": {
+      "default": 1.0,
+      "doc": "swell: intensity at the peak",
+      "map": [
+        {
+          "to": "0.curve_peak",
+          "op": "set",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1
+            ]
+          ],
+          "clamp": [
+            0,
+            1
+          ]
+        }
+      ],
+      "label": "Curve peak",
+      "ui": "advanced"
+    },
+    "curve_peak_at": {
+      "default": 0.55,
+      "doc": "swell: when the peak occurs, as a fraction of the length",
+      "map": [
+        {
+          "to": "0.curve_peak_at",
+          "op": "set",
+          "points": [
+            [
+              0,
+              0.05
+            ],
+            [
+              1,
+              0.95
+            ]
+          ],
+          "clamp": [
+            0.05,
+            0.95
+          ]
+        }
+      ],
+      "label": "Peak at",
+      "ui": "advanced"
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise; looping sources play a fresh take (the recording's own pieces in a new order)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ],
+      "label": "Seed",
+      "ui": "hidden"
     }
   },
-  "notes": "v0.25: fitted to reference recordings (BigSoundBank #0147, #2443), BigSoundBank/BBC Sound Effects, not in the repo; other takes held out for checking. Residual eq limited to +-6 dB."
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "stereo": {
+    "mode": "decorrelate",
+    "width": 0.6,
+    "mono_below_hz": 150
+  },
+  "loop": {
+    "lead_s": 1.0,
+    "xfade_s": 0.5
+  },
+  "notes": "weather_stems (docs/weather.md): rebuilt from stems of a CC0 recording (THIRD_PARTY.md). The seed macro (or any variation) plays a fresh take: the recording's own pieces, forward-only, in a new order with 100 ms crossfades. Rain and wind intensity over time crossfades real recordings at several intensities; nothing is stretched or frozen."
 }

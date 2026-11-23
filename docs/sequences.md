@@ -149,8 +149,9 @@ The **Sequence** tab, next to **Sounds**, opens the sequence panel:
 - Export writes `<out>/exports/sequences/<name>.wav` (plus MP3, plus one-shots and cues.csv). **Save
   sequence** writes `<out>/sequences/<name>.json`, which then appears under Start from.
 
-## Not yet
+## Intensity-curve beds
 
-Long beds that follow an intensity curve (rain from light to heavy) are not part of sequences yet. They need real
-recordings at several intensities to crossfade, which waits on the weather rebuild; see
-[roadmap.md](roadmap.md).
+Rain (and any other `weather_stems` family with recordings at several intensities) can swell or fade over its
+own length: set Intensity curve to linear or swell on the recipe, or pass those model controls. The curve
+crossfades the real recordings; nothing is stretched or frozen. See [weather.md](weather.md). A sequence can
+include that recipe as a step. A per-entry intensity envelope drawn in the sequence editor is not built yet.

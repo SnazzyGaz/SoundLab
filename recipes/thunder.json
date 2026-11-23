@@ -1,0 +1,208 @@
+{
+  "soundlab": 1,
+  "name": "Thunder: a near crack or a distant roll",
+  "title": "Thunder",
+  "library": "Weather/Thunder",
+  "tags": [
+    "thunder",
+    "weather",
+    "storm"
+  ],
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 15.1,
+  "seed": 1,
+  "layers": [
+    {
+      "name": "weather",
+      "model": "weather_stems",
+      "params": {
+        "source": "thunder_near",
+        "seed": 0,
+        "intensity": 1.0,
+        "at": 0.0
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.05
+  },
+  "macros": {
+    "kind": {
+      "default": "near",
+      "label": "Kind",
+      "doc": "near crack or distant roll (separate recordings)",
+      "choices": {
+        "near": [
+          {
+            "to": "0.source",
+            "op": "set",
+            "value": "thunder_near"
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 15.1
+          }
+        ],
+        "distant": [
+          {
+            "to": "0.source",
+            "op": "set",
+            "value": "thunder_far"
+          },
+          {
+            "to": "duration",
+            "op": "set",
+            "value": 14.0
+          }
+        ]
+      }
+    },
+    "distance": {
+      "default": 0.5,
+      "jitter": 0.0,
+      "doc": "nearer .. further (distance 0.7 .. 2): further is quieter (-6 dB per doubling) and duller (high shelf -5 dB per doubling, softer low-pass); nearer has more low end",
+      "map": [
+        {
+          "to": "0.distance",
+          "op": "mul",
+          "points": [
+            [
+              0.0,
+              0.7
+            ],
+            [
+              0.1,
+              0.7518
+            ],
+            [
+              0.2,
+              0.8073
+            ],
+            [
+              0.3,
+              0.867
+            ],
+            [
+              0.4,
+              0.9311
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              0.6,
+              1.1487
+            ],
+            [
+              0.7,
+              1.3195
+            ],
+            [
+              0.8,
+              1.5157
+            ],
+            [
+              0.9,
+              1.7411
+            ],
+            [
+              1.0,
+              2.0
+            ]
+          ],
+          "clamp": [
+            0.25,
+            4.0
+          ]
+        },
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0.0,
+              3.0874
+            ],
+            [
+              0.1,
+              2.47
+            ],
+            [
+              0.2,
+              1.8525
+            ],
+            [
+              0.3,
+              1.235
+            ],
+            [
+              0.4,
+              0.6175
+            ],
+            [
+              0.5,
+              -0.0
+            ],
+            [
+              0.6,
+              -1.2
+            ],
+            [
+              0.7,
+              -2.4
+            ],
+            [
+              0.8,
+              -3.6
+            ],
+            [
+              0.9,
+              -4.8
+            ],
+            [
+              1.0,
+              -6.0
+            ]
+          ],
+          "clamp": [
+            -20,
+            20
+          ]
+        }
+      ],
+      "label": "Distance"
+    },
+    "seed": {
+      "default": 0.0,
+      "jitter": 0.0,
+      "doc": "another take: reseeds the noise; looping sources play a fresh take (the recording's own pieces in a new order)",
+      "map": [
+        {
+          "to": "0.variation",
+          "op": "set",
+          "range": [
+            0,
+            1000
+          ]
+        }
+      ],
+      "label": "Seed",
+      "ui": "hidden"
+    }
+  },
+  "vary": {
+    "0.variation": {
+      "abs": 100000
+    }
+  },
+  "stereo": {
+    "mode": "decorrelate",
+    "width": 0.6,
+    "mono_below_hz": 150
+  },
+  "notes": "weather_stems (docs/weather.md): rebuilt from stems of a CC0 recording (THIRD_PARTY.md). The seed macro (or any variation) plays a fresh take: the recording's own pieces, forward-only, in a new order with 100 ms crossfades. Rain and wind intensity over time crossfades real recordings at several intensities; nothing is stretched or frozen."
+}

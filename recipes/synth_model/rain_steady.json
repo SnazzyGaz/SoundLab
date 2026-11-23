@@ -1,0 +1,127 @@
+{
+  "soundlab": 1,
+  "name": "Heavy rain, smooth and dense (fitted to field recordings)",
+  "title": "Steady rain",
+  "library": "Weather/Rain",
+  "tags": [
+    "rain"
+  ],
+  "category": "ambience",
+  "sample_rate": 48000,
+  "duration": 8.0,
+  "seed": 13,
+  "layers": [
+    {
+      "name": "main",
+      "model": "rain",
+      "params": {
+        "rate_mm_h": 65.7382,
+        "surface": "ground",
+        "near": 0.2138,
+        "hiss": 0.0733,
+        "drop_mm": 3.8419,
+        "brightness": 0.7529,
+        "texture": 0.827,
+        "patter": 0.302,
+        "smooth": 0.8411
+      }
+    }
+  ],
+  "post": [
+    {
+      "model": "eq",
+      "params": {
+        "curve": [
+          [
+            63,
+            0.0
+          ],
+          [
+            125,
+            0.0
+          ],
+          [
+            250,
+            -0.7
+          ],
+          [
+            500,
+            -2.3
+          ],
+          [
+            1000,
+            -3.7
+          ],
+          [
+            2000,
+            -6.0
+          ],
+          [
+            4000,
+            -6.0
+          ],
+          [
+            8000,
+            -4.5
+          ],
+          [
+            16000,
+            2.9
+          ]
+        ]
+      }
+    }
+  ],
+  "master": {
+    "normalize_db": -1.0,
+    "fade_out": 0.5
+  },
+  "macros": {
+    "distance": {
+      "default": 0.5,
+      "doc": "near .. far (level)",
+      "map": [
+        {
+          "to": "master.gain_db",
+          "op": "add",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              0.5,
+              0
+            ],
+            [
+              1,
+              -12
+            ]
+          ],
+          "clamp": [
+            -40,
+            0
+          ]
+        }
+      ],
+      "label": "Distance"
+    }
+  },
+  "vary": {
+    "0.rate_mm_h": {
+      "rel": 0.2
+    }
+  },
+  "loop": {
+    "lead_s": 1.0,
+    "xfade_s": 0.5
+  },
+  "stereo": {
+    "mode": "seeds",
+    "width": 0.8,
+    "mono_below_hz": 150
+  },
+  "notes": "v0.25.3: refitted to two heavy-rain recordings (BigSoundBank #0124, #2717) with a crackle term: 3-12 kHz clicks/s above 2x/3x/6x the local level 20.6/2.5/0.4 vs real 14-18/2.5/0.1 (v0.25.2: 73/20/2, audible crackle). The new smooth control makes the far rain dense Gaussian noise.",
+  "hidden": true,
+  "replaced_by": "rain"
+}

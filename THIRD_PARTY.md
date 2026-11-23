@@ -323,6 +323,32 @@ new noise.
 | drawer (1.6-2.9 s) | Drawer Open Close.wav | ThunderQuads | Freesound #467194 | https://freesound.org/people/ThunderQuads/sounds/467194/ | CC0 |
 | garage_door (0.45-3.1 s) | Garage door closing | Walking.With.Microphones | Freesound #624397 | https://freesound.org/people/Walking.With.Microphones/sounds/624397/ | CC0 |
 
+
+## Recordings decomposed into stems for `weather_stems` (numbers only, no audio included)
+
+`soundlab/models/weather_stems.bin` holds analysis numbers (per-band noise envelopes at 1 ms on 1/8-octave bands,
+optional event envelopes, a static treble ceiling) of these CC0 1.0 recordings on Freesound. No samples are stored;
+renders use new noise and the stored envelopes.
+
+| Source (cut) | Title | Author | Site | URL | Licence |
+|---|---|---|---|---|---|
+| rain_light (4-28 s) | Rain light 2 (rural) | jmbphilmes | Freesound #200273 | https://freesound.org/people/jmbphilmes/sounds/200273/ | CC0 |
+| rain_steady (4-28 s) | rain medium steady splatty thin hard surface.flac | kyles | Freesound #637781 | https://freesound.org/people/kyles/sounds/637781/ | CC0 |
+| rain_heavy (58-82 s) | Rain, Heavy, Falling on Leaves | CHallSmith | Freesound #870824 | https://freesound.org/people/CHallSmith/sounds/870824/ | CC0 |
+| rain_roof (8-32 s) | rain on a roof.wav | bruno.auzet | Freesound #537070 | https://freesound.org/people/bruno.auzet/sounds/537070/ | CC0 |
+| rain_window (16-40 s) | Rain on the House Roof Window #001 | bassimat | Freesound #833924 | https://freesound.org/people/bassimat/sounds/833924/ | CC0 |
+| rain_drips (0.5-24 s) | water dripping from gutter to gutter.aiff | jc144940 | Freesound #180949 | https://freesound.org/people/jc144940/sounds/180949/ | CC0 |
+| thunder_near (0.4-15.5 s) | 200817 Thunder, pretty close crack 4pm.flac | TRP | Freesound #567945 | https://freesound.org/people/TRP/sounds/567945/ | CC0 |
+| thunder_far (2-16 s) | Distant Thunder 4 | Fission9 | Freesound #581125 | https://freesound.org/people/Fission9/sounds/581125/ | CC0 |
+| ocean_waves (16-40 s) | Waves at Baltic Sea shore.wav | pulswelle | Freesound #339517 | https://freesound.org/people/pulswelle/sounds/339517/ | CC0 |
+| wind_breeze (64-88 s) | a gentle breeze, wind 3 | mario1298 | Freesound #181252 | https://freesound.org/people/mario1298/sounds/181252/ | CC0 |
+| wind_gusty (48-72 s) | Wind in trees 70km gusts autumn 77mel 191027.flac | TRP | Freesound #574554 | https://freesound.org/people/TRP/sounds/574554/ | CC0 |
+| wind_howl (3-27 s) | G55-12-Moaning Whistle Wind.wav | craigsmith | Freesound #438866 | https://freesound.org/people/craigsmith/sounds/438866/ | CC0 |
+| forest_day (8-32 s) | sfx_amb_forest_spring_afternoon-01.wav | bajko | Freesound #385280 | https://freesound.org/people/bajko/sounds/385280/ | CC0 |
+| night_insects (8-32 s) | Night Crickets Ambience on Rural Property | OwlStorm | Freesound #320145 | https://freesound.org/people/OwlStorm/sounds/320145/ | CC0 |
+| city_street (102-126 s) | Ambience inner city traffic.wav | dnlburnett | Freesound #360777 | https://freesound.org/people/dnlburnett/sounds/360777/ | CC0 |
+| room_tone (26-50 s) | Room tone_afternoon with closed windows.WAV | fi2lcallpeace | Freesound #729237 | https://freesound.org/people/fi2lcallpeace/sounds/729237/ | CC0 |
+
 ## Methods adopted from other projects and papers (no code copied)
 
 v0.28 `creak`: the creaking door as stick-slip events through a fixed wood formant bank (A. Farnell, *Designing
