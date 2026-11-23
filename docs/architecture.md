@@ -62,6 +62,13 @@ took 0.02-0.5 s on the box for 1.5-9 s of audio (faster than real time, but offl
   (returns a WAV URL, waveform and log-frequency spectrogram), `/api/export`, `/api/batch`, `/api/save`.
   Requests carry `{id, macros, overrides, variation, seed}`; overrides are absolute values set after the macros
   (`"L.name"`, `"L.B.name"` for chain block B, `"post.J.name"`).
+- Sequences (`soundlab/sequence.py`, presets in `sequences/`, see [sequences.md](sequences.md)): `GET
+  /api/sequences`, `POST /api/sequence/render` (same supersede / one-at-a-time / result cache as `/api/render`,
+  plus the cue list), `/api/sequence/export` (mix, one-shots, cues.csv) and `/api/sequence/save`. The engine
+  plans events (entry, concrete recipe, take) from the sequence seed, renders each event once into a
+  byte-bounded cache (in parallel when threads > 1), then schedules and mixes. A timing, gain, pan or jitter
+  edit only re-mixes. Take checks use `take_key()` in the recording-stem families (`recstems.take_key`: the
+  gestures a variation would play, worked out without rendering).
 - Speed (`soundlab/fastpath.py`; none of it changes a sample, tests/test_fastpath.py checks bit identity):
   the slider app renders live while a slider is dragged (60 ms debounce). The page aborts the request a newer
   move replaces and sends `"supersede": true`; the server runs one render at a time and a render that a newer one has

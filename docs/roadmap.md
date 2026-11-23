@@ -172,6 +172,19 @@ recipe sound and at least two listeners who did not tune the recipes.
   Car speeds are unaffected (1.06x at 20 m/s).
 - Stereo/binaural output and per-layer propagation.
 
+## Sequences: what is left
+
+Sequences (entries on a timeline, presets, a fresh take per event, export as a mix or as one-shots with a cue
+CSV) are built; see [sequences.md](sequences.md). Still to do:
+
+- **Intensity-curve beds**: a long bed whose intensity follows a curve over time (rain light to heavy, wind
+  building to a gale). Where a family has real recordings at several intensities, crossfade between them along
+  the curve. It must not time-squeeze or freeze frames. This depends on the weather rebuild (real rain at
+  several intensities), so it waits for that.
+- Separate magazine-out and magazine-in pieces for the reload preset. The current recording has both in one
+  gesture.
+- Single-hit cuts (`hit`) for other multi-hit foley sources (coins, keys), as door knocks have now.
+
 ## Later, if the checkpoint says so
 
 Deeper physics for live-steered sounds (engine following real revs, impacts that follow material and speed),

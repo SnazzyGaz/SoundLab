@@ -37,6 +37,12 @@ they stay in the recipe so existing calls and saved recipes still work.
 take (◀ ▶ step through them, 🎲 picks one). It replaces the separate seed box and the per-recipe seed slider
 (the slider stays in the files, hidden, for older calls).
 
+## Sequences
+
+The Sequence tab chains entries on a timeline: walk, run, knock xN, door open-close(-lock), gunfire with
+casings, reload, or your own. Every event gets its own take, and export gives one mix or numbered one-shots with
+a cue CSV. See [sequences.md](sequences.md).
+
 ## Old ids
 
 Recipes that were merged or replaced stay as hidden files: they are not listed, but they still load, render
@@ -47,10 +53,9 @@ recipes are folded into Footsteps the same way. `glass_hit_room` is kept as a hi
 
 Not built yet:
 
-- **Sequences**: a timeline of entries with their own settings and offsets (walk: N steps at a rate; knock xN;
-  open, close, lock; gunfire plus casings; reload), with timing and level humanisation, a fresh take per event
-  (never the same take twice in a row), long beds with an intensity curve (crossfading real recordings, no
-  stretching), and export as one mix or as numbered one-shots with a cue list.
+- **Intensity-curve beds**: long beds that follow an intensity curve (rain from light to heavy), crossfading
+  real recordings at several intensities with no stretching. This waits on the weather rebuild. Sequences
+  themselves are built: see [sequences.md](sequences.md).
 - **Gaps**: real rain (light, heavy, on a roof, on a window), thunder, a storm build, sea waves; ambience beds
   (room tone, traffic, forest, crowd, office); animals (dog, cat, birds, horse, insects); non-verbal people
   (body fall, clothing movement, grabs); bullet impacts on concrete, wood and metal, sword swing with a ring,

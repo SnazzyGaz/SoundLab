@@ -156,7 +156,18 @@ is reachable from other computers) and opens your browser. Options: `--port 8766
 - Waveform and spectrogram of the current sound.
 - Export WAV (and MP3 with ffmpeg) to `<out>/exports/`, named like `weapon_gunshot_calibreshotgun_v01.wav`;
   batch-export N variations; "Save as new recipe" writes `<out>/recipes/<name>.json` with the sliders kept.
+- Sequence tab: chain library entries on a timeline (walk, knock xN, door open-close-lock, gunfire with
+  casings, reload, or your own), each event its own take, then export one mix or numbered one-shots with a cue
+  CSV. Timing-only edits re-mix cached events. See [docs/sequences.md](docs/sequences.md).
 - `/blindtest`: the blind listening test (see [docs/checkpoint.md](docs/checkpoint.md)).
+
+## Sequences
+
+A sequence chains library entries on a timeline and renders them into one file: a walk on gravel, knock xN,
+a door opened, closed and locked, shots with casings, a reload, or your own steps. Every event draws its own
+real take, never the same as the previous one. Timing and level can be humanised, and footsteps alternate left
+and right. Export one mix (WAV/MP3) or numbered one-shots with a cue CSV (time, entry, take, gain). Use the
+Sequence tab in the slider app or `soundlab sequence`. See [docs/sequences.md](docs/sequences.md).
 
 ## Command line
 
@@ -167,6 +178,8 @@ soundlab models                         # list all blocks and sound models by st
 soundlab describe engine                # controls, units, ranges, sources
 soundlab materials                      # material table (density, E, loss factor, T60 at 1 kHz)
 soundlab render recipes/engine.json -o engine.wav --mp3
+soundlab sequence walk -m surface=gravel --repeat 12 -o walk.wav   # entries on a timeline (see --list)
+soundlab sequence knock --repeat 5 --oneshots -o knock.wav  # + knock_oneshots/ (numbered files, cues.csv)
 soundlab render recipes/rain.json --loop 10 -o rain_loop.wav   # seamless 10 s stereo loop (--mono for mono)
 soundlab render recipes/hit.json --level peak --no-trim   # raw level, full length (default: LUFS per category, trimmed)
 soundlab render recipes/engine.json --set 0.cylinders=6 --seed 4 -o six.wav
@@ -249,6 +262,7 @@ matched to the reference recordings, the starting points for `soundlab match`). 
 - [docs/licensing.md](docs/licensing.md): what we may copy, what is reference-only.
 - [docs/checkpoint.md](docs/checkpoint.md): the blind test: browser "real or synthesised?" page with your own
   recordings, plus the A/B kit (build a listening set, score it).
+- [docs/sequences.md](docs/sequences.md): sequences: entries on a timeline, presets, takes, cue CSV export.
 - [docs/roadmap.md](docs/roadmap.md): build order and status.
 
 ## Tests
