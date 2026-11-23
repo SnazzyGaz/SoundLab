@@ -50,3 +50,7 @@ def sources() -> list:
        min_s=lambda p: 0.08)
 def foley_stems(ctx: Ctx, x, **p):
     return R.render_into_ctx(ctx, p, _data(), "cloth_handling")
+
+
+def take_key(p: dict):
+    return R.take_key(_data(), p, "cloth_handling")

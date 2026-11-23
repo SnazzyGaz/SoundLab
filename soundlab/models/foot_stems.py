@@ -73,6 +73,15 @@ def render_foot(p: dict) -> "object":
         "Freesound CC0 recordings (numbers only; THIRD_PARTY.md)"],
        min_s=lambda p: 0.08)
 def foot_stems(ctx: Ctx, x, **p):
+    return R.render_into_ctx(ctx, map_params(p), _data(), "wood_floor")
+
+
+def take_key(p: dict):
+    return R.take_key(_data(), map_params(p), "wood_floor")
+
+
+def map_params(p: dict) -> dict:
+    """surface / shoe / pace names (the generic Footsteps entry) to a stored source."""
     p = dict(p)
     shoe = str(p.pop("shoe", "") or "").strip().lower()
     surface = str(p.pop("surface", "") or "").strip().lower()
@@ -86,4 +95,4 @@ def foot_stems(ctx: Ctx, x, **p):
     if pace == "run":
         src = p.get("source", "wood_floor")
         p["source"] = RUN.get(src, src)
-    return R.render_into_ctx(ctx, p, _data(), "wood_floor")
+    return p

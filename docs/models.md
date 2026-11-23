@@ -1406,6 +1406,7 @@ Doors, locks, knocks and gates rebuilt from stems of CC0 recordings. Real events
 | `tempo` | `1.0` |  | 0.4 .. 2.5 | spacing of a short count (1 = the recording's own gaps) |
 | `which` | `-1` |  | -1 .. 64 | which stored gesture to play (0-based; -1 = pick a typical one) |
 | `early` | `0` |  | 0 .. 1 | prefer the earlier gestures of the recording (1 = yes) |
+| `hit` | `-1` |  | -2 .. 16 | one hit of a multi-hit gesture such as a knock (0-based; -1 = the whole gesture; -2 = a hit picked by the variation) |
 | `force` | `0.0` |  | -3.0 .. 3.0 | event / body level and a 3 kHz shelf; 0 = as recorded |
 | `soft` | `0.0` |  | 0.0 .. 1.2 | softer attack: event-layer low-pass and a 120 Hz low shelf |
 | `speed_cents` | `0.0` | cents | -1200 .. 1200 | tape speed (pitch and time together) |

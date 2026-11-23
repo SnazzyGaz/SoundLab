@@ -309,6 +309,9 @@ def plan_pieces(st, p, rng):
     tempo = float(p.get("tempo", 1.0) or 1.0)
     if not gs:
         return [(0.0, st["n"] / SR, 0.0)]
+    hit = int(p.get("hit", -1) if p.get("hit") is not None else -1)
+    if hit != -1 and k <= 1:
+        return _plan_hit(st, gs, p, rng, hit)
     if p.get("which") is not None and int(p.get("which")) >= 0 and k <= 1:
         j = int(p["which"]) % len(gs)
         g = gs[j]
@@ -356,6 +359,43 @@ def plan_pieces(st, p, rng):
             t += gap
     sh = -min(pce[2] for pce in out)
     return [(a, e, t + sh) for a, e, t in out]
+
+
+def _plan_hit(st, gs, p, rng, hit):
+    """One hit of a multi-hit gesture (a knock of a knock-knock-knock): the gesture as usual, then the source
+    window from just before hit `hit` to just before the next one (the last hit keeps its whole tail). hit -2:
+    hit 0 for variation 0, else a hit drawn with the variation's generator. A cut of the real recording; nothing
+    is averaged or stretched."""
+    (a, e, _), = plan_pieces(st, dict(p, hit=-1), rng)
+    g = next((g for g in gs if abs(float(g["a"]) - a) < 1e-9), None)
+    ons = [float(o) for o in ((g or {}).get("onsets") or []) if a <= float(o) < e]
+    if len(ons) < 2:
+        return [(a, e, 0.0)]
+    if hit >= 0:
+        h = hit % len(ons)
+    else:
+        h = int(rng.integers(0, len(ons))) if int(p.get("variation", 0) or 0) != 0 else 0
+    a2 = max(a, ons[h] - 0.012, (ons[h - 1] + 0.004) if h else a)
+    e2 = ons[h + 1] - 0.004 if h + 1 < len(ons) else e
+    return [(a2, e2, 0.0)]
+
+
+def take_key(data, p, default_source):
+    """What makes a take a different take, without rendering it: the stored source and the gesture windows
+    render() would play for params p (same seed and generator as render)."""
+    p = dict(p)
+    src = p.pop("source", default_source)
+    p.pop("at", None)
+    if src not in data["sources"]:
+        return None
+    seed = int(p.get("seed", 0) or 0)
+    var = int(p.get("variation", 0) or 0)
+    if var:
+        seed = seed + 10007 * var
+    seed = int(seed) % (2 ** 31)
+    rng = np.random.default_rng(seed if seed else 1)
+    pieces = plan_pieces(get_source(data, src), p, rng)
+    return (src,) + tuple((round(a, 4), round(e, 4)) for a, e, _ in pieces)
 
 
 def render_window(st, a, e, seed, force=0.0, soft=0.0, identity=True):

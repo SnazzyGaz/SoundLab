@@ -60,3 +60,7 @@ def render_impact(p: dict) -> "object":
        min_s=lambda p: 0.08)
 def impact_stems(ctx: Ctx, x, **p):
     return R.render_into_ctx(ctx, p, _data(), "wood_knock")
+
+
+def take_key(p: dict):
+    return R.take_key(_data(), p, "wood_knock")

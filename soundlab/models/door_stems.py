@@ -35,6 +35,7 @@ def sources() -> list:
            Param("tempo", 1.0, "", 0.4, 2.5, "spacing of a short count (1 = the recording's own gaps)"),
            Param("which", -1, "", -1, 64, "which stored gesture to play (0-based; -1 = pick a typical one)"),
            Param("early", 0, "", 0, 1, "prefer the earlier gestures of the recording (1 = yes)"),
+           Param("hit", -1, "", -2, 16, "one hit of a multi-hit gesture such as a knock (0-based; -1 = the whole gesture; -2 = a hit picked by the variation)"),
            Param("force", 0.0, "", -3.0, 3.0, "event / body level and a 3 kHz shelf; 0 = as recorded"),
            Param("soft", 0.0, "", 0.0, 1.2, "softer attack: event-layer low-pass and a 120 Hz low shelf"),
            Param("speed_cents", 0.0, "cents", -1200, 1200, "tape speed (pitch and time together)"),
@@ -50,3 +51,7 @@ def sources() -> list:
        min_s=lambda p: 0.08)
 def door_stems(ctx: Ctx, x, **p):
     return R.render_into_ctx(ctx, p, _data(), "door_wood_close")
+
+
+def take_key(p: dict):
+    return R.take_key(_data(), p, "door_wood_close")
