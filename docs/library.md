@@ -23,7 +23,7 @@ Variants are choices inside one entry rather than separate list items:
   three recipes at every setting.
 - **Coin drop**: Shape single (one coin) or spin (the longer spinning drop).
 - **Parts**: where one recording holds two different actions they are a Part choice: wood door latch / swing,
-  deadbolt lock / unlock, bag zip open / close, cupboard open / close.
+  deadbolt lock / unlock, bag zip open / close, cupboard open / close, velcro open / close.
 
 ## Controls
 
@@ -51,6 +51,10 @@ recipes are folded into Footsteps the same way. `glass_hit_room` is kept as a hi
 
 ## Next steps
 
+Everyday interactions from recording stems (`interact_stems`): camera shutter, film advance, phone shutter,
+a can opening, a bottle cap, a cork, a screw cap, ice in a glass, velcro, a lighter, a plastic lid, a phone
+vibrate, typing, a mouse click, tape, a stapler, scissors and a spray can. See [interact_stems.md](interact_stems.md).
+
 Not built yet:
 
 - **Intensity-curve beds**: long beds that follow an intensity curve (rain from light to heavy), crossfading
@@ -59,8 +63,7 @@ Not built yet:
 - **Gaps**: real rain (light, heavy, on a roof, on a window), thunder, a storm build, sea waves; ambience beds
   (room tone, traffic, forest, crowd, office); animals (dog, cat, birds, horse, insects); non-verbal people
   (body fall, clothing movement, grabs); bullet impacts on concrete, wood and metal, sword swing with a ring,
-  heavy body hits; car start/stop, idle loop, horn, plane, helicopter and train; household (typing, phone ring
-  and vibrate, doorbell, kettle, tap, microwave, toilet flush, alarm clock); more UI sounds (error, back, hover,
+  heavy body hits; car start/stop, idle loop, horn, plane, helicopter and train; household (phone ring, doorbell, kettle, tap, microwave, toilet flush, alarm clock); more UI sounds (error, back, hover,
   notification, toggle).
 - Several older synthesis recipes stay in the library until stem rebuilds replace them (rain, wind howl and
   whistle, the creature growls, the animals, engine idle and blips, the scrapes, bullet impact, sword swing).

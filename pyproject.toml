@@ -31,4 +31,4 @@ testpaths = ["tests"]
 
 [tool.setuptools.package-data]
 "soundlab.gui" = ["static/*"]
-"soundlab.models" = ["squeal_stems.bin", "air_stems.bin", "liquid_stems.bin", "machine_stems.bin", "fire_stems.bin", "impact_stems.bin", "weapon_stems.bin", "foot_stems.bin", "foley_stems.bin", "door_stems.bin"]
+"soundlab.models" = ["squeal_stems.bin", "air_stems.bin", "liquid_stems.bin", "machine_stems.bin", "fire_stems.bin", "impact_stems.bin", "weapon_stems.bin", "foot_stems.bin", "foley_stems.bin", "door_stems.bin", "interact_stems.bin"]

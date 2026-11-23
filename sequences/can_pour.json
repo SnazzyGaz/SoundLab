@@ -1,0 +1,19 @@
+{
+  "soundlab": 1,
+  "type": "sequence",
+  "name": "can_pour",
+  "title": "Can and pour",
+  "order": 9,
+  "category": "foley",
+  "seed": 1,
+  "doc": "A soda can opened, then poured into a glass. The pour is the existing liquid-stems pour.",
+  "steps": [
+    {
+      "entry": "interact/can_open"
+    },
+    {
+      "entry": "pour_glass",
+      "at": 1.6
+    }
+  ]
+}

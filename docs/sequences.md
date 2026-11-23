@@ -16,6 +16,8 @@ are in `sequences/`.
 | `door_open_close_lock` | The same, then the deadbolt locked. |
 | `gunfire` | Pistol shots, each followed by a brass casing. |
 | `reload` | Magazine out and in, then the slide racked. The magazine recording has out and in in one gesture, so they are one step, using the take that has both. |
+| `typing` | A short sentence typed on a keyboard. Each burst is a real phrase; no two in a row are the same take. |
+| `can_pour` | A soda can opened, then poured into a glass (the existing liquid-stems pour). |
 
 ## Format
 

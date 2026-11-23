@@ -69,13 +69,17 @@ What's in it:
   glasses, bottles, cutlery, keys, a coin, a phone, a pen click, a light switch, a chair scrape and a cupboard
   (23 recipes in `recipes/foley/`), rebuilt the same way from CC0 recordings (numbers only, no audio);
   see [docs/foley_stems.md](docs/foley_stems.md).
+- **Everyday interactions from recording stems** (`interact_stems`): camera shutters, a film advance, a can
+  opening, bottle caps, a cork, ice in a glass, velcro, a lighter, a plastic lid, a phone vibrate, typing, a
+  mouse, tape, a stapler, scissors and a spray can (18 recipes in `recipes/interact/`), rebuilt the same way
+  from CC0 recordings (numbers only, no audio); see [docs/interact_stems.md](docs/interact_stems.md).
 - **Doors, locks, knocks and gates from recording stems** (`door_stems`, v0.35): wood, heavy, metal, glass, screen,
   sliding, car, cupboard and wardrobe doors, a drawer, a garage door, two gates, a key in a lock, a deadbolt, three
   knocks and a hinge squeak (24 recipes in `recipes/doors/`); see [docs/door_stems.md](docs/door_stems.md).
 - **Sequences** (v0.35): library sounds on a timeline (`soundlab sequence`, and a Sequence tab in the slider app).
-  Presets for a walk, a run, knocks, a door, gunfire and a reload. Export a mix or numbered one-shots with a cue CSV;
+  Presets for a walk, a run, knocks, a door, gunfire, a reload, typing, and opening a can and pouring. Export a mix or numbered one-shots with a cue CSV;
   see [docs/sequences.md](docs/sequences.md).
-- **Featured recipes** for game sound (272 recipe files in all; the app lists 180, the rest are old ids kept as
+- **Featured recipes** for game sound (290 recipe files in all; the app lists 198, the rest are old ids kept as
   hidden aliases, see [docs/library.md](docs/library.md)): footsteps on many surfaces and shoes, knocks, coins, wind, whooshes, arrows, fans,
   rain, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
   (pistol/rifle/shotgun), creature growl, paper and cloth rustle, splashes, drips, a pour, a stream, a river, a waterfall, boiling and sloshing, engines, explosions, fire, water,

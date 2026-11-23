@@ -292,6 +292,31 @@ new noise.
 | light_switch (0.45-1.4 s) | Light switch.wav | boop_7 | Freesound #684372 | https://freesound.org/people/boop_7/sounds/684372/ | CC0 |
 | plastic_bag (0-2.86 s) | Noisy Little Plastic Bag | TheWandermiles | Freesound #697256 | https://freesound.org/people/TheWandermiles/sounds/697256/ | CC0 |
 
+## Recordings decomposed into stems for `interact_stems` (numbers only, no audio included)
+
+`soundlab/models/interact_stems.bin` holds analysis numbers of gestures from these CC0 1.0 recordings on Freesound. No samples are stored; renders use new noise and the stored envelopes, tracks and level caps.
+
+| Source (cut) | Title | Author | Site | URL | Licence |
+|---|---|---|---|---|---|
+| camera_shutter (0.05–1.45 s) | Camera Shutter Click | Kodack | Freesound #271010 | https://freesound.org/people/Kodack/sounds/271010/ | CC0 |
+| film_advance (3.80–8.55 s) | film camera mechanism | ccovi | Freesound #718919 | https://freesound.org/people/ccovi/sounds/718919/ | CC0 |
+| phone_shutter (0.00–0.48 s) | Huawei P20 Pro Camera Shutter Sound | michx123 | Freesound #483382 | https://freesound.org/people/michx123/sounds/483382/ | CC0 |
+| can_open (0.55–2.20 s) | Can Fizz Open.wav | AndersHolm | Freesound #411218 | https://freesound.org/people/AndersHolm/sounds/411218/ | CC0 |
+| bottle_cap (0.05–2.35 s) | Opening Beer Bottle 170428_1469.wav | megashroom | Freesound #390337 | https://freesound.org/people/megashroom/sounds/390337/ | CC0 |
+| cork_pop (0.60–1.70 s) | Popping the cork off a champagne bottle | Kate_is_yellow | Freesound #708201 | https://freesound.org/people/Kate_is_yellow/sounds/708201/ | CC0 |
+| bottle_twist (0.12–1.00 s) | 2 Screwing Bottle Cap On | AardsReal | Freesound #845130 | https://freesound.org/people/AardsReal/sounds/845130/ | CC0 |
+| ice_cubes (0.90–2.55 s) | Putting ice cubes into glassWAV | 13GPanska_Gorbusinova_Anna | Freesound #377995 | https://freesound.org/people/13GPanska_Gorbusinova_Anna/sounds/377995/ | CC0 |
+| velcro (0.05–2.65 s) | Velcro pocket | nomerodin1 | Freesound #555153 | https://freesound.org/people/nomerodin1/sounds/555153/ | CC0 |
+| lighter (0.00–0.70 s) | disposable_lighter.wav | SuperSkyReaver | Freesound #171704 | https://freesound.org/people/SuperSkyReaver/sounds/171704/ | CC0 |
+| plastic_lid (3.70–10.75 s) | Glass Jar Plastic Lid Handling Open Close Room 2i4Mk2 MKE600 9632 | mikepopescu | Freesound #720041 | https://freesound.org/people/mikepopescu/sounds/720041/ | CC0 |
+| phone_vibrate (0.00–2.70 s) | cell phone vibrate glass_loopable.wav | mobaudio | Freesound #384487 | https://freesound.org/people/mobaudio/sounds/384487/ | CC0 |
+| keyboard (0.60–5.60 s) | Keyboard typing (clicking type) | vllyrl | Freesound #867994 | https://freesound.org/people/vllyrl/sounds/867994/ | CC0 |
+| mouse_click (0.95–7.70 s) | Multiple Mouse Clicks | Danilox7x | Freesound #826783 | https://freesound.org/people/Danilox7x/sounds/826783/ | CC0 |
+| tape_peel (0.35–3.15 s) | duct tape peels.wav | thefirecrowd | Freesound #203107 | https://freesound.org/people/thefirecrowd/sounds/203107/ | CC0 |
+| stapler (0.15–4.30 s) | multiple stapler hits.wav | thefirecrowd | Freesound #203106 | https://freesound.org/people/thefirecrowd/sounds/203106/ | CC0 |
+| scissors (0.20–5.60 s) | Scissors 2 | randbsoundbites | Freesound #795697 | https://freesound.org/people/randbsoundbites/sounds/795697/ | CC0 |
+| spray_can (0.00–1.80 s) | spray.wav | Sempoo | Freesound #124039 | https://freesound.org/people/Sempoo/sounds/124039/ | CC0 |
+
 ## Recordings decomposed into stems for `door_stems` (numbers only, no audio included)
 
 `soundlab/models/door_stems.bin` holds analysis numbers of gestures from these CC0 1.0 recordings on Freesound. No samples are stored; renders use new noise and the stored envelopes, tracks and level caps.
