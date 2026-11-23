@@ -141,6 +141,18 @@ def resolve(recipe: Any, macros: dict | None = None, variation: int = 0) -> tupl
     return rr, seed
 
 
+def apply_overrides(r: dict, overrides: dict) -> None:
+    """Set controls by key: 'L.name' (single-model layer), 'L.B.name' (block B of a chain), 'post.J.name'."""
+    for key, val in overrides.items():
+        parts = key.split(".")
+        if parts[0] == "post":
+            blk = r["post"][int(parts[1])]
+        else:
+            layer = r["layers"][int(parts[0])]
+            blk = layer["chain"][int(parts[1])] if layer.get("chain") and len(parts) == 3 else layer
+        blk.setdefault("params", {})[parts[-1]] = val
+
+
 def ring_tail_s(recipe: dict) -> float:
     """How long the recipe keeps sounding after its sources stop: per layer the tails of its processing blocks
     in series, the longest layer, then the post blocks in series (see soundlab/models/tails.py)."""

@@ -1,0 +1,8 @@
+{"soundlab": 1, "type": "sequence", "name": "gunfire", "title": "Gunfire with casings", "order": 6, "category": "weapons", "seed": 1,
+ "doc": "N pistol shots, each with its brass casing landing a moment later. Every shot and every casing is its own real take.",
+ "rate": {"interval": 0.45},
+ "humanise": {"timing_ms": 25, "level_db": 1.0},
+ "steps": [
+  {"entry": "pistol_shot", "repeat": 5},
+  {"entry": "brass_casings", "at": 0.55, "repeat": 5, "gain_db": -8, "pan": 0.15}
+ ]}

@@ -1,0 +1,7 @@
+{"soundlab": 1, "type": "sequence", "name": "knock", "title": "Knock xN", "order": 3, "category": "door", "seed": 1,
+ "doc": "Knocks on a wooden door. Each knock is one real hit cut from the recorded knock-knock-knock (hit picked per take), so any count works and no two knocks in a row are the same hit.",
+ "rate": {"interval": 0.24},
+ "humanise": {"timing_ms": 12, "level_db": 1.5},
+ "steps": [
+  {"entry": "doors/knock_wood", "overrides": {"0.hit": -2}, "repeat": 3}
+ ]}

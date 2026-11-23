@@ -1,4 +1,4 @@
-"""soundlab command line: render, batch, audition, models, describe, materials, analyze, match, resynth, compare, validate, gui, blindtest."""
+"""soundlab command line: render, sequence, batch, audition, models, describe, materials, analyze, match, resynth, compare, validate, gui, blindtest."""
 from __future__ import annotations
 
 import argparse
@@ -14,6 +14,43 @@ def _print(obj, as_json):
         print(json.dumps(obj, indent=1))
         return True
     return False
+
+
+def _sequence_cmd(args) -> None:
+    from . import sequence as S
+    from .macros import parse_macro_args
+    if args.list or not args.sequence:
+        for d in S.presets():
+            print(f"{d['id']:<22} {d['title']}: {d['doc']}")
+        return
+    src = args.sequence
+    seq = S.load(src) if src.endswith(".json") or Path(src).is_file() else S.preset(src)
+    seq = json.loads(json.dumps(seq))
+    if args.seed is not None:
+        seq["seed"] = args.seed
+    if args.spm:
+        seq["rate"] = {"spm": args.spm}
+    elif args.interval:
+        seq["rate"] = {"interval": args.interval}
+    hum = seq.setdefault("humanise", {})
+    if args.jitter_ms is not None:
+        hum["timing_ms"] = args.jitter_ms
+    if args.level_jitter_db is not None:
+        hum["level_db"] = args.level_jitter_db
+    mv = parse_macro_args(args.macro)
+    for st in seq["steps"]:
+        if args.repeat and int(st.get("repeat", 1) or 1) > 1:
+            st["repeat"] = args.repeat
+        if mv:
+            raw = soundlab.load_recipe(S.default_resolver(st["entry"]))
+            have = {k: v for k, v in mv.items() if k in (raw.get("macros") or {})}
+            if have:
+                st["macros"] = {**(st.get("macros") or {}), **have}
+    out = args.out or f"{seq.get('name') or Path(src).stem}.wav"
+    info = S.export(seq, out, mp3=args.mp3, oneshots=args.oneshots, level=args.level)
+    for row in info.pop("cue_list"):
+        print(f"  {row['time']:8.3f} s  {row['title']:<28} take {row['take']:<6} {row['gain_db']:+.1f} dB  pan {row['pan']:+.2f}")
+    print(json.dumps(info))
 
 
 def main(argv=None) -> int:
@@ -44,6 +81,25 @@ def main(argv=None) -> int:
                         help="stereo file (default: stereo only for loops of recipes with a stereo bed config)")
         sg.add_argument("--mono", dest="stereo", action="store_false", help="always mono")
     _finish_args(r)
+
+    sq = sub.add_parser("sequence", help="render a sequence (library entries on a timeline) to one file, "
+                                          "optionally plus numbered one-shots and a cue CSV")
+    sq.add_argument("sequence", nargs="?", help="a preset name (see --list) or a sequence .json")
+    sq.add_argument("--list", action="store_true", help="list the presets")
+    sq.add_argument("-o", "--out", help="output .wav (default: <name>.wav in the current folder)")
+    sq.add_argument("--mp3", action="store_true", help="also write an MP3 (needs ffmpeg)")
+    sq.add_argument("--oneshots", action="store_true",
+                    help="also write <out>_oneshots/: numbered event files and cues.csv (time, entry, take, gain)")
+    sq.add_argument("--seed", type=int, help="sequence seed (which takes the events draw, and the jitter)")
+    sq.add_argument("--repeat", type=int, help="events for every repeating step (walk steps, knocks, shots)")
+    rg = sq.add_mutually_exclusive_group()
+    rg.add_argument("--spm", type=float, help="base rate in steps per minute")
+    rg.add_argument("--interval", type=float, help="base interval in seconds")
+    sq.add_argument("--jitter-ms", type=float, help="timing jitter, +- milliseconds")
+    sq.add_argument("--level-jitter-db", type=float, help="level jitter, +- dB")
+    sq.add_argument("--macro", "-m", action="append", default=[], metavar="NAME=VALUE",
+                    help="set a control on every step whose entry has it, e.g. -m surface=snow -m shoe=boot")
+    sq.add_argument("--level", choices=["lufs", "peak"], help="the mix level (default: the sequence's, else lufs)")
 
     b = sub.add_parser("batch", help="render many recipes (folders, files, .txt lists) with variations and macro sweeps")
     b.add_argument("inputs", nargs="+")
@@ -152,7 +208,14 @@ def main(argv=None) -> int:
 
     args = ap.parse_args(argv)
     try:
-        if args.cmd == "render":
+        if args.cmd == "render" and soundlab.sequence.is_sequence(soundlab.load_recipe(args.recipe)):
+            info = soundlab.sequence.export(args.recipe, args.out or str(Path(args.recipe).with_suffix(".wav")),
+                                            mp3=args.mp3, sample_rate=args.sr)
+            info.pop("cue_list", None)
+            print(json.dumps(info))
+        elif args.cmd == "sequence":
+            _sequence_cmd(args)
+        elif args.cmd == "render":
             rec = soundlab.load_recipe(args.recipe)
             for s in args.set:
                 key, val = s.split("=", 1)

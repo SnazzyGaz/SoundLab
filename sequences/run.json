@@ -1,0 +1,7 @@
+{"soundlab": 1, "type": "sequence", "name": "run", "title": "Run", "order": 2, "category": "impact", "seed": 1,
+ "doc": "Running footsteps on concrete (runs were recorded on concrete and grass; other surfaces play their walk steps at a running rate).",
+ "rate": {"spm": 165},
+ "humanise": {"timing_ms": 10, "level_db": 1.5, "alternate": 0.2},
+ "steps": [
+  {"entry": "footstep", "macros": {"surface": "concrete", "shoe": "normal", "pace": "run"}, "repeat": 10}
+ ]}

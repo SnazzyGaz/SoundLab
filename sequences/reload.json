@@ -1,0 +1,6 @@
+{"soundlab": 1, "type": "sequence", "name": "reload", "title": "Pistol reload", "order": 7, "category": "weapons", "seed": 1,
+ "doc": "Magazine out and in, then the slide racked. The library's magazine recording has out and in as one gesture, so they are one step (the take that has both; each play is a fresh remix of it).",
+ "steps": [
+  {"entry": "magazine_change", "overrides": {"0.which": 0}},
+  {"entry": "slide_rack", "gap": 0.2}
+ ]}

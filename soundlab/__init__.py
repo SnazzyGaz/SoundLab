@@ -22,6 +22,7 @@ from . import materials
 from .core import REGISTRY, RecipeError
 from .recipe import load as load_recipe
 from .recipe import render, validate
+from . import sequence  # noqa: E402  (sequences: entries on a timeline)
 
 __version__ = "0.34.0"
 __all__ = ["render", "render_stereo", "render_loop", "render_to_file", "list_models", "describe", "macros", "variation", "batch", "validate",

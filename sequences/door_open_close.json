@@ -1,0 +1,7 @@
+{"soundlab": 1, "type": "sequence", "name": "door_open_close", "title": "Door open, close", "order": 4, "category": "door", "seed": 1,
+ "doc": "A wooden door: latch, swing open, then closed again.",
+ "steps": [
+  {"entry": "doors/door_wood_open", "macros": {"part": "latch"}},
+  {"entry": "doors/door_wood_open", "macros": {"part": "swing"}, "gap": 0.05},
+  {"entry": "doors/door_wood_close", "gap": 1.2}
+ ]}

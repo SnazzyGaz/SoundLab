@@ -1,0 +1,7 @@
+{"soundlab": 1, "type": "sequence", "name": "walk", "title": "Walk", "order": 1, "category": "impact", "seed": 1,
+ "doc": "N footsteps at a walking pace. Surface, shoe and pace are the Footsteps entry's own choices; every step is its own real take, alternating left and right.",
+ "rate": {"spm": 110},
+ "humanise": {"timing_ms": 15, "level_db": 1.5, "alternate": 0.2},
+ "steps": [
+  {"entry": "footstep", "macros": {"surface": "gravel", "shoe": "normal", "pace": "walk"}, "repeat": 8}
+ ]}
