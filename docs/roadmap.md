@@ -11,6 +11,14 @@ Ground rules:
 
 ## Now: interaction models and resynthesis (v0.17 to v0.27)
 
+v0.35: household foley and doors from recording stems (`foley_stems`, `door_stems`; numbers only; 23 foley and 24
+door recipes); the library is one tree of plain names, with old recipe ids kept as hidden aliases (see
+[library.md](library.md), [foley_stems.md](foley_stems.md) and [door_stems.md](door_stems.md)). The slider app
+re-renders in a near-instant pass when the audio is unchanged, with named macro options, display labels and an
+Advanced panel. Sequences put library entries on a timeline (`soundlab sequence`, a Sequence tab in the slider app),
+with presets for a walk, a run, knocks, a door, gunfire and a reload, and export a mix or numbered one-shots with a
+cue CSV; see [sequences.md](sequences.md).
+
 v0.34: impacts, weapons and footsteps from recording stems (`impact_stems`, `weapon_stems`, `foot_stems`: body-mode
 partial tracks, each recorded hit or step as its own 1/8-octave band envelopes, a 1/8-octave 1 ms noise bed, a
 1/6-octave colour curve and a static treble ceiling; numbers only). 14 impact, 40 weapon and 25 footstep recipes

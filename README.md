@@ -65,13 +65,16 @@ What's in it:
   (numbers only, no audio). Defaults are a softer, more natural step than the often-forceful recordings; `force` and
   `soft` stay as macros. The older `footstep` / `footstep_*` names still work;
   see [docs/foot_stems.md](docs/foot_stems.md).
-- **Household foley from recording stems** (`foley_stems`): cloth, zips, bags, paper, a page turn, a book, cups,
+- **Household foley from recording stems** (`foley_stems`, v0.35): cloth, zips, bags, paper, a page turn, a book, cups,
   glasses, bottles, cutlery, keys, a coin, a phone, a pen click, a light switch, a chair scrape and a cupboard
   (23 recipes in `recipes/foley/`), rebuilt the same way from CC0 recordings (numbers only, no audio);
   see [docs/foley_stems.md](docs/foley_stems.md).
-- **Doors, locks, knocks and gates from recording stems** (`door_stems`): wood, heavy, metal, glass, screen,
+- **Doors, locks, knocks and gates from recording stems** (`door_stems`, v0.35): wood, heavy, metal, glass, screen,
   sliding, car, cupboard and wardrobe doors, a drawer, a garage door, two gates, a key in a lock, a deadbolt, three
   knocks and a hinge squeak (24 recipes in `recipes/doors/`); see [docs/door_stems.md](docs/door_stems.md).
+- **Sequences** (v0.35): library sounds on a timeline (`soundlab sequence`, and a Sequence tab in the slider app).
+  Presets for a walk, a run, knocks, a door, gunfire and a reload. Export a mix or numbered one-shots with a cue CSV;
+  see [docs/sequences.md](docs/sequences.md).
 - **Featured recipes** for game sound (272 recipe files in all; the app lists 180, the rest are old ids kept as
   hidden aliases, see [docs/library.md](docs/library.md)): footsteps on many surfaces and shoes, knocks, coins, wind, whooshes, arrows, fans,
   rain, glass break, sword swing and clash, metal clang, door creak, squeal and slam, hinge, gate and shoe squeaks, punch, bullet impacts, gunshot
@@ -83,7 +86,8 @@ What's in it:
   played out then silent tails trimmed, DC blocked, 24-bit (16-bit dithered), and **seamless loops** for rain,
   wind, fire, water and engine idle (`--loop 10`), exported as **stereo beds**; see
   [docs/export.md](docs/export.md).
-- A **slider app** in the browser (`soundlab gui`) with play, waveform/spectrogram preview and export.
+- A **slider app** in the browser (`soundlab gui`) with a library tree, one Variation control, play,
+  waveform/spectrogram preview and export; slider edits re-render in a near-instant pass when the audio is unchanged.
 - A **blind listening test** in the browser (`/blindtest`, "real or synthesised?") and an A/B kit.
 - Fitting tools: analyse a recording, fit a recipe's controls to it (`soundlab match`), compare renders.
 - A generic synth toolkit (oscillators, FM, noise, grains, filters, envelopes, distortion, delay, chorus,
