@@ -33,6 +33,13 @@ Targets ("to"): "L.param" (first block of layer L; L = index or layer name), "L.
 "distance" macro can make a sound quieter). Automation (breakpoint lists) is mapped point by point (values,
 not times). Results are clipped to the control's declared range.
 
+Display (the app only; nothing here changes the sound): "label" is the plain name shown for the macro;
+"ui" is "front" (default), "advanced" (under Advanced) or "hidden" (kept so older calls and saved recipes
+still work, not shown). A numeric macro may name positions with "options": {"wood": 0.0, ...} (a slider
+value) or {"creaky wood": [{to, op, value}, ...]} (its own targets, like a choice); the app shows these as a
+dropdown and sends the name, and "default_label" names the option the default stands for. Numeric values
+still work as before.
+
 Variations: "vary": {"0.freq": {"cents": 30}, "0.velocity": {"rel": 0.15}, "1.gain_db": {"db": 2},
 "1.start": {"abs": 0.01}} gives uniform random offsets per control; every numeric macro also jitters by its
 "jitter" (default 0.04 of its range); and each variation renders with its own seed so the stochastic parts
@@ -150,18 +157,31 @@ def macro_defaults(recipe) -> dict:
     return {k: v.get("default", 0.5) for k, v in macro_specs(recipe).items()}
 
 
+def _apply_targets(r, targets):
+    for t in targets:
+        op, x = t.get("op", "set"), t.get("value")
+        if op == "set":
+            _set_target(r, t["to"], value=x)
+        elif op == "mul":
+            _set_target(r, t["to"], fn=lambda v, x=x: v * float(x))
+        elif op == "add":
+            _set_target(r, t["to"], fn=lambda v, x=x: v + float(x))
+
+
 def _apply_one(r, name, spec, val):
+    if isinstance(val, str) and "options" in spec and "choices" not in spec:
+        # a slider with named positions (a dropdown in the app): a name is either a slider value or its own targets
+        if val not in spec["options"]:
+            raise RecipeError(f"macro {name}: {val!r} not in {list(spec['options'])}")
+        o = spec["options"][val]
+        if isinstance(o, list):
+            _apply_targets(r, o)
+            return
+        val = o
     if "choices" in spec:
         if val not in spec["choices"]:
             raise RecipeError(f"macro {name}: {val!r} not in {list(spec['choices'])}")
-        for t in spec["choices"][val]:
-            op, x = t.get("op", "set"), t.get("value")
-            if op == "set":
-                _set_target(r, t["to"], value=x)
-            elif op == "mul":
-                _set_target(r, t["to"], fn=lambda v, x=x: v * float(x))
-            elif op == "add":
-                _set_target(r, t["to"], fn=lambda v, x=x: v + float(x))
+        _apply_targets(r, spec["choices"][val])
         return
     m = float(val)
     if not 0.0 <= m <= 1.0:
@@ -265,7 +285,10 @@ def variation(recipe: dict, k: int, macros: dict | None = None) -> tuple[dict, d
         if "choices" in spec:
             continue
         j = float(spec.get("jitter", DEFAULT_JITTER))
-        vals[name] = float(np.clip(float(vals[name]) + rng.uniform(-j, j), 0.0, 1.0))
+        u = rng.uniform(-j, j)            # drawn for named positions too, so later draws stay where they were
+        if isinstance(vals[name], str):
+            continue
+        vals[name] = float(np.clip(float(vals[name]) + u, 0.0, 1.0))
     r = apply_macros(recipe, vals)
     for to, spec in (r.pop("vary", None) or {}).items():
         u = rng.uniform(-1.0, 1.0)
@@ -300,6 +323,10 @@ def validate_macros(recipe: dict) -> list[str]:
             else:
                 for m in (0.0, 1.0):
                     apply_macros(recipe, {name: m})
+                for o in spec.get("options") or {}:
+                    apply_macros(recipe, {name: o})
+            if spec.get("ui") not in (None, "front", "advanced", "hidden"):
+                errs.append(f"macro {name}: ui must be front, advanced or hidden")
         except (RecipeError, KeyError, IndexError, ValueError, TypeError) as e:
             errs.append(f"macro {name}: {e}")
     for to, spec in (recipe.get("vary") or {}).items():
@@ -314,10 +341,13 @@ def describe_recipe(recipe: dict) -> dict:
     out = {"name": recipe.get("name", ""), "category": recipe.get("category", "sfx"),
            "duration": recipe.get("duration"), "macros": [], "layers": [], "vary": recipe.get("vary", {})}
     for name, spec in macro_specs(recipe).items():
-        d = {"name": name, "default": spec.get("default", 0.5), "doc": spec.get("doc", "")}
+        d = {"name": name, "default": spec.get("default", 0.5), "doc": spec.get("doc", ""),
+             "label": spec.get("label", name), "ui": spec.get("ui", "front")}
         if "choices" in spec:
             d["choices"] = list(spec["choices"])
         else:
+            if "options" in spec:
+                d["options"] = list(spec["options"])
             d["jitter"] = spec.get("jitter", DEFAULT_JITTER)
             d["moves"] = [f"{t['to']} ({t.get('op', 'mul')} " + (", ".join(f"{a:g}:{b:g}" for a, b in t["points"])
                           if "points" in t else str(t.get("range"))) + ")" for t in spec.get("map", [])]

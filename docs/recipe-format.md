@@ -45,6 +45,20 @@ Rules:
 
 The CLI can override a single-model layer's parameter: `--set 0.rpm=3000` (layer index, parameter).
 
+## Library keys
+
+Optional top-level keys for the app's library; the renderer ignores them, so they never change the sound:
+
+- `"title"`: the plain name shown in the list (`"Wood door, close"`); `"name"` stays the one-line description.
+- `"library"`: the place in the tree, `"Domain/Group"` (`"Foley/Doors & gates"`).
+- `"tags"`: extra search words (`["door", "slam"]`).
+- `"hidden": true` with `"replaced_by": "<id>"`: an old id kept so existing files and calls still work. It still
+  loads and renders exactly as before but is not listed. See [library.md](library.md).
+
+Per macro, `"label"` (the shown name), `"ui"` (`"front"`, `"advanced"` or `"hidden"`) and, on a numeric macro,
+`"options"` (named positions shown as a dropdown) are described in
+[macros-and-variations.md](macros-and-variations.md#display).
+
 ## Generic synth blocks (0.6.0)
 
 Besides the five physical stages there are two generic stages: `synth` blocks (osc, fm, noisegen, grains) are sources and start a chain; `fx` blocks (svf, env, shaper, delay, chorus, reverb, gain) process a chain or run in `post`. Extra top-level keys such as `category` are ignored by the renderer (reserved for batch naming). See [synth-blocks.md](synth-blocks.md).

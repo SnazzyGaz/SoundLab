@@ -37,6 +37,22 @@ velocity +-20 %, strike position +-0.06, onset +-4 ms), and (3) renders with its
 part (noise, grains, crackle timing) differs. Variation k of a recipe is fully determined by (seed, k):
 re-running a batch gives identical files, and asking for more variations never changes the earlier ones.
 
+## Display
+
+Three optional keys per macro change only how the app shows it:
+
+- `"label"`: the plain name (`force` shows as Intensity, `tempo` as Rate).
+- `"ui"`: `"front"` (default), `"advanced"` (in the Advanced panel) or `"hidden"` (not shown; kept so older
+  calls and saved recipes still work: the per-recipe `seed` slider, sliders that no longer change the sound,
+  and older names that repeat another slider).
+- `"options"` on a numeric macro: named positions, shown as a dropdown. A name maps to a slider value
+  (`"wood": 0.0`) or to its own targets like a choice (`"creaky wood": [{"to": "0.surface", "op": "set",
+  "value": "creaky_wood"}, ...]`). `--macro surface=carpet` and the API accept the names; numbers still work.
+  `"default_label"` names the option the default stands for. Choice macros and named options draw no random
+  numbers in a variation, so adding them leaves every variation of a recipe as it was.
+
+In the app, Variation is the single control for new takes (0 = as designed; ◀ ▶ step; 🎲 picks one).
+
 ## Naming
 
 `<category>_<name>[_<macro><value>...]_v<NN>.wav`, words inside a field joined by `-`:

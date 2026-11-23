@@ -17,7 +17,9 @@ SURFACE = {
     "metal": "metal_walk", "dirt": "dirt_walk", "gravel": "gravel_walk", "grass": "grass_walk",
     "leaves": "leaves_walk", "concrete": "concrete_walk", "sand": "sand_walk", "snow": "snow_walk",
     "mud": "mud_walk", "tile": "tile_walk", "carpet": "carpet_walk",
+    "creaky_wood": "wood_creaky", "puddle": "puddle_walk",
 }
+RUN = {"concrete_walk": "concrete_run", "grass_walk": "grass_run"}   # pace "run" where a run was recorded
 SHOE = {"trainer": "trainers_walk", "trainers": "trainers_walk", "boot": "boots_walk",
         "boots": "boots_walk", "heel": "heels_walk", "heels": "heels_walk",
         "barefoot": "barefoot_wood"}
@@ -63,6 +65,7 @@ def render_foot(p: dict) -> "object":
            Param("variation", 0, "", -1e6, 1e6, "0 = the stored take; others reseed a fresh remix of the same stems"),
            Param("surface", "", "", None, None, "optional surface name for the generic footstep recipe (wood, stone, dirt, ...)"),
            Param("shoe", "", "", None, None, "optional shoe name for the generic footstep recipe (trainer, boot, heel, barefoot)"),
+           Param("pace", "", "", None, None, "optional 'run' for the generic footstep recipe (concrete and grass have runs; others walk)"),
            Param("at", 0.0, "s", 0, None),
        ],
        ["McDermott & Simoncelli 2011 (sound texture statistics)",
@@ -73,10 +76,14 @@ def foot_stems(ctx: Ctx, x, **p):
     p = dict(p)
     shoe = str(p.pop("shoe", "") or "").strip().lower()
     surface = str(p.pop("surface", "") or "").strip().lower()
+    pace = str(p.pop("pace", "") or "").strip().lower()
     if shoe in SHOE:
         p["source"] = SHOE[shoe]
         if p["source"] == "trainers_walk":
             p.setdefault("early", 1)
     elif surface in SURFACE:
         p["source"] = SURFACE[surface]
+    if pace == "run":
+        src = p.get("source", "wood_floor")
+        p["source"] = RUN.get(src, src)
     return R.render_into_ctx(ctx, p, _data(), "wood_floor")
