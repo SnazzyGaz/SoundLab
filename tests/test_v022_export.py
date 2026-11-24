@@ -65,7 +65,12 @@ def test_ring_out_does_not_change_the_head(name):
 def test_every_ring_out_tail_decays_before_the_end():
     for p in sorted(R.glob("*.json")):
         r = json.loads(p.read_text())
-        if r.get("loop") or p.stem in ("car_passby", "engine", "engine_blips"):   # sources running at the end
+        if r.get("loop") or p.stem in ("car_passby", "engine", "engine_blips"):  # sources still going at the end
+            continue
+        # weather one-shots (thunder): the recorded take still has energy at the cut, and there is no
+        # resonant tail after duration. Looping weather beds are already skipped by the loop key above.
+        models = {layer.get("model") for layer in r.get("layers", [])}
+        if "weather_stems" in models:
             continue
         y, sr = soundlab.render(p, ring_out=True)
         w = int(0.01 * sr)

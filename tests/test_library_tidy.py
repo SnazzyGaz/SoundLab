@@ -14,7 +14,7 @@ from soundlab.macros import apply_macros, variation
 
 ROOT = Path(__file__).resolve().parents[1]
 R = ROOT / "recipes"
-TOPS = {"Foley", "Impacts & breaks", "Combat", "Fire", "Water", "Weather", "Machines", "Vehicles", "Animals",
+TOPS = {"Foley", "Impacts & breaks", "Combat", "Fire", "Water", "Weather", "Ambience", "Machines", "Vehicles", "Animals",
         "Creatures", "Game UI & sci-fi"}
 
 

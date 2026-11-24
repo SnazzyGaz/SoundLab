@@ -20,7 +20,8 @@
         "source": "wind_breeze",
         "seed": 0,
         "intensity": 0.0,
-        "at": 0.0
+        "at": 0.0,
+        "curve": "constant"
       }
     }
   ],

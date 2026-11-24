@@ -46,7 +46,7 @@ def test_plastic_and_leaves_unchanged_branch():
 
 def test_rain_patter_adds_mid_rate_modulation():
     import json, tempfile
-    r = json.loads((RECIPES / "rain.json").read_text())
+    r = json.loads((RECIPES / "synth_model" / "rain.json").read_text())
     ys = []
     for p in (0.0, 1.0):
         r["layers"][0]["params"]["patter"] = p

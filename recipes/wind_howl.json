@@ -20,7 +20,8 @@
         "source": "wind_howl",
         "seed": 0,
         "intensity": 0.5,
-        "at": 0.0
+        "at": 0.0,
+        "curve": "constant"
       }
     }
   ],

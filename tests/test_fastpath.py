@@ -138,7 +138,7 @@ def test_app_caches_and_supersedes(tmp_path):
 
 def test_warm_up_only_for_stem_recipes(tmp_path):
     app = App(recipe_dirs=[REPO_RECIPES], out_dir=tmp_path)
-    assert app.prefetch_requests({"id": "rain"}) == []
+    assert app.prefetch_requests({"id": "foghorn"}) == []
     qs = app.prefetch_requests({"id": "concrete_walk", "macros": {"force": 0.6}})
     assert qs and qs[-1]["variation"] == 1
     moved = {k for q in qs[:-1] for k in q["macros"] if q["macros"][k] in (0.0, 1.0)}
